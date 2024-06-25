@@ -1,0 +1,5 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+inst/htmlwidgets/jsversion
+inst/htmlwidgets/lib/threejs/origin
+^.*\.DS_Store

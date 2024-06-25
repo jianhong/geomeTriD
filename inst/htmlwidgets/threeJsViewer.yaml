@@ -1,0 +1,43 @@
+dependencies:
+  - name: threejs
+    version: 165
+    src: "htmlwidgets/lib/threejs"
+    script: 
+      - src: 'three.module.min.js'
+        type: module
+      # - src: 'jsm/libs/stats.module.js'
+      #   type: module
+      # - src: 'jsm/utils/GPUStatsPanel.js'
+      #   type: module
+      - src: 'jsm/libs/lil-gui.module.min.js'
+        type: module
+      - src: 'jsm/utils/GeometryUtils.js'
+        type: module
+      - src: 'jsm/lines/LineSegmentsGeometry.js'
+        type: module
+      - src: 'jsm/lines/LineSegments2.js'
+        type: module
+      - src: 'jsm/lines/LineMaterial.js'
+        type: module
+      - src: 'jsm/lines/LineGeometry.js'
+        type: module
+      - src: 'jsm/lines/Line2.js'
+        type: module
+      # - src: 'jsm/renderers/SVGRenderer.js'
+      #   type: module
+      # - src: 'jsm/exporters/GLTFExporter.js'
+      #   type: module
+      # - src: 'jsm/utils/TextureUtils.js'
+      #   type: module
+      # - src: 'jsm/exporters/PLYExporter.js'
+      #   type: module
+      # - src: 'jsm/exporters/STLExporter.js'
+      #   type: module
+      # - src: 'jsm/exporters/DRACOExporter.js'
+      #   type: module
+  - name: tjviewer
+    version: 0.0.1
+    src: "htmlwidgets/lib/tjviewer"
+    script:
+      - src: 'tjviewer.module.js'
+        type: module

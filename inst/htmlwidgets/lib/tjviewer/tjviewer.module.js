@@ -1,0 +1,533 @@
+// please note that the relative folder is related with the version number.
+import * as THREE from '../threejs-165/three.module.min.js';
+//import Stats from '../threejs-165/addons/libs/stats.module.js';
+//import { GPUStatsPanel } from '../threejs-165/addons/utils/GPUStatsPanel.js';
+import { GUI } from '../threejs-165/addons/libs/lil-gui.module.min.js';
+import { OrbitControls } from '../threejs-165/addons/controls/OrbitControls.js';
+import { Line2 } from '../threejs-165/addons/lines/Line2.js';
+import { LineMaterial } from '../threejs-165/addons/lines/LineMaterial.js';
+import { LineGeometry } from '../threejs-165/addons/lines/LineGeometry.js';
+// exporters
+//import { SVGRenderer } from '../threejs-165/addons/renderers/SVGRenderer.js';
+//import { GLTFExporter } from '../threejs-165/addons/exporters/GLTFExporter.js';
+//import { PLYExporter } from '../threejs-165/addons/exporters/PLYExporter.js';
+//import { STLExporter } from '../threejs-165/addons/exporters/STLExporter.js';
+//import { DRACOExporter } from '../threejs-165/addons/exporters/DRACOExporter.js';
+// module Widget
+class tjViewer{
+  constructor(el, width, height, x){
+    //viewer
+    this.width = width;
+    this.height = height;
+    // viewport
+    this.insetWidth = height / 4; // square
+    this.insetHeight = height / 4;
+    
+    this.renderer = new THREE.WebGLRenderer( { antialias: true } );
+    this.renderer.setPixelRatio( window.devicePixelRatio );
+    this.renderer.setSize( width, height );
+    this.renderer.setClearColor( 0x000000, 0.0 );
+    this.animate = this.animate.bind(this);
+    this.renderer.setAnimationLoop( this.animate );
+    el.appendChild(this.renderer.domElement);
+    
+    this.scene = new THREE.Scene();
+    
+    var near = .0001
+    var far = 100
+    var fov = 50
+    this.camera = new THREE.PerspectiveCamera( fov, width / height, near, far );
+    this.camera.position.set( 0, 0, -far/10 ); // set to x, y, z;
+    
+    // viewport
+    this.camera2 = new THREE.PerspectiveCamera( fov, 1, near, far );
+    this.camera2.position.copy( this.camera.position );
+    
+    this.controls = new OrbitControls( this.camera, this.renderer.domElement );
+    this.controls.enableDamping = true;
+    this.controls.minDistance = near*2;
+    this.controls.maxDistance = far/2;
+    /*
+    this.stats = new Stats();
+    el.appendChild(this.stats.dom);
+    
+    this.gpuPanel = new GPUStatsPanel( this.renderer.getContext() );
+    this.stats.addPanel( this.gpuPanel );
+    this.stats.showPanel( 0 );*/
+    
+    this.materials = [];
+    this.objects = [];
+    this.background = new THREE.Color(1, 1, 1);
+    this.bckalpha = 1;
+    
+    el.parentElement.addEventListener('wheel', (event)=>{
+      // Infinity zoom in.
+      this.camera.fov += event.deltaY*0.005;
+      if(this.camera.fov<=0.1) this.camera.fov=0.1;
+      //console.log(this.camera.fov);
+      this.camera.updateProjectionMatrix();
+    })
+    
+    this.gui = new GUI();
+    this.maxRadius = 1;
+    this.maxLineWidth = 50;
+    const saveBlob = (function(){
+        const a = document.createElement('a');
+        document.body.appendChild(a);
+        a.style.display = 'none';
+        return function saveData(blob, fileName) {
+           const url = window.URL.createObjectURL(blob);
+           a.href = url;
+           a.download = fileName;
+           a.click();
+        };
+    }());
+    const expparam = {
+      filename: 'threejsviewer',
+      format: 'png',
+      export : function() {
+        let exporter;
+        /*console.log(this.scene);
+        this.scene.traverse(function(it){
+          if(it instanceof THREE.Mesh){
+            console.log(it);
+          }
+        });*/
+        switch(expparam.format){
+          case 'png':
+            this.animate(false);
+            this.renderer.domElement.toBlob(blob =>{
+              saveBlob(blob, expparam.filename+'.'+expparam.format);
+            });
+            break;
+          /*case 'drc':
+            exporter = new DRACOExporter();
+            const drcData = exporter.parse(this.scene, {exportColor:true});
+            saveBlob(new Blob([drcData], {
+              type: 'application/octet-stream'
+            }), expparam.filename+'.'+expparam.format);
+            break;
+          case 'svg':
+            var rendererSVG = new SVGRenderer();
+            rendererSVG.setSize(this.width, this.height);
+            rendererSVG.setClearColor( this.background, this.bckalpha );
+            this.camera.updateProjectionMatrix();
+            rendererSVG.render(this.scene, this.camera);
+            var XMLS = new XMLSerializer();
+            var svgData = XMLS.serializeToString(rendererSVG.domElement);
+            var preface = '<?xml version="1.0" standalone="no"?>\r\n';
+            var blob = new Blob([preface, svgData], {
+              type: "image/svg+xml;charset=utf-8"
+            });
+            saveBlob(blob, expparam.filename+'.'+expparam.format);
+            break;
+          case 'gltf':
+            exporter = new GLTFExporter();
+            exporter.parse(
+              this.scene,
+              function(gltf){
+                var blob = new Blob([JSON.stringify(gltf)], {
+                  type: 'text/plain'
+                });
+                saveBlob(blob, expparam.filename+'.'+expparam.format);
+              },
+              function(error){
+                console.log(error);
+              }
+            )
+            break;
+          case 'ply':
+            exporter = new PLYExporter();
+            const plyData = exporter.parse(this.scene);
+            saveBlob(new Blob([plyData], {
+              type: 'text/plain'
+            }), expparam.filename+'.'+expparam.format);
+            break;
+          case 'stl':
+            exporter = new STLExporter();
+            const stlData = exporter.parse( this.scene );
+            saveBlob(new Blob([stlData], {
+              type: 'text/plain'
+            }), expparam.filename+'.'+expparam.format);
+            break;*/
+          default:
+            alert('not support yet!');
+        }
+      }.bind(this)
+    };
+    this.gui.add(expparam, 'filename').onChange(
+      val => expparam.filename = val
+    );
+    this.gui.add(expparam, 'format', ['drc', 'gltf', 'ply', 'png', 'stl', 'svg']).onChange(
+      val => expparam.format = val
+    );
+    this.gui.add(expparam, 'export');
+  }
+
+  create_plot(x){
+    //console.log(x);
+    //const twoPi = Math.PI * 2;
+    //x is a named array
+    if('background' in x){
+      //Separate RGB values between 0 and 1
+      this.background = new THREE.Color(
+        x.background.r,
+        x.background.g,
+        x.background.b
+      );
+      this.bckalpha = x.background.alpha;
+    }
+    if('maxRadius' in x){
+      this.maxRadius = x.maxRadius;
+    }
+    if('maxLineWidth' in x){
+      this.maxLineWidth = x.maxLineWidth;
+    }
+    function updateGroupGeometry(mesh, geometry){
+            mesh.geometry.dispose();
+            mesh.geometry = geometry;
+        }
+    function initNewMesh(obj, ele){
+      const matrix = new THREE.Matrix4();
+      const color = new THREE.Color();
+      for ( let i = 0; i < obj.count; i ++ ) {
+        matrix.setPosition( ele.positions[i*3],
+                            ele.positions[i*3+1],
+                            ele.positions[i*3+2] );
+        obj.setMatrixAt( i, matrix );
+        if(ele.colors.length==ele.positions.length){
+          obj.setColorAt( i, color.setRGB(
+                ele.colors[i*3],
+                ele.colors[i*3+1],
+                ele.colors[i*3+2]
+              ) );
+        }else{//same color for alll elements
+          obj.setColorAt( i, color.setRGB(
+                ele.colors[0],
+                ele.colors[1],
+                ele.colors[2]
+              ) );
+        }
+      }
+    }
+    // each element 
+    for(var k in x){
+      if(k!='background' && k!='maxRadius' && k!='maxLineWidth'){
+        let ele = x[k];
+        const param = {
+          'size': 0.08,
+          'radius': 0.08,
+          'radiusTop': 0.08,
+          'radiusBottom': 0.08,
+          'tube': 0.08,
+          'width':0.08,
+          'height':0.08,
+          'depth':0.08,
+          'opacity':1,
+          'transparent':true
+        };
+        const len = ele.positions.length/3;
+        const folder = this.gui.addFolder(ele.type+' '+k);
+        let geometry = new THREE.BufferGeometry();
+        let obj = new THREE.InstancedMesh();
+        let material = new THREE.MeshBasicMaterial( {
+              color: 0xffffff,
+              opacity: 1,
+              transparent: true
+            } );
+        switch(ele.type){
+          case 'line':// Line2 ( LineGeometry, LineMaterial )
+            param.size = ele.size;
+            geometry = new LineGeometry();
+            geometry.setPositions( ele.positions );
+            geometry.setColors( ele.colors );
+            material = new LineMaterial( {
+              color: 0xffffff,
+              linewidth: ele.size, // in world units with size attenuation, pixels otherwise
+              vertexColors: true,
+              dashed: false,
+              alphaToCoverage: false,
+              opacity: 1,
+              transparent: true
+            } );
+            obj = new Line2( geometry, material );
+            obj.computeLineDistances();
+            obj.scale.set( 1, 1, 1 );
+            folder.add(param, 'size', 0, this.maxLineWidth).onChange( function( val) {
+              material.linewidth = val;
+            })
+            break;
+          case 'sphere':
+            const spheredata = {
+              radius: ele.radius,
+              widthSegments: 32, //3-64
+              heightSegments: 16//2-32
+            };
+            geometry = new THREE.SphereGeometry(
+              spheredata.radius, spheredata.widthSegments, spheredata.heightSegments);
+            obj = new THREE.InstancedMesh( geometry, material, len );
+            initNewMesh(obj, ele);
+            folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
+              spheredata.radius = val;
+              updateGroupGeometry(obj, new THREE.SphereGeometry(
+                spheredata.radius,
+                spheredata.widthSegments,
+                spheredata.heightSegments));
+            })
+            break;
+          case 'box':
+            const boxdata = {
+              width : ele.width,
+              height : ele.height,
+              depth : ele.depth
+            }
+            geometry = new THREE.BoxGeometry(
+              boxdata.width, 
+              boxdata.height,
+              boxdata.depth);
+            obj = new THREE.InstancedMesh( geometry, material, len );
+            initNewMesh(obj, ele);
+            function updateBoxGeometry(){
+              updateGroupGeometry(obj, new THREE.BoxGeometry(
+                boxdata.width, 
+                boxdata.height,
+                boxdata.depth));
+            }
+            folder.add(param, 'width', 0, this.maxRadius).onChange( function( val) {
+              boxdata.width = val;
+              updateBoxGeometry();
+            })
+            folder.add(param, 'height', 0, this.maxRadius).onChange( function( val) {
+              boxdata.height = val;
+              updateBoxGeometry();
+            })
+            folder.add(param, 'depth', 0, this.maxRadius).onChange( function( val) {
+              boxdata.depth = val;
+              updateBoxGeometry();
+            })
+            break;
+          case 'capsule':
+            const capsuledata = {
+              radius : ele.radius,
+              height : ele.height
+            }
+            geometry = new THREE.CapsuleGeometry(
+              capsuledata.radius,
+              capsuledata.height
+            )
+            obj = new THREE.InstancedMesh( geometry, material, len);
+            initNewMesh(obj, ele);
+            function updateCapsuleGeometry(){
+              updateGroupGeometry(obj, new THREE.CapsuleGeometry(
+                capsuledata.radius,
+                capsuledata.size
+              ))
+            }
+            folder.add(param, 'radius', 0, this.maxRadius).onChange( function(val) {
+              capsuledata.radius = val;
+              updateCapsuleGeometry()
+            })
+            folder.add(param, 'height', 0, this.maxRadius).onChange( function(val) {
+              capsuledata.height = val;
+              updateCapsuleGeometry()
+            })
+            break;
+          case 'cone':
+            const conedata = {
+              radius: ele.radius,
+              height: ele.height
+            }
+            geometry = new THREE.ConeGeometry(
+              conedata.radius,
+              conedata.height
+            )
+            obj = new THREE.InstancedMesh( geometry, material, len);
+            initNewMesh(obj, ele);
+            function updateConeGeometry(){
+              updateGroupGeometry(obj, new THREE.ConeGeometry(
+                conedata.radius,
+                conedata.height
+              ))
+            }
+            folder.add(param, 'radius', 0, this.maxRadius).onChange( function(val) {
+              conedata.radius = val;
+              updateConeGeometry()
+            })
+            folder.add(param, 'height', 0, this.maxRadius).onChange( function(val) {
+              conedata.height = val;
+              updateConeGeometry()
+            })
+            break;
+          case 'cylinder':
+            const cylinderdata = {
+              radiusTop: ele.radiusTop,
+              radiusBottom: ele.radiusBottom,
+              height: ele.height
+            }
+            geometry = new THREE.CylinderGeometry(
+              cylinderdata.radiusTop,
+              cylinderdata.radiusBottom,
+              cylinderdata.height
+            )
+            obj = new THREE.InstancedMesh( geometry, material, len);
+            initNewMesh(obj, ele);
+            function updateCylinderGeometry(){
+              updateGroupGeometry(obj, new THREE.CylinderGeometry(
+              cylinderdata.radiusTop,
+              cylinderdata.radiusBottom,
+              cylinderdata.height
+              ))
+            }
+            folder.add(param, 'radiusTop', 0, this.maxRadius).onChange( function(val) {
+              cylinderdata.radiusTop = val;
+              updateCylinderGeometry()
+            })
+            folder.add(param, 'radiusBottom', 0, this.maxRadius).onChange( function(val) {
+              cylinderdata.radiusBottom = val;
+              updateCylinderGeometry()
+            })
+            folder.add(param, 'height', 0, this.maxRadius).onChange( function(val) {
+              cylinderdata.height = val;
+              updateCylinderGeometry()
+            })
+            break;
+          case 'dodecahedron':
+            const dodecahedrondata = {
+              radius: ele.radius
+            };
+            geometry = new THREE.DodecahedronGeometry(
+              dodecahedrondata.radius);
+            obj = new THREE.InstancedMesh( geometry, material, len );
+            initNewMesh(obj, ele);
+            folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
+              dodecahedrondata.radius = val;
+              updateGroupGeometry(obj, new THREE.DodecahedronGeometry(
+                dodecahedrondata.radius));
+            })
+            break;
+          case 'icosahedron':
+            const icosahedrondata = {
+              radius: ele.radius
+            };
+            geometry = new THREE.IcosahedronGeometry(
+              icosahedrondata.radius);
+            obj = new THREE.InstancedMesh( geometry, material, len );
+            initNewMesh(obj, ele);
+            folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
+              icosahedrondata.radius = val;
+              updateGroupGeometry(obj, new THREE.IcosahedronGeometry(
+                icosahedrondata.radius));
+            })
+            break;
+          case 'octahedron':
+            const octahedrondata = {
+              radius: ele.radius
+            };
+            geometry = new THREE.OctahedronGeometry(
+              octahedrondata.radius);
+            obj = new THREE.InstancedMesh( geometry, material, len );
+            initNewMesh(obj, ele);
+            folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
+              octahedrondata.radius = val;
+              updateGroupGeometry(obj, new THREE.OctahedronGeometry(
+                octahedrondata.radius));
+            })
+            break;
+          case 'tetrahedron':
+            const tetrahedrondata = {
+              radius: ele.radius
+            };
+            geometry = new THREE.TetrahedronGeometry(
+              tetrahedrondata.radius);
+            obj = new THREE.InstancedMesh( geometry, material, len );
+            initNewMesh(obj, ele);
+            folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
+              tetrahedrondata.radius = val;
+              updateGroupGeometry(obj, new THREE.TetrahedronGeometry(
+                tetrahedrondata.radius));
+            })
+            break;
+          case 'torus':
+            const torusdata = {
+              radius: ele.radius,
+              tube: ele.tube
+            }
+            geometry = new THREE.TorusGeometry(
+              torusdata.radius,
+              torusdata.tube
+            )
+            obj = new THREE.InstancedMesh( geometry, material, len);
+            initNewMesh(obj, ele);
+            function updateTorusGeometry(){
+              updateGroupGeometry(obj, new THREE.TorusGeometry(
+                torusdata.radius,
+                torusdata.tube
+              ))
+            }
+            folder.add(param, 'radius', 0, this.maxRadius).onChange( function(val) {
+              torusdata.radius = val;
+              updateTorusGeometry()
+            })
+            folder.add(param, 'tube', 0, this.maxRadius).onChange( function(val) {
+              torusdata.tube = val;
+              updateTorusGeometry()
+            })
+            break;
+          default:
+        }
+        folder.add(param, 'opacity', 0, this.maxRadius).onChange( function( val ){
+          material.opacity = val;
+        })
+        folder.add(param, 'transparent').onChange( function( val ){
+          material.transparent = val;
+        })
+        this.materials.push(material);
+        this.objects.push(obj);
+        this.scene.add(obj);
+      }
+    }
+  }
+  
+  onWindowResize(width, height){
+    this.camera.aspect = width / height;
+    this.camera.updateProjectionMatrix();
+    this.width = width;
+    this.height = height;
+    this.renderer.setSize( width, height );
+    
+    this.insetWidth = height / 4; // square
+    this.insetHeight = height / 4;
+    
+    this.camera2.aspect = this.insetWidth / this.insetHeight;
+    this.camera2.updateProjectionMatrix();
+  }
+  
+  animate(inset=true){
+    // main scene
+    this.renderer.setClearColor( this.background, this.bckalpha );
+    this.renderer.setViewport( 0, 0, this.width, this.height );
+    this.controls.update();
+    //controls
+    //this.gpuPanel.startQuery();
+    this.renderer.render( this.scene, this.camera );
+    //this.gpuPanel.endQuery();
+    
+    // inset scene
+    if(inset){
+      this.renderer.setClearColor( 0x222222, 1 );
+      this.renderer.clearDepth(); // important!
+      this.renderer.setScissorTest( true );
+      this.renderer.setScissor( 20, 20, this.insetWidth, this.insetHeight );
+      this.renderer.setViewport( 20, 20, this.insetWidth, this.insetHeight );
+      this.camera2.position.copy( this.camera.position );
+      this.camera2.quaternion.copy( this.camera.quaternion );
+      this.renderer.render( this.scene, this.camera2 );
+      this.renderer.setScissorTest( false );
+    }
+    
+    // stats
+    //this.stats.update();
+  }
+};
+
+export { tjViewer };
