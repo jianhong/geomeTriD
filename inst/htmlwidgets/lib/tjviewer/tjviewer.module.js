@@ -4,18 +4,22 @@ import * as THREE from '../threejs-165/three.module.min.js';
 //import { GPUStatsPanel } from '../threejs-165/addons/utils/GPUStatsPanel.js';
 import { GUI } from '../threejs-165/addons/libs/lil-gui.module.min.js';
 import { OrbitControls } from '../threejs-165/addons/controls/OrbitControls.js';
+// lines
 import { Line2 } from '../threejs-165/addons/lines/Line2.js';
 import { LineMaterial } from '../threejs-165/addons/lines/LineMaterial.js';
 import { LineGeometry } from '../threejs-165/addons/lines/LineGeometry.js';
+// text
+import { Font } from '../threejs-165/addons/loaders/FontLoader.js';
+import { TextGeometry } from '../threejs-165/addons/geometries/TextGeometry.js';
 // exporters
 //import { SVGRenderer } from '../threejs-165/addons/renderers/SVGRenderer.js';
 //import { GLTFExporter } from '../threejs-165/addons/exporters/GLTFExporter.js';
 //import { PLYExporter } from '../threejs-165/addons/exporters/PLYExporter.js';
-//import { STLExporter } from '../threejs-165/addons/exporters/STLExporter.js';
+import { STLExporter } from '../threejs-165/addons/exporters/STLExporter.js';
 //import { DRACOExporter } from '../threejs-165/addons/exporters/DRACOExporter.js';
 // module Widget
 class tjViewer{
-  constructor(el, width, height, x){
+  constructor(el, width, height){
     //viewer
     this.width = width;
     this.height = height;
@@ -87,12 +91,6 @@ class tjViewer{
       format: 'png',
       export : function() {
         let exporter;
-        /*console.log(this.scene);
-        this.scene.traverse(function(it){
-          if(it instanceof THREE.Mesh){
-            console.log(it);
-          }
-        });*/
         switch(expparam.format){
           case 'png':
             this.animate(false);
@@ -187,13 +185,13 @@ class tjViewer{
             mesh.geometry.dispose();
             mesh.geometry = geometry;
         }
-    function initNewMesh(obj, ele){
+    function initNewMesh(obj, ele, offset={x:0,y:0,z:0}){
       const matrix = new THREE.Matrix4();
       const color = new THREE.Color();
       for ( let i = 0; i < obj.count; i ++ ) {
-        matrix.setPosition( ele.positions[i*3],
-                            ele.positions[i*3+1],
-                            ele.positions[i*3+2] );
+        matrix.setPosition( ele.positions[i*3] + offset.x,
+                            ele.positions[i*3+1] + offset.y,
+                            ele.positions[i*3+2] + offset.z );
         obj.setMatrixAt( i, matrix );
         if(ele.colors.length==ele.positions.length){
           obj.setColorAt( i, color.setRGB(
@@ -255,7 +253,7 @@ class tjViewer{
             obj.scale.set( 1, 1, 1 );
             folder.add(param, 'size', 0, this.maxLineWidth).onChange( function( val) {
               material.linewidth = val;
-            })
+            });
             break;
           case 'sphere':
             const spheredata = {
@@ -273,7 +271,7 @@ class tjViewer{
                 spheredata.radius,
                 spheredata.widthSegments,
                 spheredata.heightSegments));
-            })
+            });
             break;
           case 'box':
             const boxdata = {
@@ -296,15 +294,15 @@ class tjViewer{
             folder.add(param, 'width', 0, this.maxRadius).onChange( function( val) {
               boxdata.width = val;
               updateBoxGeometry();
-            })
+            });
             folder.add(param, 'height', 0, this.maxRadius).onChange( function( val) {
               boxdata.height = val;
               updateBoxGeometry();
-            })
+            });
             folder.add(param, 'depth', 0, this.maxRadius).onChange( function( val) {
               boxdata.depth = val;
               updateBoxGeometry();
-            })
+            });
             break;
           case 'capsule':
             const capsuledata = {
@@ -314,7 +312,7 @@ class tjViewer{
             geometry = new THREE.CapsuleGeometry(
               capsuledata.radius,
               capsuledata.height
-            )
+            );
             obj = new THREE.InstancedMesh( geometry, material, len);
             initNewMesh(obj, ele);
             function updateCapsuleGeometry(){
@@ -326,11 +324,11 @@ class tjViewer{
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function(val) {
               capsuledata.radius = val;
               updateCapsuleGeometry()
-            })
+            });
             folder.add(param, 'height', 0, this.maxRadius).onChange( function(val) {
               capsuledata.height = val;
               updateCapsuleGeometry()
-            })
+            });
             break;
           case 'cone':
             const conedata = {
@@ -340,7 +338,7 @@ class tjViewer{
             geometry = new THREE.ConeGeometry(
               conedata.radius,
               conedata.height
-            )
+            );
             obj = new THREE.InstancedMesh( geometry, material, len);
             initNewMesh(obj, ele);
             function updateConeGeometry(){
@@ -352,11 +350,11 @@ class tjViewer{
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function(val) {
               conedata.radius = val;
               updateConeGeometry()
-            })
+            });
             folder.add(param, 'height', 0, this.maxRadius).onChange( function(val) {
               conedata.height = val;
               updateConeGeometry()
-            })
+            });
             break;
           case 'cylinder':
             const cylinderdata = {
@@ -381,15 +379,15 @@ class tjViewer{
             folder.add(param, 'radiusTop', 0, this.maxRadius).onChange( function(val) {
               cylinderdata.radiusTop = val;
               updateCylinderGeometry()
-            })
+            });
             folder.add(param, 'radiusBottom', 0, this.maxRadius).onChange( function(val) {
               cylinderdata.radiusBottom = val;
               updateCylinderGeometry()
-            })
+            });
             folder.add(param, 'height', 0, this.maxRadius).onChange( function(val) {
               cylinderdata.height = val;
               updateCylinderGeometry()
-            })
+            });
             break;
           case 'dodecahedron':
             const dodecahedrondata = {
@@ -403,7 +401,7 @@ class tjViewer{
               dodecahedrondata.radius = val;
               updateGroupGeometry(obj, new THREE.DodecahedronGeometry(
                 dodecahedrondata.radius));
-            })
+            });
             break;
           case 'icosahedron':
             const icosahedrondata = {
@@ -417,7 +415,7 @@ class tjViewer{
               icosahedrondata.radius = val;
               updateGroupGeometry(obj, new THREE.IcosahedronGeometry(
                 icosahedrondata.radius));
-            })
+            });
             break;
           case 'octahedron':
             const octahedrondata = {
@@ -431,7 +429,7 @@ class tjViewer{
               octahedrondata.radius = val;
               updateGroupGeometry(obj, new THREE.OctahedronGeometry(
                 octahedrondata.radius));
-            })
+            });
             break;
           case 'tetrahedron':
             const tetrahedrondata = {
@@ -445,7 +443,43 @@ class tjViewer{
               tetrahedrondata.radius = val;
               updateGroupGeometry(obj, new THREE.TetrahedronGeometry(
                 tetrahedrondata.radius));
-            })
+            });
+            break;
+          case 'text':
+            const textdata = {
+              font: new Font(JSON.parse(ele.font)),
+              size: ele.size,
+              depth: ele.depth
+            }
+            geometry = new TextGeometry(ele.label, {
+                font: textdata.font,
+                size: textdata.size,
+                depth: textdata.depth
+            });
+              geometry.computeBoundingBox();
+              const centerOffset = {
+                x: - 0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x ),
+                y: - 0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y ),
+                z: - 0.5 * (geometry.boundingBox.max.z - geometry.boundingBox.min.z )
+                };
+              console.log(centerOffset);
+              obj = new THREE.InstancedMesh( geometry, material, len );
+              initNewMesh(obj, ele, centerOffset);
+              function updateTextGeometry(){
+                updateGroupGeometry(obj, new TextGeometry(ele.label, {
+                    font: textdata.font,
+                    size: textdata.size,
+                    depth: textdata.depth
+                }))
+              }
+              folder.add(param, 'size', 0, this.maxRadius).onChange( function(val) {
+                textdata.size = val;
+                updateTextGeometry()
+              });
+              folder.add(param, 'depth', 0, this.maxRadius).onChange( function(val) {
+                textdata.depth = val;
+                updateTextGeometry()
+              });
             break;
           case 'torus':
             const torusdata = {
@@ -467,11 +501,11 @@ class tjViewer{
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function(val) {
               torusdata.radius = val;
               updateTorusGeometry()
-            })
+            });
             folder.add(param, 'tube', 0, this.maxRadius).onChange( function(val) {
               torusdata.tube = val;
               updateTorusGeometry()
-            })
+            });
             break;
           default:
         }

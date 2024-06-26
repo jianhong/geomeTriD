@@ -5,35 +5,41 @@ dependencies:
     script: 
       - src: 'three.module.min.js'
         type: module
-      # - src: 'jsm/libs/stats.module.js'
+      # - src: 'addons/libs/stats.module.js'
       #   type: module
-      # - src: 'jsm/utils/GPUStatsPanel.js'
+      # - src: 'addons/utils/GPUStatsPanel.js'
       #   type: module
-      - src: 'jsm/libs/lil-gui.module.min.js'
+      - src: 'addons/libs/lil-gui.module.min.js'
         type: module
-      - src: 'jsm/utils/GeometryUtils.js'
+      - src: 'addons/controls/OrbitContrls.js'
         type: module
-      - src: 'jsm/lines/LineSegmentsGeometry.js'
+      - src: 'addons/utils/GeometryUtils.js'
         type: module
-      - src: 'jsm/lines/LineSegments2.js'
+      - src: 'addons/lines/LineSegmentsGeometry.js'
         type: module
-      - src: 'jsm/lines/LineMaterial.js'
+      - src: 'addons/lines/LineSegments2.js'
         type: module
-      - src: 'jsm/lines/LineGeometry.js'
+      - src: 'addons/lines/LineMaterial.js'
         type: module
-      - src: 'jsm/lines/Line2.js'
+      - src: 'addons/lines/LineGeometry.js'
         type: module
-      # - src: 'jsm/renderers/SVGRenderer.js'
+      - src: 'addons/lines/Line2.js'
+        type: module
+      - src: 'addons/loaders/FontLoader.js'
+        type: module
+      - src: 'addons/geometries/TextGeometry.js'
+        type: module
+      # - src: 'addons/renderers/SVGRenderer.js'
       #   type: module
-      # - src: 'jsm/exporters/GLTFExporter.js'
+      # - src: 'addons/exporters/GLTFExporter.js'
       #   type: module
-      # - src: 'jsm/utils/TextureUtils.js'
+      # - src: 'addons/utils/TextureUtils.js'
       #   type: module
-      # - src: 'jsm/exporters/PLYExporter.js'
+      # - src: 'addons/exporters/PLYExporter.js'
       #   type: module
-      # - src: 'jsm/exporters/STLExporter.js'
-      #   type: module
-      # - src: 'jsm/exporters/DRACOExporter.js'
+      - src: 'addons/exporters/STLExporter.js'
+        type: module
+      # - src: 'addons/exporters/DRACOExporter.js'
       #   type: module
   - name: tjviewer
     version: 0.0.1

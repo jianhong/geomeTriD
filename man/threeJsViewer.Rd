@@ -58,5 +58,17 @@ cylinder <- threeJsGeometry(x=cylinder$x, y=cylinder$y, z=cylinder$z,
                             'height'=0.07,
                             'radiusTop'=0.05,
                             'radiusBottom'=0.09))
-threeJsViewer(line, sphere, torus, cylinder)
+labels <- x[sample.int(length(x), 5)]
+labels <- threeJsGeometry(x=labels$x, y=labels$y, z=labels$z,
+                          colors = 'black',
+                          type = 'text',
+                          properties = list(
+                            'label'='text',
+                            'font'=readLines(system.file(
+                              'extdata', "fonts", 
+                              'helvetiker_regular.typeface.json',
+                               package='threeJsEpi')),
+                            'size'=.5,
+                            'depth'=.1))
+threeJsViewer(line, sphere, torus, cylinder, labels)
 }

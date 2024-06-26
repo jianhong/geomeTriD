@@ -7,7 +7,7 @@
 #' @slot colors \code{"character"}, the colors for each geometry.
 #' @slot type \code{"charater"}, the type of the geometry. Available types are
 #' 'line', 'box', 'capsule', 'cone', 'cylinder', 'dodecahedron', 'icosahedron',
-#' 'octahedron', 'sphere', 'tetrahedron', and 'torus'.
+#' 'octahedron', 'sphere', 'tetrahedron', 'text', and 'torus'.
 #' @slot properties A \code{"list"}, the properties to control the geometry.
 #' @import methods
 #' @exportClass threeJsGeometry
@@ -38,11 +38,11 @@ setClass("threeJsGeometry",
            }
            if(!object@type %in% c('line', 'box', 'capsule', 'cone', 'cylinder',
                            'dodecahedron', 'icosahedron', 'octahedron',
-                           'sphere', 'tetrahedron', 'torus' )){
+                           'sphere', 'tetrahedron', 'text', 'torus' )){
              return("type only support
               'line', 'box', 'capsule', 'cone', 'cylinder',
               'dodecahedron', 'icosahedron', 'octahedron',
-              'sphere', 'tetrahedron', and 'torus'.")
+              'sphere', 'tetrahedron', 'text', and 'torus'.")
            }
            switch(object@type,
                   line={
@@ -106,6 +106,18 @@ setClass("threeJsGeometry",
                     if(!'radius' %in% names(object@properties)){
                       return("Property radius is
                              required for tetrahedron")
+                    }
+                  },
+                  text={
+                    if(!all(c('label', 'font', 'size', 'depth') %in%
+                            names(object@properties))){
+                      return("Property label, font, size, and depth are
+                             required for text.")
+                    }
+                    for(i in c('label', 'font', 'size', 'depth')){
+                      if(length(i)!=1){
+                        return(paste("The length of property", i, 'must be 1.'))
+                      }
                     }
                   },
                   torus={

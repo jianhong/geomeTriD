@@ -36,7 +36,7 @@ An object of class \code{"threeJsGeometry"}
 
 \item{\code{type}}{\code{"charater"}, the type of the geometry. Available types are
 'line', 'box', 'capsule', 'cone', 'cylinder', 'dodecahedron', 'icosahedron',
-'octahedron', 'sphere', 'tetrahedron', and 'torus'.}
+'octahedron', 'sphere', 'tetrahedron', 'text', and 'torus'.}
 
 \item{\code{properties}}{A \code{"list"}, the properties to control the geometry.}
 }}

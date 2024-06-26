@@ -1,16 +1,9 @@
 MIT License
 
-Copyright (c) 2024~ JIANHONG OU
+Copyright (c) 2024 JIANHONG OU
 
-This package includes the threejs package. The following is a list of
-their copyrights and licenses.
-
-FILE(S): inst/htmlwidgets/lib/threejs/*
-LICENSE: MIT
-YEAR: 2010-2024
-COPYRIGHT HOLDER: The three.js authors, see https://github.com/mrdoob/three.js/
-
-Other part of the package:
+This package includes the threejs package. The files is located at inst/htmlwidgets/lib/threejs
+under the MIT LICENSE, see https://github.com/mrdoob/three.js/
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
