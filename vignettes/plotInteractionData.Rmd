@@ -51,7 +51,7 @@ Here `mdsPlot` can be used to plot the bin-based contact matrix by Kruskal's Non
 ```{r mdsPlot2d}
 library(trackViewer)
 library(InteractionSet)
-gi <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds", package="trackViewer"))
+gi <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds", package="threeJsEpi"))
 head(gi)
 range <- GRanges("chr6", IRanges(51120000, 53200000))
 ctcf <- readRDS(system.file("extdata", "ctcf.sample.rds", package="trackViewer"))
@@ -77,7 +77,8 @@ Or plot it in 3d.
 library(rgl)
 library(manipulateWidget)
 clear3d() # Remove the earlier display
-objs <- mdsPlot(gi, range = range, feature.gr = feature.gr, atacSig = ctcf, k=3)
+objs <- threeJsEpi::mdsPlot(gi, range = range, feature.gr = feature.gr, atacSig = ctcf, k=3, render='none')
+rglViewer(objs, background = 'white')
 rglwidget() %>%
   toggleWidget(tags = "tick_minor") %>%
   toggleWidget(tags = "tick_major") %>%
@@ -93,12 +94,7 @@ rglwidget() %>%
 
 Plot it by threeJs.
 ```{r threejs}
-p <- readRDS(system.file('extdata', '4DNFI1UEG1HD.chr21.FLAMINGO.res.rds',
-     package='threeJsEpi'))
-feature.gr <- readRDS(system.file('extdata', '4DNFI1UEG1HD.feature.gr.rds',
-     package='threeJsEpi'))
-view3dStructure(p, k=3, feature.gr=feature.gr, renderer='threejs',
-                length.arrow=grid::unit(0.000006, 'native'))
+threeJsViewer(objs)
 ```
 
 
@@ -124,7 +120,7 @@ feature.gr$pch[feature.gr$type=='cRE'] <- 11
 symbol <- mget(feature.gr$gene_id, org.Hs.egSYMBOL, ifnotfound = NA)
 symbol <- unlist(lapply(symbol, function(.ele) .ele[1]))
 feature.gr$label <- symbol
-loopBouquetPlot(gi, range, feature.gr)
+threeJsEpi::loopBouquetPlot(gi, range, feature.gr)
 ```
 
 ```{r plotRealData}
@@ -150,7 +146,7 @@ feature.gr$label <- symbol
 feature.gr <- c(feature.gr[sample(seq_along(feature.gr), 5)],
                 feature.gr[feature.gr$type=='cRE'][1])
 feature.gr <- unique(sort(feature.gr))
-loopBouquetPlot(gi, range, feature.gr,
+threeJsEpi::loopBouquetPlot(gi, range, feature.gr,
                 coor_tick_unit = 5e4,
                 coor_mark_interval = 5e5,
                 atacSig = ctcf)

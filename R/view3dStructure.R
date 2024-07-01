@@ -5,8 +5,9 @@
 #' @param k The dimension of plot. 2: 2d, 3: 3d.
 #' @param feature.gr The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.
 #' @param atacSig The ATAC-seq signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.
-#' @param renderer Ther renderer of the 3D plots. Could be rgl or threejs.
-#' The threejs will create a htmlwidgets.
+#' @param renderer The renderer of the 3D plots. Could be rgl or threejs.
+#' The threejs will create a htmlwidgets. If 'none' is set, a list of object
+#' will be returned.
 #' @param show_coor Plot ticks in the line to show the DNA compact tension.
 #' @param reverseATACSig Plot the ATAC-seq signals in reverse values.
 #' @param coor_tick_unit The bps for every ticks. Default is 1K.
@@ -23,7 +24,8 @@
 #' @param square A logical value that controls whether control points for the curve are created city-block fashion or obliquely. See \link[grid]{grid.curve}.
 #' @param font A font json file for three.js text geometry. See \url{https://threejs.org/docs/index.html?q=font#examples/en/loaders/FontLoader}.
 #' @param ... Not used.
-#' @return Coordinates for 2d or a list of threeJsGeometry objects.
+#' @return Coordinates for 2d or a list of threeJsGeometry objects or a 
+#' htmlwidget.
 #' @import grid
 #' @importFrom stats quantile
 #' @importFrom trackViewer parseWIG

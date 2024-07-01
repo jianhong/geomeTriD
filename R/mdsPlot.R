@@ -20,6 +20,9 @@
 #' @param length.arrow Length of the edges of the arrow head (in inches).
 #' @param safe_text_force The loops to avoid the text overlapping.
 #' @param square A logical value that controls whether control points for the curve are created city-block fashion or obliquely. See \link[grid]{grid.curve}.
+#' @param renderer The renderer of the 3D plots. Could be rgl or threejs.
+#' The threejs will create a htmlwidgets. If 'none' is set, a list of object
+#' will be returned.
 #' @param ... Parameter will be passed to \link[MASS]{isoMDS}.
 #' @return Coordinates for 2d.
 #' @importClassesFrom InteractionSet GInteractions
@@ -65,12 +68,14 @@ mdsPlot <- function(gi, range, feature.gr, k=2,
                     length.arrow = NULL,
                     safe_text_force = 3,
                     square = TRUE,
+                    renderer = c('rgl', 'threejs', 'none'),
                     ...){
   gi <- checkGI(gi, fixedBin=TRUE)
   stopifnot(is.numeric(k))
   stopifnot(k==2 || k==3)
   stopifnot(is.numeric(coor_mark_interval))
   stopifnot(length(coor_mark_interval)==1)
+  renderer <- match.arg(renderer)
   if(!missing(range)){
     stopifnot(is(range, "GRanges"))
     stopifnot('coor_tick_unit is too small.'=
@@ -112,7 +117,7 @@ mdsPlot <- function(gi, range, feature.gr, k=2,
   view3dStructure(p=p, k=k,
                   feature.gr=feature.gr,
                   atacSig=atacSig,
-                  renderer='rgl',
+                  renderer=renderer,
                   lwd.backbone = lwd.backbone,
                   col.backbone = col.backbone,
                   lwd.maxAtacSig = lwd.maxAtacSig,
