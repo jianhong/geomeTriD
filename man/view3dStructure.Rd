@@ -84,6 +84,6 @@ p <- readRDS(system.file('extdata', '4DNFI1UEG1HD.chr21.FLAMINGO.res.rds',
     package='threeJsEpi'))
 feature.gr <- readRDS(system.file('extdata', '4DNFI1UEG1HD.feature.gr.rds',
     package='threeJsEpi'))
-tjg <- view3dStructure(p, k=3, feature.gr=feature.gr,
+tjg <- view3dStructure(p, k=3, feature.gr=feature.gr, renderer='none',
    length.arrow=grid::unit(0.000006, 'native'))
 }
