@@ -6,6 +6,7 @@
 \alias{threeJsGeometry}
 \alias{$,threeJsGeometry-method}
 \alias{$<-,threeJsGeometry-method}
+\alias{show,threeJsGeometry-method}
 \title{Class \code{"threeJsGeometry"}}
 \usage{
 threeJsGeometry(...)
@@ -13,6 +14,8 @@ threeJsGeometry(...)
 \S4method{$}{threeJsGeometry}(x, name)
 
 \S4method{$}{threeJsGeometry}(x, name) <- value
+
+\S4method{show}{threeJsGeometry}(object)
 }
 \arguments{
 \item{\dots}{Each argument in \dots becomes an slot in the new threeJsGeometry.}
@@ -22,6 +25,8 @@ threeJsGeometry(...)
 \item{name}{slot name of threeJsGeometry}
 
 \item{value}{value to be assigned}
+
+\item{object}{an object of threeJsGeometry}
 }
 \description{
 An object of class \code{"threeJsGeometry"} 
@@ -35,8 +40,12 @@ An object of class \code{"threeJsGeometry"}
 \item{\code{colors}}{\code{"character"}, the colors for each geometry.}
 
 \item{\code{type}}{\code{"charater"}, the type of the geometry. Available types are
-'line', 'box', 'capsule', 'cone', 'cylinder', 'dodecahedron', 'icosahedron',
-'octahedron', 'sphere', 'tetrahedron', 'text', and 'torus'.}
+'arrow', 'box', 'capsule', 'cone', 'cylinder', 'dodecahedron', 'line', 
+'label',
+'icosahedron', 'octahedron', 'segment', 'sphere', 'tetrahedron', 'text',
+ and 'torus'.}
+
+\item{\code{tag}}{\code{'character'}, the tag used to group geometries.}
 
 \item{\code{properties}}{A \code{"list"}, the properties to control the geometry.}
 }}

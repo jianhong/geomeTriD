@@ -8,15 +8,19 @@ import { OrbitControls } from '../threejs-165/addons/controls/OrbitControls.js';
 import { Line2 } from '../threejs-165/addons/lines/Line2.js';
 import { LineMaterial } from '../threejs-165/addons/lines/LineMaterial.js';
 import { LineGeometry } from '../threejs-165/addons/lines/LineGeometry.js';
+import { LineSegments2 } from '../threejs-165/addons/lines/LineSegments2.js';
+import { LineSegmentsGeometry } from '../threejs-165/addons/lines/LineSegmentsGeometry.js';
 // text
 import { Font } from '../threejs-165/addons/loaders/FontLoader.js';
 import { TextGeometry } from '../threejs-165/addons/geometries/TextGeometry.js';
+// label
+import { CSS2DRenderer, CSS2DObject } from '../threejs-165/addons/renderers/CSS2DRenderer.js';
 // exporters
-//import { SVGRenderer } from '../threejs-165/addons/renderers/SVGRenderer.js';
-//import { GLTFExporter } from '../threejs-165/addons/exporters/GLTFExporter.js';
-//import { PLYExporter } from '../threejs-165/addons/exporters/PLYExporter.js';
+import { SVGRenderer } from '../threejs-165/addons/renderers/SVGRenderer.js';
+import { GLTFExporter } from '../threejs-165/addons/exporters/GLTFExporter.js';
+import { PLYExporter } from '../threejs-165/addons/exporters/PLYExporter.js';
 import { STLExporter } from '../threejs-165/addons/exporters/STLExporter.js';
-//import { DRACOExporter } from '../threejs-165/addons/exporters/DRACOExporter.js';
+import { DRACOExporter } from '../threejs-165/addons/exporters/DRACOExporter.js';
 // module Widget
 class tjViewer{
   constructor(el, width, height){
@@ -35,6 +39,14 @@ class tjViewer{
     this.renderer.setAnimationLoop( this.animate );
     el.appendChild(this.renderer.domElement);
     
+    // label renderer
+    this.labelRenderer = new CSS2DRenderer();
+    this.labelRenderer.setSize( width, height );
+    this.labelRenderer.domElement.style.position = 'absolute';
+    this.labelRenderer.domElement.style.top = this.renderer.domElement.getBoundingClientRect().top+'px';
+    this.labelRenderer.domElement.style.left = this.renderer.domElement.getBoundingClientRect().left+'px';
+    el.appendChild(this.labelRenderer.domElement);
+    
     this.scene = new THREE.Scene();
     
     var near = .0001
@@ -42,12 +54,13 @@ class tjViewer{
     var fov = 50
     this.camera = new THREE.PerspectiveCamera( fov, width / height, near, far );
     this.camera.position.set( 0, 0, -far/10 ); // set to x, y, z;
+    this.camera.layers.enableAll();
     
     // viewport
     this.camera2 = new THREE.PerspectiveCamera( fov, 1, near, far );
     this.camera2.position.copy( this.camera.position );
     
-    this.controls = new OrbitControls( this.camera, this.renderer.domElement );
+    this.controls = new OrbitControls( this.camera, this.labelRenderer.domElement );
     this.controls.enableDamping = true;
     this.controls.minDistance = near*2;
     this.controls.maxDistance = far/2;
@@ -98,7 +111,7 @@ class tjViewer{
               saveBlob(blob, expparam.filename+'.'+expparam.format);
             });
             break;
-          /*case 'drc':
+          case 'drc':
             exporter = new DRACOExporter();
             const drcData = exporter.parse(this.scene, {exportColor:true});
             saveBlob(new Blob([drcData], {
@@ -109,7 +122,6 @@ class tjViewer{
             var rendererSVG = new SVGRenderer();
             rendererSVG.setSize(this.width, this.height);
             rendererSVG.setClearColor( this.background, this.bckalpha );
-            this.camera.updateProjectionMatrix();
             rendererSVG.render(this.scene, this.camera);
             var XMLS = new XMLSerializer();
             var svgData = XMLS.serializeToString(rendererSVG.domElement);
@@ -147,7 +159,7 @@ class tjViewer{
             saveBlob(new Blob([stlData], {
               type: 'text/plain'
             }), expparam.filename+'.'+expparam.format);
-            break;*/
+            break;
           default:
             alert('not support yet!');
         }
@@ -156,12 +168,32 @@ class tjViewer{
     this.gui.add(expparam, 'filename').onChange(
       val => expparam.filename = val
     );
-    this.gui.add(expparam, 'format', ['drc', 'gltf', 'ply', 'png', 'stl', 'svg']).onChange(
+    var availableFormat = ['drc', 'gltf', 'ply', 'png', 'stl', 'svg'];
+    var supportFormat = ['png'];
+    this.gui.add(expparam, 'format', supportFormat).onChange(
       val => expparam.format = val
     );
     this.gui.add(expparam, 'export');
+    this.layer = {
+      'tick_labels':1,
+      'gene_labels':2
+    };
+    const labelLayer = {
+      'Toggle tick labels': function(){
+        this.camera.layers.toggle(this.layer.tick_labels);
+      }.bind(this),
+      'Toggle gene labels': function(){
+        this.camera.layers.toggle(this.layer.gene_labels);
+      }.bind(this)
+    };
+    this.gui.add(labelLayer, 'Toggle tick labels');
+    this.gui.add(labelLayer, 'Toggle gene labels');
   }
-
+  
+  getLayer = function(tag){
+      return(this.layer[tag]);
+  };
+    
   create_plot(x){
     //console.log(x);
     //const twoPi = Math.PI * 2;
@@ -234,10 +266,37 @@ class tjViewer{
               transparent: true
             } );
         switch(ele.type){
+          case 'arrow':
+            const hex = new THREE.Color(
+                ele.colors[0],
+                ele.colors[1],
+                ele.colors[2]);
+            obj = new THREE.ArrowHelper(
+              new THREE.Vector3(
+                ele.positions[3],
+                ele.positions[4],
+                ele.positions[5]
+                ), // next three elements are end x,y,z
+              new THREE.Vector3(
+                ele.positions[0],
+                ele.positions[1],
+                ele.positions[2]
+              ), // first three elements are start x,y,z
+              ele.size, '#'+hex.getHexString(), ele.headLength, ele.headWidth);
+            
+            break;
           case 'line':// Line2 ( LineGeometry, LineMaterial )
             param.size = ele.size;
             geometry = new LineGeometry();
             geometry.setPositions( ele.positions );
+            if(ele.colors.length!=ele.positions.length){
+              // single colors
+              for(var i=1; i<len; i++){
+                ele.colors.push(ele.colors[0]);
+                ele.colors.push(ele.colors[1]);
+                ele.colors.push(ele.colors[2]); 
+              }
+            }
             geometry.setColors( ele.colors );
             material = new LineMaterial( {
               color: 0xffffff,
@@ -255,7 +314,30 @@ class tjViewer{
               material.linewidth = val;
             });
             break;
+          case 'segment':
+            param.size = ele.size;
+            geometry = new LineSegmentsGeometry();
+            geometry.setPositions( ele.positions );
+            if(ele.colors.length!=ele.positions.length){
+              // single colors
+              for(var i=1; i<len; i++){
+                ele.colors.push(ele.colors[0]);
+                ele.colors.push(ele.colors[1]);
+                ele.colors.push(ele.colors[2]); 
+              }
+            }
+            geometry.setColors( ele.colors );
+            material = new LineMaterial({ 
+              color: 0xffffff,
+              linewidth: ele.size,
+              vertexColors: true});
+            obj = new LineSegments2(geometry, material);
+            folder.add(param, 'size', 0, this.maxLineWidth).onChange( function( val){
+              material.linewidth = val;
+            });
+            break;
           case 'sphere':
+            param.radius = ele.radius;
             const spheredata = {
               radius: ele.radius,
               widthSegments: 32, //3-64
@@ -274,6 +356,9 @@ class tjViewer{
             });
             break;
           case 'box':
+            param.width = ele.width;
+            param.height = ele.height;
+            param.depth = ele.depth;
             const boxdata = {
               width : ele.width,
               height : ele.height,
@@ -305,6 +390,8 @@ class tjViewer{
             });
             break;
           case 'capsule':
+            param.radius = ele.radius;
+            param.height = ele.height;
             const capsuledata = {
               radius : ele.radius,
               height : ele.height
@@ -331,6 +418,8 @@ class tjViewer{
             });
             break;
           case 'cone':
+            param.radius = ele.radius;
+            param.height = ele.height;
             const conedata = {
               radius: ele.radius,
               height: ele.height
@@ -345,7 +434,7 @@ class tjViewer{
               updateGroupGeometry(obj, new THREE.ConeGeometry(
                 conedata.radius,
                 conedata.height
-              ))
+              ));
             }
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function(val) {
               conedata.radius = val;
@@ -357,6 +446,9 @@ class tjViewer{
             });
             break;
           case 'cylinder':
+            param.radiusTop = ele.radiusTop;
+            param.radiusBottom = ele.radiusBottom;
+            param.height = ele.height;
             const cylinderdata = {
               radiusTop: ele.radiusTop,
               radiusBottom: ele.radiusBottom,
@@ -390,6 +482,7 @@ class tjViewer{
             });
             break;
           case 'dodecahedron':
+            param.radius = ele.radius;
             const dodecahedrondata = {
               radius: ele.radius
             };
@@ -404,6 +497,7 @@ class tjViewer{
             });
             break;
           case 'icosahedron':
+            param.radius = ele.radius;
             const icosahedrondata = {
               radius: ele.radius
             };
@@ -417,7 +511,42 @@ class tjViewer{
                 icosahedrondata.radius));
             });
             break;
+          case 'label'://ask to modify the CSS2DRenderer.js at the line
+                      //const visible = ( _vector.z >= - 1 && _vector.z <= 1 ) && ( object.layers.test( camera.layers ) === true );
+                      // to const visible = object.layers.test( camera.layers ) === true;
+                      // becase the _vector.x,y,z always is null. no global viewport.
+            let labelDiv = document.createElement('div');
+            let css2obj = new CSS2DObject();
+            const color = new THREE.Color();
+            labelDiv.style.backgroundColor = 'transparent';
+            for(var i=0; i<ele.label.length; i++){
+              labelDiv.textContent = ele.label;
+              if(ele.colors.length==ele.positions.length){
+                labelDiv.style.color='#'+color.setRGB(
+                      ele.colors[i*3],
+                      ele.colors[i*3+1],
+                      ele.colors[i*3+2]
+                    ).getHexString();
+              }else{//same color for alll elements
+                labelDiv.style.color='#'+color.setRGB(
+                      ele.colors[0],
+                      ele.colors[1],
+                      ele.colors[2]
+                    ).getHexString();
+              }
+              css2obj = new CSS2DObject(labelDiv);
+              css2obj.position.set(
+                ele.positions[i*3],
+                ele.positions[i*3+1],
+                ele.positions[i*3+2]);
+              css2obj.center.set(0.5,0.5);
+              css2obj.layers.set(this.getLayer(ele.tag));
+              obj.add(css2obj);
+            }
+            obj.layers.enableAll();
+            break;
           case 'octahedron':
+            param.radius = ele.radius;
             const octahedrondata = {
               radius: ele.radius
             };
@@ -432,6 +561,7 @@ class tjViewer{
             });
             break;
           case 'tetrahedron':
+            param.radius = ele.radius;
             const tetrahedrondata = {
               radius: ele.radius
             };
@@ -446,6 +576,8 @@ class tjViewer{
             });
             break;
           case 'text':
+            param.size = ele.size;
+            param.depth = ele.depth;
             const textdata = {
               font: new Font(JSON.parse(ele.font)),
               size: ele.size,
@@ -462,7 +594,6 @@ class tjViewer{
                 y: - 0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y ),
                 z: - 0.5 * (geometry.boundingBox.max.z - geometry.boundingBox.min.z )
                 };
-              console.log(centerOffset);
               obj = new THREE.InstancedMesh( geometry, material, len );
               initNewMesh(obj, ele, centerOffset);
               function updateTextGeometry(){
@@ -482,6 +613,8 @@ class tjViewer{
               });
             break;
           case 'torus':
+            param.radius = ele.radius;
+            param.tube = ele.tube;
             const torusdata = {
               radius: ele.radius,
               tube: ele.tube
@@ -515,11 +648,13 @@ class tjViewer{
         folder.add(param, 'transparent').onChange( function( val ){
           material.transparent = val;
         })
+        folder.close();
         this.materials.push(material);
         this.objects.push(obj);
         this.scene.add(obj);
       }
     }
+    this.gui.close();
   }
   
   onWindowResize(width, height){
@@ -528,6 +663,7 @@ class tjViewer{
     this.width = width;
     this.height = height;
     this.renderer.setSize( width, height );
+    this.labelRenderer.setSize( width, height );
     
     this.insetWidth = height / 4; // square
     this.insetHeight = height / 4;
@@ -544,6 +680,7 @@ class tjViewer{
     //controls
     //this.gpuPanel.startQuery();
     this.renderer.render( this.scene, this.camera );
+    this.labelRenderer.render(this.scene, this.camera );
     //this.gpuPanel.endQuery();
     
     // inset scene

@@ -1,18 +1,35 @@
 Package: threeJsEpi
 Type: Package
-Title: A R/Bioconductor package for interactive 3D plot of epigenetic data 
-Version: 0.0.2
+Title: A R/Bioconductor package for interactive 3D plot of epigenetic data or single cell data
+Version: 0.0.3
 Authors@R: c(person(given="Jianhong", family="Ou", email="jianhong.ou@duke.edu", 
         role=c("aut", "cre"), comment=c(ORCID="0000-0002-8652-2488")))
 Maintainer: Jianhong Ou <jianhong.ou@duke.edu>
 Description: Create interactive 3D plots using the 'three.js' visualization library (<https://threejs.org>).
 License: MIT + file LICENSE
-Depends: R (>= 4.4.0), grDevices, methods
+Depends: R (>= 4.4.0)
 Imports:
+  BiocGenerics,
+  GenomeInfoDb,
+  GenomicRanges,
+  graphics,
+  grDevices,
+  grid,
   htmlwidgets,
-  GenomicRanges
+  igraph,
+  InteractionSet,
+  IRanges,
+  MASS,
+  Matrix,
+  methods,
+  plotrix,
+  rgl,
+  S4Vectors,
+  scales,
+  stats,
+  trackViewer
 Suggests: 
-  RUnit, org.Hs.eg.db,
+  RUnit, org.Hs.eg.db, TxDb.Hsapiens.UCSC.hg19.knownGene,
   BiocStyle, knitr, rmarkdown
 biocViews: Visualization
 VignetteBuilder: knitr

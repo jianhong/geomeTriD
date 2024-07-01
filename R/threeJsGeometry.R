@@ -1,3 +1,6 @@
+# a class for either numeric or character
+setClassUnion("maybeColor", c("numeric", "character"))
+
 #' Class \code{"threeJsGeometry"}
 #' @description An object of class \code{"threeJsGeometry"} 
 #'              represents `three.js` geometry.
@@ -6,8 +9,11 @@
 #' @slot x,y,z \code{"numeric"}, specify the x, y, and z coordinates.
 #' @slot colors \code{"character"}, the colors for each geometry.
 #' @slot type \code{"charater"}, the type of the geometry. Available types are
-#' 'line', 'box', 'capsule', 'cone', 'cylinder', 'dodecahedron', 'icosahedron',
-#' 'octahedron', 'sphere', 'tetrahedron', 'text', and 'torus'.
+#' 'arrow', 'box', 'capsule', 'cone', 'cylinder', 'dodecahedron', 'line', 
+#' 'label',
+#' 'icosahedron', 'octahedron', 'segment', 'sphere', 'tetrahedron', 'text',
+#'  and 'torus'.
+#' @slot tag \code{'character'}, the tag used to group geometries.
 #' @slot properties A \code{"list"}, the properties to control the geometry.
 #' @import methods
 #' @exportClass threeJsGeometry
@@ -19,9 +25,10 @@ setClass("threeJsGeometry",
            x = "numeric",
            y = "numeric",
            z = "numeric",
-           colors = 'character',
+           colors = 'maybeColor',
            type = 'character',
-           properties = 'list'
+           properties = 'list',
+           tag = 'character'
          ),
          prototype = prototype(
            x = 0,
@@ -29,6 +36,7 @@ setClass("threeJsGeometry",
            z = 0,
            colors = 'black',
            type = 'sphere',
+           tag = 'sphere',
            properties = list(radius=0.05)
          ),
          validity=function(object){
@@ -36,18 +44,32 @@ setClass("threeJsGeometry",
               length(object@x)!=length(object@z)){
              return('x, y, z must keep same length.')
            }
-           if(!object@type %in% c('line', 'box', 'capsule', 'cone', 'cylinder',
-                           'dodecahedron', 'icosahedron', 'octahedron',
-                           'sphere', 'tetrahedron', 'text', 'torus' )){
-             return("type only support
-              'line', 'box', 'capsule', 'cone', 'cylinder',
-              'dodecahedron', 'icosahedron', 'octahedron',
-              'sphere', 'tetrahedron', 'text', and 'torus'.")
+           if(!object@type %in% c('arrow', 'box', 'capsule', 'cone', 'cylinder',
+                           'dodecahedron', 'icosahedron', 'line', 'label',
+                           'octahedron',
+                           'segment', 'sphere',
+                           'tetrahedron', 'text', 'torus' )){
+             return("type only support 'arrow',
+              'box', 'capsule', 'cone', 'cylinder',
+              'dodecahedron', 'icosahedron', 'line', 'label', 'octahedron',
+              'segment', 'sphere', 'tetrahedron', 'text', and 'torus'.")
            }
            switch(object@type,
+                  arrow = {
+                    if(!all(c("size", "headLength", 'headWidth') %in%
+                            names(object@properties))){
+                      return("Property size, headLength, and headWidth are
+                             required for arrow")
+                    }
+                  },
                   line={
                     if(length(object@properties$size)==0){
                       return("Property size is required for line.")
+                    }
+                  },
+                  segment={
+                    if(length(object@properties$size)==0){
+                      return("Property size is required for segment.")
                     }
                   },
                   box={
@@ -90,6 +112,13 @@ setClass("threeJsGeometry",
                              required for icosahedron")
                     }
                   },
+                  label={
+                    if(!all(c('label', 'size') %in%
+                            names(object@properties))){
+                      return("Property label, and size are
+                             required for text.")
+                    }
+                  },
                   octahedron={
                     if(!'radius' %in% names(object@properties)){
                       return("Property radius is
@@ -115,8 +144,8 @@ setClass("threeJsGeometry",
                              required for text.")
                     }
                     for(i in c('label', 'font', 'size', 'depth')){
-                      if(length(i)!=1){
-                        return(paste("The length of property", i, 'must be 1.'))
+                      if(length(object@properties[[i]])!=1){
+                        return("The length of property ", i, " must be 1.")
                       }
                     }
                   },
@@ -155,3 +184,12 @@ setReplaceMethod("$", "threeJsGeometry",
                    slot(x, name, check = TRUE) <- value
                    x
                  })
+#' Method show
+#' @rdname threeJsGeometry-class
+#' @param object an object of threeJsGeometry
+setMethod("show", "threeJsGeometry", function(object){
+  message('An threeJsGeometry object of type ', object@type, ' at coordinates:')
+  print(head(cbind(x=object$x, y=object$y, z=object$z)))
+  message('with properties:', names(object$properties))
+  
+})

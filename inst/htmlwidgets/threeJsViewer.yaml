@@ -29,18 +29,20 @@ dependencies:
         type: module
       - src: 'addons/geometries/TextGeometry.js'
         type: module
-      # - src: 'addons/renderers/SVGRenderer.js'
-      #   type: module
-      # - src: 'addons/exporters/GLTFExporter.js'
-      #   type: module
-      # - src: 'addons/utils/TextureUtils.js'
-      #   type: module
-      # - src: 'addons/exporters/PLYExporter.js'
-      #   type: module
+      - src: 'addons/renderers/Projector.js'
+        type: module
+      - src: 'addons/renderers/SVGRenderer.js'
+        type: module
+      - src: 'addons/exporters/GLTFExporter.js'
+        type: module
+      - src: 'addons/utils/TextureUtils.js'
+        type: module
+      - src: 'addons/exporters/PLYExporter.js'
+        type: module
       - src: 'addons/exporters/STLExporter.js'
         type: module
-      # - src: 'addons/exporters/DRACOExporter.js'
-      #   type: module
+      - src: 'addons/exporters/DRACOExporter.js'
+        type: module
   - name: tjviewer
     version: 0.0.1
     src: "htmlwidgets/lib/tjviewer"

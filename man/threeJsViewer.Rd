@@ -32,7 +32,7 @@ The htmlwidgets viewer for threeJs.
 \examples{
 # example code
 library(GenomicRanges)
-flamingo <- system.file('extdata', "flamingo.rds", package='threeJsEpi')
+flamingo <- system.file('extdata', "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds", package='threeJsEpi')
 x <- readRDS(flamingo[[1]])
 set.seed(1)
 line <- threeJsGeometry(x=x$x, y=x$y, z=x$z,

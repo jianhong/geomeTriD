@@ -10,7 +10,7 @@
 #' @examples
 #' # example code
 #' library(GenomicRanges)
-#' flamingo <- system.file('extdata', "flamingo.rds", package='threeJsEpi')
+#' flamingo <- system.file('extdata', "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds", package='threeJsEpi')
 #' x <- readRDS(flamingo[[1]])
 #' set.seed(1)
 #' line <- threeJsGeometry(x=x$x, y=x$y, z=x$z,
@@ -54,9 +54,19 @@ threeJsViewer <- function(..., background = '#00000088',
                           maxLineWidth = 50,
                           width = NULL, height = NULL) {
   geos <- list(...)
-  dots <- substitute(list(...))[-1]
-  names <- unlist(vapply(dots, deparse, FUN.VALUE = character(1L)))
-  names(geos) <- names
+  if(length(geos)==1){
+    if(is.list(geos[[1]])){
+      geos <- geos[[1]]
+      if(length(names(geos))!=length(geos)){
+        stop('Names are required for the input threeJsGeometries.')
+      }
+    }
+  }else{
+    dots <- substitute(list(...))[-1]
+    names <- unlist(vapply(dots, deparse, FUN.VALUE = character(1L)))
+    names(geos) <- names
+  }
+  
   null <- lapply(geos, function(.ele){
     stopifnot('input must be an object of threeJsGeometry.'=
                 is(.ele, 'threeJsGeometry'))
@@ -84,7 +94,8 @@ threeJsViewer <- function(..., background = '#00000088',
            colors <- as.numeric(colors)
            c(list(type = .geo$type,
                   positions = positions,
-                  colors = colors),
+                  colors = colors,
+                  tag = .geo$tag),
              .geo$properties)
          }))
   # create the widget
