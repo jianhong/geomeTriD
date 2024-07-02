@@ -27,6 +27,7 @@ mdsPlot(
   length.arrow = NULL,
   safe_text_force = 3,
   square = TRUE,
+  renderer = c("rgl", "threejs", "none"),
   ...
 )
 }
@@ -66,6 +67,10 @@ to turn it off. The default value 1e5 means show coordinates every 0.1M bp.}
 
 \item{square}{A logical value that controls whether control points for the curve are created city-block fashion or obliquely. See \link[grid]{grid.curve}.}
 
+\item{renderer}{The renderer of the 3D plots. Could be rgl or threejs.
+The threejs will create a htmlwidgets. If 'none' is set, a list of object
+will be returned.}
+
 \item{...}{Parameter will be passed to \link[MASS]{isoMDS}.}
 }
 \value{
@@ -78,7 +83,7 @@ distance matrix and then plot the matrix by multi-dimensional scaling plot.
 \examples{
 library(InteractionSet) 
 gi <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds",
- package="threeJsEpi"))
+ package="geomeTriD"))
 range <- GRanges("chr6", IRanges(51120000, 53200000))
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 library(org.Hs.eg.db)

@@ -1,51 +1,15 @@
 dependencies:
-  - name: threejs
-    version: 165
-    src: "htmlwidgets/lib/threejs"
-    script: 
-      - src: 'three.module.min.js'
-        type: module
-      # - src: 'addons/libs/stats.module.js'
-      #   type: module
-      # - src: 'addons/utils/GPUStatsPanel.js'
-      #   type: module
-      - src: 'addons/libs/lil-gui.module.min.js'
-        type: module
-      - src: 'addons/controls/OrbitContrls.js'
-        type: module
-      - src: 'addons/utils/GeometryUtils.js'
-        type: module
-      - src: 'addons/lines/LineSegmentsGeometry.js'
-        type: module
-      - src: 'addons/lines/LineSegments2.js'
-        type: module
-      - src: 'addons/lines/LineMaterial.js'
-        type: module
-      - src: 'addons/lines/LineGeometry.js'
-        type: module
-      - src: 'addons/lines/Line2.js'
-        type: module
-      - src: 'addons/loaders/FontLoader.js'
-        type: module
-      - src: 'addons/geometries/TextGeometry.js'
-        type: module
-      - src: 'addons/renderers/Projector.js'
-        type: module
-      - src: 'addons/renderers/SVGRenderer.js'
-        type: module
-      - src: 'addons/exporters/GLTFExporter.js'
-        type: module
-      - src: 'addons/utils/TextureUtils.js'
-        type: module
-      - src: 'addons/exporters/PLYExporter.js'
-        type: module
-      - src: 'addons/exporters/STLExporter.js'
-        type: module
-      - src: 'addons/exporters/DRACOExporter.js'
-        type: module
+  - name: tjviewer_map_loader
+    version: 0.0.1
+    src: "htmlwidgets/lib/tjviewer"
+    head: '<script type="importmap">{"imports": {"three": "https://cdn.jsdelivr.net/npm/three@0.166.1/build/three.module.js","three/addons/": "https://cdn.jsdelivr.net/npm/three@0.166.1/examples/jsm/"}}</script>'
+    script:
+      - src: 'tjviewer.map.js'
   - name: tjviewer
     version: 0.0.1
     src: "htmlwidgets/lib/tjviewer"
     script:
       - src: 'tjviewer.module.js'
+        type: module
+      - src: 'CSS2DRenderer.js'
         type: module

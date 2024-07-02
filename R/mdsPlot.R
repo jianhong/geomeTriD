@@ -39,7 +39,7 @@
 #' @examples
 #' library(InteractionSet) 
 #' gi <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds",
-#'  package="threeJsEpi"))
+#'  package="geomeTriD"))
 #' range <- GRanges("chr6", IRanges(51120000, 53200000))
 #' library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 #' library(org.Hs.eg.db)

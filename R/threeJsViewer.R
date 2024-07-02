@@ -1,6 +1,6 @@
 #' threeJs Viewer
 #' The htmlwidgets viewer for threeJs.
-#' @import htmlwidgets
+#' @importFrom htmlwidgets createWidget
 #' @export
 #' @param ... objects of threeJsGeometry.
 #' @param background background of the main camera.
@@ -10,7 +10,7 @@
 #' @examples
 #' # example code
 #' library(GenomicRanges)
-#' flamingo <- system.file('extdata', "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds", package='threeJsEpi')
+#' flamingo <- system.file('extdata', "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds", package='geomeTriD')
 #' x <- readRDS(flamingo[[1]])
 #' set.seed(1)
 #' line <- threeJsGeometry(x=x$x, y=x$y, z=x$z,
@@ -45,7 +45,7 @@
 #'                             'font'=readLines(system.file(
 #'                               'extdata', "fonts", 
 #'                               'helvetiker_regular.typeface.json',
-#'                                package='threeJsEpi')),
+#'                                package='geomeTriD')),
 #'                             'size'=.5,
 #'                             'depth'=.1))
 #' threeJsViewer(line, sphere, torus, cylinder, labels)
@@ -119,6 +119,7 @@ threeJsViewer <- function(..., background = '#00000088',
 #'   is useful if you want to save an expression in a variable.
 #'
 #' @name threeJsViewer-shiny
+#' @importFrom htmlwidgets shinyWidgetOutput
 #' @export
 threejsOutput <- function(outputId, width = "100%", height = "600px") {
   htmlwidgets::shinyWidgetOutput(
@@ -127,6 +128,7 @@ threejsOutput <- function(outputId, width = "100%", height = "600px") {
 }
 
 #' @name threeJsViewer-shiny
+#' @importFrom htmlwidgets shinyRenderWidget
 #' @export
 renderthreeJsViewer <- function(expr, env = parent.frame(), quoted = FALSE) {
   if (!quoted) { expr <- substitute(expr) } # force quoted

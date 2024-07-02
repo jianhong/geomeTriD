@@ -1,26 +1,26 @@
 // please note that the relative folder is related with the version number.
-import * as THREE from '../threejs-165/three.module.min.js';
-//import Stats from '../threejs-165/addons/libs/stats.module.js';
-//import { GPUStatsPanel } from '../threejs-165/addons/utils/GPUStatsPanel.js';
-import { GUI } from '../threejs-165/addons/libs/lil-gui.module.min.js';
-import { OrbitControls } from '../threejs-165/addons/controls/OrbitControls.js';
+import * as THREE from 'three';
+//import Stats from 'three/addons/libs/stats.module.js';
+//import { GPUStatsPanel } from 'three/addons/utils/GPUStatsPanel.js';
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 // lines
-import { Line2 } from '../threejs-165/addons/lines/Line2.js';
-import { LineMaterial } from '../threejs-165/addons/lines/LineMaterial.js';
-import { LineGeometry } from '../threejs-165/addons/lines/LineGeometry.js';
-import { LineSegments2 } from '../threejs-165/addons/lines/LineSegments2.js';
-import { LineSegmentsGeometry } from '../threejs-165/addons/lines/LineSegmentsGeometry.js';
+import { Line2 } from 'three/addons/lines/Line2.js';
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
+import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
 // text
-import { Font } from '../threejs-165/addons/loaders/FontLoader.js';
-import { TextGeometry } from '../threejs-165/addons/geometries/TextGeometry.js';
-// label
-import { CSS2DRenderer, CSS2DObject } from '../threejs-165/addons/renderers/CSS2DRenderer.js';
+import { Font } from 'three/addons/loaders/FontLoader.js';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+// label , local patch 
+import { CSS2DRenderer, CSS2DObject } from './CSS2DRenderer.js';
 // exporters
-import { SVGRenderer } from '../threejs-165/addons/renderers/SVGRenderer.js';
-import { GLTFExporter } from '../threejs-165/addons/exporters/GLTFExporter.js';
-import { PLYExporter } from '../threejs-165/addons/exporters/PLYExporter.js';
-import { STLExporter } from '../threejs-165/addons/exporters/STLExporter.js';
-import { DRACOExporter } from '../threejs-165/addons/exporters/DRACOExporter.js';
+import { SVGRenderer } from 'three/addons/renderers/SVGRenderer.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { PLYExporter } from 'three/addons/exporters/PLYExporter.js';
+import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+import { DRACOExporter } from 'three/addons/exporters/DRACOExporter.js';
 // module Widget
 class tjViewer{
   constructor(el, width, height){

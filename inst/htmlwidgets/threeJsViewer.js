@@ -24,6 +24,9 @@ HTMLWidgets.widget({
             },
             function(error){
                   console.log(error);
+                  canvas = new tjViewer(el, width, height);
+                  canvas.create_plot(x);
+                  canvas.animate();
             }
           );
         },

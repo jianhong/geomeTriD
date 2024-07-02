@@ -1,14 +1,14 @@
 ---
-title: "threeJsEpi Vignette: plot interaction data"
+title: "geomeTriD Vignette: plot interaction data"
 author: "Jianhong Ou"
 date: "`r BiocStyle::doc_date()`"
-package: "`r BiocStyle::pkg_ver('threeJsEpi')`"
+package: "`r BiocStyle::pkg_ver('geomeTriD')`"
 abstract: >
   Visualize chromatin interactions along with annotation as track layers.
   The interactions can be compared by back to back heatmaps. 
   The interactions can be plot as heatmap and links.
 vignette: >
-  %\VignetteIndexEntry{threeJsEpi Vignette: plot interaction data}
+  %\VignetteIndexEntry{geomeTriD Vignette: plot interaction data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
@@ -22,7 +22,7 @@ output:
 
 ```{r, echo=FALSE, results="hide", warning=FALSE}
 suppressPackageStartupMessages({
-  library(threeJsEpi)
+  library(geomeTriD)
   library(TxDb.Hsapiens.UCSC.hg19.knownGene)
   library(org.Hs.eg.db)
   library(InteractionSet)
@@ -51,7 +51,7 @@ Here `mdsPlot` can be used to plot the bin-based contact matrix by Kruskal's Non
 ```{r mdsPlot2d}
 library(trackViewer)
 library(InteractionSet)
-gi <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds", package="threeJsEpi"))
+gi <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds", package="geomeTriD"))
 head(gi)
 range <- GRanges("chr6", IRanges(51120000, 53200000))
 ctcf <- readRDS(system.file("extdata", "ctcf.sample.rds", package="trackViewer"))
@@ -73,11 +73,11 @@ mdsPlot(gi, range = range, feature.gr = feature.gr, atacSig = ctcf)
 ```
 
 Or plot it in 3d.
-```{r mdsPlot3d, eval=FALSE}
+```{r mdsPlot3d}
 library(rgl)
 library(manipulateWidget)
 clear3d() # Remove the earlier display
-objs <- threeJsEpi::mdsPlot(gi, range = range, feature.gr = feature.gr, atacSig = ctcf, k=3, render='none')
+objs <- geomeTriD::mdsPlot(gi, range = range, feature.gr = feature.gr, atacSig = ctcf, k=3, render='none')
 rglViewer(objs, background = 'white')
 rglwidget() %>%
   toggleWidget(tags = "tick_minor") %>%
@@ -120,11 +120,11 @@ feature.gr$pch[feature.gr$type=='cRE'] <- 11
 symbol <- mget(feature.gr$gene_id, org.Hs.egSYMBOL, ifnotfound = NA)
 symbol <- unlist(lapply(symbol, function(.ele) .ele[1]))
 feature.gr$label <- symbol
-threeJsEpi::loopBouquetPlot(gi, range, feature.gr)
+geomeTriD::loopBouquetPlot(gi, range, feature.gr)
 ```
 
 ```{r plotRealData}
-gi <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds", package="threeJsEpi"))
+gi <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds", package="geomeTriD"))
 range <- GRanges("chr6", IRanges(51120000, 53200000))
 ## filter the links to simulate the real data
 keep <- distance(first(gi), second(gi)) > 5e5 & gi$score>35
@@ -146,7 +146,7 @@ feature.gr$label <- symbol
 feature.gr <- c(feature.gr[sample(seq_along(feature.gr), 5)],
                 feature.gr[feature.gr$type=='cRE'][1])
 feature.gr <- unique(sort(feature.gr))
-threeJsEpi::loopBouquetPlot(gi, range, feature.gr,
+geomeTriD::loopBouquetPlot(gi, range, feature.gr,
                 coor_tick_unit = 5e4,
                 coor_mark_interval = 5e5,
                 atacSig = ctcf)

@@ -28,7 +28,7 @@ view3dStructure(
   safe_text_force = 3,
   square = TRUE,
   font = readLines(system.file("extdata", "fonts", "helvetiker_regular.typeface.json",
-    package = "threeJsEpi")),
+    package = "geomeTriD")),
   ...
 )
 }
@@ -41,8 +41,9 @@ view3dStructure(
 
 \item{atacSig}{The ATAC-seq signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.}
 
-\item{renderer}{Ther renderer of the 3D plots. Could be rgl or threejs.
-The threejs will create a htmlwidgets.}
+\item{renderer}{The renderer of the 3D plots. Could be rgl or threejs.
+The threejs will create a htmlwidgets. If 'none' is set, a list of object
+will be returned.}
 
 \item{lwd.backbone, lwd.gene, lwd.tension_line, lwd.maxAtacSig}{Line width for the 
 linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed ATAC signal.}
@@ -74,16 +75,17 @@ to turn it off. The default value 1e5 means show coordinates every 0.1M bp.}
 \item{...}{Not used.}
 }
 \value{
-Coordinates for 2d or a list of threeJsGeometry objects.
+Coordinates for 2d or a list of threeJsGeometry objects or a 
+htmlwidget.
 }
 \description{
 Plot xyz data with grid or rgl package.
 }
 \examples{
 p <- readRDS(system.file('extdata', '4DNFI1UEG1HD.chr21.FLAMINGO.res.rds',
-    package='threeJsEpi'))
+    package='geomeTriD'))
 feature.gr <- readRDS(system.file('extdata', '4DNFI1UEG1HD.feature.gr.rds',
-    package='threeJsEpi'))
+    package='geomeTriD'))
 tjg <- view3dStructure(p, k=3, feature.gr=feature.gr, renderer='none',
    length.arrow=grid::unit(0.000006, 'native'))
 }

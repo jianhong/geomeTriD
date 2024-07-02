@@ -1,2 +1,2 @@
-# threejsEpi
+# geomeTriD
 R version of Threejs

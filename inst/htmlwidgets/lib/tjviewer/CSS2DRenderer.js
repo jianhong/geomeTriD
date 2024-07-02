@@ -3,7 +3,7 @@ import {
 	Object3D,
 	Vector2,
 	Vector3
-} from '../../three.module.min.js';
+} from 'three';
 
 class CSS2DObject extends Object3D {
 

@@ -1,11 +1,21 @@
-Package: threeJsEpi
+Package: geomeTriD
 Type: Package
-Title: A R/Bioconductor package for interactive 3D plot of epigenetic data or single cell data
-Version: 0.0.4
+Title: A R/Bioconductor package for interactive 3D plot of epigenetic data or
+  single cell data.
+Version: 0.0.5
 Authors@R: c(person(given="Jianhong", family="Ou", email="jianhong.ou@duke.edu", 
         role=c("aut", "cre"), comment=c(ORCID="0000-0002-8652-2488")))
 Maintainer: Jianhong Ou <jianhong.ou@duke.edu>
-Description: Create interactive 3D plots using the 'three.js' visualization library (<https://threejs.org>).
+Description: geomeTriD (Three Dimensional Geometry Package) 
+  create interactive 3D plots using the GL library with the 'three.js' 
+  visualization library (https://threejs.org) or the rgl library.
+  In addition to creating interactive 3D plots, the application also generates 
+  simplified models in 2D.
+  These 2D models provide a more straightforward visual representation,
+  making it easier to analyze and interpret the data quickly.
+  This functionality ensures that users have access to both detailed 
+  three-dimensional visualizations and more accessible two-dimensional views,
+  catering to various analytical needs.
 License: MIT + file LICENSE
 Depends: R (>= 4.4.0)
 Imports:
