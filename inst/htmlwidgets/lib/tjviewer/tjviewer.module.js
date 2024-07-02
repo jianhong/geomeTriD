@@ -14,7 +14,7 @@ import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js
 import { Font } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 // label , local patch 
-import { CSS2DRenderer, CSS2DObject } from './CSS2DRenderer.js';
+import { CSS2DRenderer, CSS2DObject } from 'tjviewer/CSS2DRenderer.js';
 // exporters
 import { SVGRenderer } from 'three/addons/renderers/SVGRenderer.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
@@ -43,8 +43,8 @@ class tjViewer{
     this.labelRenderer = new CSS2DRenderer();
     this.labelRenderer.setSize( width, height );
     this.labelRenderer.domElement.style.position = 'absolute';
-    this.labelRenderer.domElement.style.top = this.renderer.domElement.getBoundingClientRect().top+'px';
-    this.labelRenderer.domElement.style.left = this.renderer.domElement.getBoundingClientRect().left+'px';
+    this.labelRenderer.domElement.style.top = this.getOffset(this.renderer.domElement).top+'px';
+    this.labelRenderer.domElement.style.left = this.getOffset(this.renderer.domElement).left+'px';
     el.appendChild(this.labelRenderer.domElement);
     
     this.scene = new THREE.Scene();
@@ -190,10 +190,47 @@ class tjViewer{
     this.gui.add(labelLayer, 'Toggle gene labels');
   }
   
-  getLayer = function(tag){
+  getLayer(tag){
       return(this.layer[tag]);
-  };
-    
+  }
+  
+  getOffsetSum(elem) {
+    var top=0, left=0
+    while(elem) {
+      top = top + parseInt(elem.offsetTop)
+      left = left + parseInt(elem.offsetLeft)
+      elem = elem.offsetParent        
+    }
+  
+    return {top: top, left: left}
+  }
+
+  getOffsetRect(elem) {
+      var box = elem.getBoundingClientRect()
+  
+      var body = document.body
+      var docElem = document.documentElement
+  
+      var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop
+      var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft
+  
+      var clientTop = docElem.clientTop || body.clientTop || 0
+      var clientLeft = docElem.clientLeft || body.clientLeft || 0
+  
+      var top  = box.top +  scrollTop - clientTop
+      var left = box.left + scrollLeft - clientLeft
+  
+      return { top: Math.round(top), left: Math.round(left) }
+  }
+
+  getOffset(elem) {
+      if (elem.getBoundingClientRect) {
+          return this.getOffsetRect(elem)
+      } else {
+          return this.getOffsetSum(elem)
+      }
+  }
+
   create_plot(x){
     //console.log(x);
     //const twoPi = Math.PI * 2;

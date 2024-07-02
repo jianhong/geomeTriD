@@ -5,7 +5,7 @@ HTMLWidgets.widget({
   factory: function(el, width, height){
     var canvas;
     // import tjviewer class
-    const importPromise = import('../tjviewer-0.0.1/tjviewer.module.js');
+    const importPromise = import('https://cdn.jsdelivr.net/gh/jianhong/geometrid@main/inst/htmlwidgets/lib/tjviewer/tjviewer.module.js');
     async function run() {
         const {tjViewer} = await importPromise;
         var obj = new tjViewer(el, width, height);
