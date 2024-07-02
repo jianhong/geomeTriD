@@ -195,39 +195,35 @@ class tjViewer{
   }
   
   getOffsetSum(elem) {
-    var top=0, left=0
+    var top=0, left=0;
     while(elem) {
-      top = top + parseInt(elem.offsetTop)
-      left = left + parseInt(elem.offsetLeft)
-      elem = elem.offsetParent        
+      top = top + parseInt(elem.offsetTop);
+      left = left + parseInt(elem.offsetLeft);
+      elem = elem.offsetParent;
     }
   
-    return {top: top, left: left}
+    return {top: top, left: left};
   }
 
   getOffsetRect(elem) {
-      var box = elem.getBoundingClientRect()
+      var box = elem.getBoundingClientRect();
   
-      var body = document.body
-      var docElem = document.documentElement
+      var body = document.body;
   
-      var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop
-      var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft
+      var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+      var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   
-      var clientTop = docElem.clientTop || body.clientTop || 0
-      var clientLeft = docElem.clientLeft || body.clientLeft || 0
+      var top  = box.top +  scrollTop;
+      var left = box.left + scrollLeft;
   
-      var top  = box.top +  scrollTop - clientTop
-      var left = box.left + scrollLeft - clientLeft
-  
-      return { top: Math.round(top), left: Math.round(left) }
+      return { top: Math.round(top), left: Math.round(left) };
   }
 
   getOffset(elem) {
       if (elem.getBoundingClientRect) {
-          return this.getOffsetRect(elem)
+          return this.getOffsetRect(elem);
       } else {
-          return this.getOffsetSum(elem)
+          return this.getOffsetSum(elem);
       }
   }
 
