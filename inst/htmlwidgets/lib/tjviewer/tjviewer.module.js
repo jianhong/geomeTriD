@@ -42,9 +42,9 @@ class tjViewer{
     // label renderer
     this.labelRenderer = new CSS2DRenderer();
     this.labelRenderer.setSize( width, height );
-    this.labelRenderer.domElement.style.position = 'absolute';
-    this.labelRenderer.domElement.style.top = this.getOffset(this.renderer.domElement).top+'px';
-    this.labelRenderer.domElement.style.left = this.getOffset(this.renderer.domElement).left+'px';
+    this.labelRenderer.domElement.style.position = 'relative';
+    this.labelRenderer.domElement.style.top = '-'+this.height+'px';
+    this.labelRenderer.domElement.style.left = '0px';
     el.appendChild(this.labelRenderer.domElement);
     
     this.scene = new THREE.Scene();
@@ -192,39 +192,6 @@ class tjViewer{
   
   getLayer(tag){
       return(this.layer[tag]);
-  }
-  
-  getOffsetSum(elem) {
-    var top=0, left=0;
-    while(elem) {
-      top = top + parseInt(elem.offsetTop);
-      left = left + parseInt(elem.offsetLeft);
-      elem = elem.offsetParent;
-    }
-  
-    return {top: top, left: left};
-  }
-
-  getOffsetRect(elem) {
-      var box = elem.getBoundingClientRect();
-  
-      var body = document.body;
-  
-      var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-      var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  
-      var top  = box.top +  scrollTop;
-      var left = box.left + scrollLeft;
-  
-      return { top: Math.round(top), left: Math.round(left) };
-  }
-
-  getOffset(elem) {
-      if (elem.getBoundingClientRect) {
-          return this.getOffsetRect(elem);
-      } else {
-          return this.getOffsetSum(elem);
-      }
   }
 
   create_plot(x){
@@ -697,6 +664,7 @@ class tjViewer{
     this.height = height;
     this.renderer.setSize( width, height );
     this.labelRenderer.setSize( width, height );
+    this.labelRenderer.domElement.style.top = '-'+this.height+'px';
     
     this.insetWidth = height / 4; // square
     this.insetHeight = height / 4;
