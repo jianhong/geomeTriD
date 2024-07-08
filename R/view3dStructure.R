@@ -33,6 +33,7 @@
 #' @importFrom GenomeInfoDb seqnames 
 #' @importFrom BiocGenerics start<- end<- strand<-
 #' @importFrom utils tail
+#' @importFrom grid convertUnit
 #' @export
 #' @examples
 #' p <- readRDS(system.file('extdata', '4DNFI1UEG1HD.chr21.FLAMINGO.res.rds',
@@ -204,6 +205,7 @@ view3dStructure <- function(p, k=3, feature.gr,
       z = c(p$z0, p$z1[length(p)])/scale_factor,
       colors = col.backbone,
       type = 'line',
+      tag = 'backbone',
       properties = list(size = lwd.backbone)
     )
     
@@ -381,7 +383,7 @@ view3dStructure <- function(p, k=3, feature.gr,
             tag = 'tss_labels',
             properties = list(headLength =as.numeric(arrowLen)*.2,
                               headWidth =as.numeric(arrowLen)*.2,
-                              size = .08)
+                              size = lwd.gene/2)
           )
         })
         names(tss_arrow) <- paste0('arrow_', genePos$fgf$label[isGene])
@@ -398,8 +400,8 @@ view3dStructure <- function(p, k=3, feature.gr,
           colors = genePos$fgf$col[notGene],
           tag = 'cRE',
           properties = list(
-            pch = genePos$fgf$pch[notGene],
-            radius = genePos$fgf$size[notGene],
+            radius = convertUnit(genePos$fgf$size[notGene], unitTo = 'inch',
+                                 valueOnly = TRUE)/5,
             pch = genePos$fgf$pch[notGene]
           )
         )

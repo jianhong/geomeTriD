@@ -59,6 +59,7 @@ class tjViewer{
     // viewport
     this.camera2 = new THREE.PerspectiveCamera( fov, 1, near, far );
     this.camera2.position.copy( this.camera.position );
+    this.camera2.layers.enableAll();
     
     this.controls = new OrbitControls( this.camera, this.labelRenderer.domElement );
     this.controls.enableDamping = true;
@@ -174,28 +175,15 @@ class tjViewer{
       val => expparam.format = val
     );
     this.gui.add(expparam, 'export');
-    this.layer = {
-      'tick_labels':1,
-      'gene_labels':2
-    };
-    const labelLayer = {
-      'Toggle tick labels': function(){
-        this.camera.layers.toggle(this.layer.tick_labels);
-      }.bind(this),
-      'Toggle gene labels': function(){
-        this.camera.layers.toggle(this.layer.gene_labels);
-      }.bind(this)
-    };
-    this.gui.add(labelLayer, 'Toggle tick labels');
-    this.gui.add(labelLayer, 'Toggle gene labels');
+    this.layer = {};
   }
   
   getLayer(tag){
-      return(this.layer[tag]);
+    return(this.layer[tag]);
   }
 
   create_plot(x){
-    //console.log(x);
+    console.log(x);
     //const twoPi = Math.PI * 2;
     //x is a named array
     if('background' in x){
@@ -212,6 +200,26 @@ class tjViewer{
     }
     if('maxLineWidth' in x){
       this.maxLineWidth = x.maxLineWidth;
+    }
+    const arrowLayer = [];
+    if('layers' in x){
+      const labelLayer = {};
+      const layerFolder = this.gui.addFolder('show/hide');
+      var lay=0;
+      for(var i=0; i<x.layers.length&&i<32; i++){
+        lay = x.layers[i];
+        this.layer[lay] = i+1;
+        labelLayer['Toggle '+lay]=function(tag){
+          this.camera.layers.toggle(this.getLayer(tag));
+        }.bind(this, lay);
+        layerFolder.add(labelLayer, 'Toggle '+lay);
+      }
+      labelLayer['Toggle all arrows']=function(){
+        for(var i=0; i<arrowLayer.length; i++){
+          arrowLayer[i].visible = !arrowLayer[i].visible;
+        }
+      }
+      layerFolder.add(labelLayer, 'Toggle all arrows');
     }
     function updateGroupGeometry(mesh, geometry){
             mesh.geometry.dispose();
@@ -242,7 +250,7 @@ class tjViewer{
     }
     // each element 
     for(var k in x){
-      if(k!='background' && k!='maxRadius' && k!='maxLineWidth'){
+      if(k!='background' && k!='maxRadius' && k!='maxLineWidth' && k!='layers'){
         let ele = x[k];
         const param = {
           'size': 0.08,
@@ -271,19 +279,23 @@ class tjViewer{
                 ele.colors[0],
                 ele.colors[1],
                 ele.colors[2]);
+            const arrowDirection = new THREE.Vector3();
+            arrowDirection.subVectors(this.scene.position,
+                new THREE.Vector3( // next three elements are end x,y,z
+                ele.positions[0]-ele.positions[3],
+                ele.positions[1]-ele.positions[4],
+                ele.positions[2]-ele.positions[5]
+                )).normalize();
             obj = new THREE.ArrowHelper(
-              new THREE.Vector3(
-                ele.positions[3],
-                ele.positions[4],
-                ele.positions[5]
-                ), // next three elements are end x,y,z
+              arrowDirection,
               new THREE.Vector3(
                 ele.positions[0],
                 ele.positions[1],
                 ele.positions[2]
               ), // first three elements are start x,y,z
-              ele.size, '#'+hex.getHexString(), ele.headLength, ele.headWidth);
-            
+              ele.size/100, '#'+hex.getHexString(), ele.headLength/5, ele.headWidth/10);
+            obj.layers.set(this.getLayer(ele.tag));
+            arrowLayer.push(obj);
             break;
           case 'line':// Line2 ( LineGeometry, LineMaterial )
             param.size = ele.size;
@@ -310,6 +322,7 @@ class tjViewer{
             obj = new Line2( geometry, material );
             obj.computeLineDistances();
             obj.scale.set( 1, 1, 1 );
+            obj.layers.set(this.getLayer(ele.tag));
             folder.add(param, 'size', 0, this.maxLineWidth).onChange( function( val) {
               material.linewidth = val;
             });
@@ -332,6 +345,7 @@ class tjViewer{
               linewidth: ele.size,
               vertexColors: true});
             obj = new LineSegments2(geometry, material);
+            obj.layers.set(this.getLayer(ele.tag));
             folder.add(param, 'size', 0, this.maxLineWidth).onChange( function( val){
               material.linewidth = val;
             });
@@ -346,6 +360,7 @@ class tjViewer{
             geometry = new THREE.SphereGeometry(
               spheredata.radius, spheredata.widthSegments, spheredata.heightSegments);
             obj = new THREE.InstancedMesh( geometry, material, len );
+            obj.layers.set(this.getLayer(ele.tag));
             initNewMesh(obj, ele);
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
               spheredata.radius = val;
@@ -369,6 +384,7 @@ class tjViewer{
               boxdata.height,
               boxdata.depth);
             obj = new THREE.InstancedMesh( geometry, material, len );
+            obj.layers.set(this.getLayer(ele.tag));
             initNewMesh(obj, ele);
             function updateBoxGeometry(){
               updateGroupGeometry(obj, new THREE.BoxGeometry(
@@ -401,6 +417,7 @@ class tjViewer{
               capsuledata.height
             );
             obj = new THREE.InstancedMesh( geometry, material, len);
+            obj.layers.set(this.getLayer(ele.tag));
             initNewMesh(obj, ele);
             function updateCapsuleGeometry(){
               updateGroupGeometry(obj, new THREE.CapsuleGeometry(
@@ -429,6 +446,7 @@ class tjViewer{
               conedata.height
             );
             obj = new THREE.InstancedMesh( geometry, material, len);
+            obj.layers.set(this.getLayer(ele.tag));
             initNewMesh(obj, ele);
             function updateConeGeometry(){
               updateGroupGeometry(obj, new THREE.ConeGeometry(
@@ -460,6 +478,7 @@ class tjViewer{
               cylinderdata.height
             )
             obj = new THREE.InstancedMesh( geometry, material, len);
+            obj.layers.set(this.getLayer(ele.tag));
             initNewMesh(obj, ele);
             function updateCylinderGeometry(){
               updateGroupGeometry(obj, new THREE.CylinderGeometry(
@@ -489,6 +508,7 @@ class tjViewer{
             geometry = new THREE.DodecahedronGeometry(
               dodecahedrondata.radius);
             obj = new THREE.InstancedMesh( geometry, material, len );
+            obj.layers.set(this.getLayer(ele.tag));
             initNewMesh(obj, ele);
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
               dodecahedrondata.radius = val;
@@ -504,6 +524,7 @@ class tjViewer{
             geometry = new THREE.IcosahedronGeometry(
               icosahedrondata.radius);
             obj = new THREE.InstancedMesh( geometry, material, len );
+            obj.layers.set(this.getLayer(ele.tag));
             initNewMesh(obj, ele);
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
               icosahedrondata.radius = val;
@@ -554,6 +575,7 @@ class tjViewer{
               octahedrondata.radius);
             obj = new THREE.InstancedMesh( geometry, material, len );
             initNewMesh(obj, ele);
+            obj.layers.set(this.getLayer(ele.tag));
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
               octahedrondata.radius = val;
               updateGroupGeometry(obj, new THREE.OctahedronGeometry(
@@ -569,6 +591,7 @@ class tjViewer{
               tetrahedrondata.radius);
             obj = new THREE.InstancedMesh( geometry, material, len );
             initNewMesh(obj, ele);
+            obj.layers.set(this.getLayer(ele.tag));
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
               tetrahedrondata.radius = val;
               updateGroupGeometry(obj, new THREE.TetrahedronGeometry(
@@ -596,6 +619,7 @@ class tjViewer{
                 };
               obj = new THREE.InstancedMesh( geometry, material, len );
               initNewMesh(obj, ele, centerOffset);
+            obj.layers.set(this.getLayer(ele.tag));
               function updateTextGeometry(){
                 updateGroupGeometry(obj, new TextGeometry(ele.label, {
                     font: textdata.font,
@@ -625,6 +649,7 @@ class tjViewer{
             )
             obj = new THREE.InstancedMesh( geometry, material, len);
             initNewMesh(obj, ele);
+            obj.layers.set(this.getLayer(ele.tag));
             function updateTorusGeometry(){
               updateGroupGeometry(obj, new THREE.TorusGeometry(
                 torusdata.radius,
@@ -654,6 +679,7 @@ class tjViewer{
         this.scene.add(obj);
       }
     }
+    
     this.gui.close();
   }
   

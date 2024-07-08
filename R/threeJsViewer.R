@@ -81,7 +81,10 @@ threeJsViewer <- function(..., background = '#00000088',
                     b=unname(background['blue', 1, drop=TRUE]),
                     alpha=unname(background['alpha', 1, drop=TRUE])),
     maxRadius=maxRadius,
-    maxLineWidth=maxLineWidth
+    maxLineWidth=maxLineWidth,
+    layers=unique(unname(vapply(geos, function(.geo){
+      .geo$tag[1]
+    }, FUN.VALUE = character(1L))))
   )
   x <- c(x, 
          lapply(geos, function(.geo){
