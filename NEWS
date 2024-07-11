@@ -1,3 +1,7 @@
+Changes in version 0.0.7
+
+    o Change atacSig to segments for tjviewer.
+    
 Changes in version 0.0.6
 
     o Fix the arrow direction for tjviewer.

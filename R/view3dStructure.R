@@ -264,18 +264,36 @@ view3dStructure <- function(p, k=3, feature.gr,
               labels = atacSiglabels)))
         ## add atac signals
         ## add signal to -z axis
-        geometries$atac_signal <- threeJsGeometry(
-          x = as.numeric(t(as.matrix(mcols(p)[, c('x0', 'x1')])))/scale_factor,
-          y = as.numeric(t(as.matrix(mcols(p)[, c('y0', 'y1')])))/scale_factor,
-          z = as.numeric(t(as.matrix(mcols(p)[, c('z0', 'z1')]) -
-                             data.frame(z0=atacSig$lwd/rate,
-                                        z1=0)))/scale_factor,
-          type = 'line',
-          colors = col.backbone_background,
-          tag='atac_signal',
-          properties = list(size=1,
-                            alpha= alpha.backbone_background)
-        )
+        
+        # geometries$atac_signal <- threeJsGeometry(
+        #   x = as.numeric(t(as.matrix(mcols(p)[, c('x0', 'x1')])))/scale_factor,
+        #   y = as.numeric(t(as.matrix(mcols(p)[, c('y0', 'y1')])))/scale_factor,
+        #   z = as.numeric(t(as.matrix(mcols(p)[, c('z0', 'z1')]) -
+        #                      data.frame(z0=atacSig$lwd/rate,
+        #                                 z1=0)))/scale_factor,
+        #   type = 'line',
+        #   colors = col.backbone_background,
+        #   tag='atac_signal',
+        #   properties = list(size=1,
+        #                     alpha= alpha.backbone_background)
+        # )
+        atacSigLwd <- sort(unique(atacSig$lwd))
+        atac_signal <- lapply(atacSigLwd, function(lwd){
+          idx <- which(atacSig$lwd==lwd)
+          threeJsGeometry(
+              x = as.numeric(t(as.matrix(mcols(p)[idx, c('x0', 'x1')])))/scale_factor,
+              y = as.numeric(t(as.matrix(mcols(p)[idx, c('y0', 'y1')])))/scale_factor,
+              z = as.numeric(t(as.matrix(mcols(p)[idx, c('z0', 'z1')])))/scale_factor,
+              type = 'segment',
+              colors = col.backbone_background,
+              tag='atac_signal',
+              properties = list(size=lwd,
+                                alpha= alpha.backbone_background)
+            )
+        })
+        
+        names(atac_signal) <- paste0('atac_signal_lwd_', atacSigLwd)
+        geometries <- c(geometries, atac_signal)
       }
     }
     
