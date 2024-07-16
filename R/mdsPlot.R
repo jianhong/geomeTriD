@@ -114,7 +114,7 @@ mdsPlot <- function(gi, range, feature.gr, k=2,
   p <- r[as.numeric(rownames(mds$points))]
   mcols(p) <- mds$points
   colnames(mcols(p)) <- c('x', 'y', 'z')[seq.int(k)]
-  view3dStructure(p=p, k=k,
+  view3dStructure(obj=p, k=k,
                   feature.gr=feature.gr,
                   atacSig=atacSig,
                   renderer=renderer,

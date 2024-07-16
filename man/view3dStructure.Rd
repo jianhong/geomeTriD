@@ -2,10 +2,10 @@
 % Please edit documentation in R/view3dStructure.R
 \name{view3dStructure}
 \alias{view3dStructure}
-\title{Plot xyz data in 2d or 3d}
+\title{Plot GRanges xyz data in 2d or 3d}
 \usage{
 view3dStructure(
-  p,
+  obj,
   k = 3,
   feature.gr,
   atacSig,
@@ -33,7 +33,7 @@ view3dStructure(
 )
 }
 \arguments{
-\item{p}{GRanges object with mcols x, y, or with z}
+\item{obj}{GRanges object with mcols x, y, and/or z}
 
 \item{k}{The dimension of plot. 2: 2d, 3: 3d.}
 
@@ -79,13 +79,13 @@ Coordinates for 2d or a list of threeJsGeometry objects or a
 htmlwidget.
 }
 \description{
-Plot xyz data with grid or rgl package.
+Plot GRanges xyz data with grid or rgl package.
 }
 \examples{
-p <- readRDS(system.file('extdata', '4DNFI1UEG1HD.chr21.FLAMINGO.res.rds',
+obj <- readRDS(system.file('extdata', '4DNFI1UEG1HD.chr21.FLAMINGO.res.rds',
     package='geomeTriD'))
 feature.gr <- readRDS(system.file('extdata', '4DNFI1UEG1HD.feature.gr.rds',
     package='geomeTriD'))
-tjg <- view3dStructure(p, k=3, feature.gr=feature.gr, renderer='none',
+tjg <- view3dStructure(obj, k=3, feature.gr=feature.gr, renderer='none',
    length.arrow=grid::unit(0.000006, 'native'))
 }

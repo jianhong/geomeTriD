@@ -1,7 +1,7 @@
-#' Plot xyz data in 2d or 3d
+#' Plot GRanges xyz data in 2d or 3d
 #' @description
-#' Plot xyz data with grid or rgl package.
-#' @param p GRanges object with mcols x, y, or with z
+#' Plot GRanges xyz data with grid or rgl package.
+#' @param obj GRanges object with mcols x, y, and/or z
 #' @param k The dimension of plot. 2: 2d, 3: 3d.
 #' @param feature.gr The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.
 #' @param atacSig The ATAC-seq signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.
@@ -26,23 +26,23 @@
 #' @param ... Not used.
 #' @return Coordinates for 2d or a list of threeJsGeometry objects or a 
 #' htmlwidget.
-#' @import grid
 #' @importFrom stats quantile
 #' @importFrom trackViewer parseWIG
 #' @importFrom IRanges tile
 #' @importFrom GenomeInfoDb seqnames 
 #' @importFrom BiocGenerics start<- end<- strand<-
 #' @importFrom utils tail
-#' @importFrom grid convertUnit
+#' @importFrom grid convertUnit grid.newpage viewport pushViewport popViewport 
+#' convertWidth convertHeight xsplineGrob grobCoords convertX convertY
 #' @export
 #' @examples
-#' p <- readRDS(system.file('extdata', '4DNFI1UEG1HD.chr21.FLAMINGO.res.rds',
+#' obj <- readRDS(system.file('extdata', '4DNFI1UEG1HD.chr21.FLAMINGO.res.rds',
 #'     package='geomeTriD'))
 #' feature.gr <- readRDS(system.file('extdata', '4DNFI1UEG1HD.feature.gr.rds',
 #'     package='geomeTriD'))
-#' tjg <- view3dStructure(p, k=3, feature.gr=feature.gr, renderer='none',
+#' tjg <- view3dStructure(obj, k=3, feature.gr=feature.gr, renderer='none',
 #'    length.arrow=grid::unit(0.000006, 'native'))
-view3dStructure <- function(p, k=3, feature.gr,
+view3dStructure <- function(obj, k=3, feature.gr,
                             atacSig,
                             renderer = c('rgl', 'threejs', 'none'),
                             lwd.backbone = 2, col.backbone = 'gray',
@@ -64,22 +64,22 @@ view3dStructure <- function(p, k=3, feature.gr,
                               'helvetiker_regular.typeface.json',
                               package='geomeTriD')),
                             ...){
-  stopifnot(is(p, 'GRanges'))
+  stopifnot(is(obj, 'GRanges'))
   stopifnot(
     'Only work for data in a single chromsome.'=
-      all(as.character(seqnames(p))==as.character(seqnames(p)[1])))
-  seqn <- as.character(seqnames(p)[1])
+      all(as.character(seqnames(obj))==as.character(seqnames(obj)[1])))
+  seqn <- as.character(seqnames(obj)[1])
   stopifnot(is.numeric(k))
   stopifnot(k==2 || k==3)
-  stopifnot(all(c('x', 'y') %in% colnames(mcols(p))))
+  stopifnot(all(c('x', 'y') %in% colnames(mcols(obj))))
   if(k==3){
-    stopifnot('z' %in% colnames(mcols(p)))
+    stopifnot('z' %in% colnames(mcols(obj)))
   }
   renderer <- match.arg(renderer)
   feature.gr <- parseFeature(feature.gr=feature.gr)
-  xlim <- range(p$x)
-  ylim <- range(p$y)
-  zlim <- range(p$z)
+  xlim <- range(obj$x)
+  ylim <- range(obj$y)
+  zlim <- range(obj$z)
   d_xlim <- diff(xlim)/10
   d_ylim <- diff(ylim)/10
   d_zlim <- diff(zlim)/10
@@ -111,11 +111,11 @@ view3dStructure <- function(p, k=3, feature.gr,
                       unitTo = "inch", valueOnly = TRUE))))/
       convertUnit(arrowLen, unitTo = "inches", valueOnly = TRUE)
     
-    ncurve <- length(p) - 1
-    x1 <- p$x[-length(p$x)]
-    x2 <- p$x[-1]
-    y1 <- p$y[-length(p$y)]
-    y2 <- p$y[-1]
+    ncurve <- length(obj) - 1
+    x1 <- obj$x[-length(obj$x)]
+    x2 <- obj$x[-1]
+    y1 <- obj$y[-length(obj$y)]
+    y2 <- obj$y[-1]
     if(square){
       cps <- calcSquareControlPoints(
         x1, y1, x2, y2,
@@ -148,10 +148,10 @@ view3dStructure <- function(p, k=3, feature.gr,
            y = convertY(unit(.ele$y, 'inch'),
                         unitTo = 'native', valueOnly = TRUE))
     })
-    midPoints <- ceiling((start(p) + end(p))/2)
-    midPoints <- c(start(p)[1],
+    midPoints <- ceiling((start(obj) + end(obj))/2)
+    midPoints <- c(start(obj)[1],
                    midPoints[-c(1, length(midPoints))],
-                   end(p)[length(p)])
+                   end(obj)[length(obj)])
     pP <- mapply(coor, midPoints[-length(midPoints)]+1, midPoints[-1],
                  FUN=function(xys, startP, endP){
                    list(x=xys$x, y=xys$y, start=startP, end=endP)
@@ -178,31 +178,31 @@ view3dStructure <- function(p, k=3, feature.gr,
                            xlim=xlim, ylim=ylim)
   }else{
     ## plot 3D
-    t <- seq_along(p)
+    t <- seq_along(obj)
     ## spline smooth for each bin with 30 points
     resolusion <- 30
-    tt <- seq(1, length(p), len = resolusion*length(p)+1)
-    sdata <- lapply(colnames(mcols(p)), function(j){
-      splinefun(t, mcols(p)[, j, drop=TRUE])(tt)
+    tt <- seq(1, length(obj), len = resolusion*length(obj)+1)
+    sdata <- lapply(colnames(mcols(obj)), function(j){
+      splinefun(t, mcols(obj)[, j, drop=TRUE])(tt)
     })
     sdata <- do.call(cbind, sdata)
     sdata <- data.frame(sdata)
-    colnames(sdata) <- colnames(mcols(p))
-    p <- tile(p, n=resolusion)
-    p <- unlist(p)
-    stopifnot('Unexpected happend.'=length(p)+1==nrow(sdata))
+    colnames(sdata) <- colnames(mcols(obj))
+    obj <- tile(obj, n=resolusion)
+    obj <- unlist(obj)
+    stopifnot('Unexpected happend.'=length(obj)+1==nrow(sdata))
     sdata0 <- sdata[-nrow(sdata), , drop=FALSE]
     sdata1 <- sdata[-1, , drop=FALSE]
     colnames(sdata0) <- paste0(colnames(sdata), '0')
     colnames(sdata1) <- paste0(colnames(sdata), '1')
-    mcols(p) <- cbind(sdata0, sdata1)
-    ## p is the GRanges with p0 and p1 (x,y,z) coordinates
+    mcols(obj) <- cbind(sdata0, sdata1)
+    ## obj is the GRanges with p0 and p1 (x,y,z) coordinates
     
     geometries <- list() ## list to save all geometries to plot
     geometries$backbone <- threeJsGeometry(
-      x = c(p$x0, p$x1[length(p)])/scale_factor,
-      y = c(p$y0, p$y1[length(p)])/scale_factor,
-      z = c(p$z0, p$z1[length(p)])/scale_factor,
+      x = c(obj$x0, obj$x1[length(obj)])/scale_factor,
+      y = c(obj$y0, obj$y1[length(obj)])/scale_factor,
+      z = c(obj$z0, obj$z1[length(obj)])/scale_factor,
       colors = col.backbone,
       type = 'line',
       tag = 'backbone',
@@ -234,14 +234,14 @@ view3dStructure <- function(p, k=3, feature.gr,
         if(atacSig$format=='WIG'){
           atacSig <- parseWIG(trackScore=atacSig,
                               chrom=seqn,
-                              from=start(range(p)),
-                              to=end(range(p)))
+                              from=start(range(obj)),
+                              to=end(range(obj)))
         }
         atacSig <- atacSig$dat
       }
       stopifnot(is(atacSig, 'GRanges'))
       stopifnot('score' %in% colnames(mcols(atacSig)))
-      atacSig <- resampleDataByFun(atacSig, p, dropZERO = FALSE,
+      atacSig <- resampleDataByFun(atacSig, obj, dropZERO = FALSE,
                                    na.rm = TRUE)
       atacSigScoreRange <- quantile(log2(atacSig$score+1),
                                     probs = c(.1, .99))
@@ -266,9 +266,9 @@ view3dStructure <- function(p, k=3, feature.gr,
         ## add signal to -z axis
         
         # geometries$atac_signal <- threeJsGeometry(
-        #   x = as.numeric(t(as.matrix(mcols(p)[, c('x0', 'x1')])))/scale_factor,
-        #   y = as.numeric(t(as.matrix(mcols(p)[, c('y0', 'y1')])))/scale_factor,
-        #   z = as.numeric(t(as.matrix(mcols(p)[, c('z0', 'z1')]) -
+        #   x = as.numeric(t(as.matrix(mcols(obj)[, c('x0', 'x1')])))/scale_factor,
+        #   y = as.numeric(t(as.matrix(mcols(obj)[, c('y0', 'y1')])))/scale_factor,
+        #   z = as.numeric(t(as.matrix(mcols(obj)[, c('z0', 'z1')]) -
         #                      data.frame(z0=atacSig$lwd/rate,
         #                                 z1=0)))/scale_factor,
         #   type = 'line',
@@ -281,9 +281,9 @@ view3dStructure <- function(p, k=3, feature.gr,
         atac_signal <- lapply(atacSigLwd, function(lwd){
           idx <- which(atacSig$lwd==lwd)
           threeJsGeometry(
-              x = as.numeric(t(as.matrix(mcols(p)[idx, c('x0', 'x1')])))/scale_factor,
-              y = as.numeric(t(as.matrix(mcols(p)[idx, c('y0', 'y1')])))/scale_factor,
-              z = as.numeric(t(as.matrix(mcols(p)[idx, c('z0', 'z1')])))/scale_factor,
+              x = as.numeric(t(as.matrix(mcols(obj)[idx, c('x0', 'x1')])))/scale_factor,
+              y = as.numeric(t(as.matrix(mcols(obj)[idx, c('y0', 'y1')])))/scale_factor,
+              z = as.numeric(t(as.matrix(mcols(obj)[idx, c('z0', 'z1')])))/scale_factor,
               type = 'segment',
               colors = col.backbone_background,
               tag='atac_signal',
@@ -299,13 +299,13 @@ view3dStructure <- function(p, k=3, feature.gr,
     
     ## add genomic coordinates
     if(show_coor){
-      r_tick <- range(p)
+      r_tick <- range(obj)
       end(r_tick) <- ceiling(end(r_tick)/coor_tick_unit)*coor_tick_unit
       start(r_tick) <- floor(start(r_tick)/coor_tick_unit)*coor_tick_unit
       strand(r_tick) <- "*"
       feature.tick <- GenomicRanges::slidingWindows(r_tick, width = 1, step=coor_tick_unit)[[1]]
       feature.tick$col <- col.tension_line
-      tick.xy <- calTickPos(feature.tick, p, arrowLen, rate=rate, kd=k)
+      tick.xy <- calTickPos(feature.tick, obj, arrowLen, rate=rate, kd=k)
       tick.xy_matrix <- do.call(rbind, tick.xy)
       geometries$tick_minor <- threeJsGeometry(
         x = as.numeric(tick.xy_matrix[c('x1', 'x2'), ])/scale_factor,
@@ -357,7 +357,7 @@ view3dStructure <- function(p, k=3, feature.gr,
     }
     
     ## add gene annotation
-    genePos <- calGenePos(feature.gr, p, arrowLen, rate=rate, kd=3)
+    genePos <- calGenePos(feature.gr, obj, arrowLen, rate=rate, kd=3)
     if(length(genePos)>0){
       gene_body_geometries <- lapply(seq_along(genePos$xs), function(idx){
         threeJsGeometry(

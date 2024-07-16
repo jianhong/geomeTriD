@@ -74,7 +74,7 @@ class tjViewer{
     this.stats.showPanel( 0 );*/
     
     this.materials = [];
-    this.objects = [];
+    this.objects = new THREE.Group();
     this.background = new THREE.Color(1, 1, 1);
     this.bckalpha = 1;
     
@@ -89,6 +89,24 @@ class tjViewer{
     this.gui = new GUI();
     this.maxRadius = 1;
     this.maxLineWidth = 50;
+    
+    // animate GUI
+    this.clock = new THREE.Clock();
+    this.animateparam = {
+      play : false,
+      stepX : 0.3,
+      stepY : 0.3
+    };
+    const animateGUI = this.gui.addFolder('animate');
+    animateGUI.add(this.animateparam, 'play');
+    animateGUI.add(this.animateparam, 'stepX', 0, 5 ).onChange( function ( val ) {
+      this.animateparam.stepX = val;
+    }.bind(this) );
+    animateGUI.add(this.animateparam, 'stepY', 0, 5 ).onChange( function ( val ) {
+      this.animateparam.stepY = val;
+    }.bind(this) );
+    
+    // exporter GUI
     const saveBlob = (function(){
         const a = document.createElement('a');
         document.body.appendChild(a);
@@ -161,21 +179,72 @@ class tjViewer{
               type: 'text/plain'
             }), expparam.filename+'.'+expparam.format);
             break;
+          case 'video':
+            if(this.animateparam.play){
+              const stream = this.renderer.domElement.captureStream(25);
+              var recordedChunks = [];
+              var options = {};
+              var mediaRecorder = new MediaRecorder(stream, options);
+              function handleDataAvailable(event) {
+                recordedChunks.push(event.data);
+              }
+              mediaRecorder.ondataavailable = handleDataAvailable;
+              var animationLoop = function (){
+                // while we're recording
+                if (mediaRecorder.state !== "inactive") {
+                  requestAnimationFrame(this.animate);
+                }
+              }.bind(this);
+              mediaRecorder.onstart = animationLoop;
+              mediaRecorder.start();
+              var animationStop = function (){
+                console.log(recordedChunks);
+                saveBlob(new Blob(recordedChunks, {
+                type: 'video/webm'
+              }), expparam.filename+'.webm');
+              }
+              mediaRecorder.onstop = animationStop;
+              setTimeout(()=>{
+                mediaRecorder.stop();
+              }, 10000);// 10s for recording.
+            }else{
+              alert('Please turn on the animate first.');
+            }
+            break;
           default:
             alert('not support yet!');
         }
       }.bind(this)
     };
-    this.gui.add(expparam, 'filename').onChange(
+    const exporterGUI = this.gui.addFolder('exporter');
+    exporterGUI.add(expparam, 'filename').onChange(
       val => expparam.filename = val
     );
-    var availableFormat = ['drc', 'gltf', 'ply', 'png', 'stl', 'svg'];
-    var supportFormat = ['png'];
-    this.gui.add(expparam, 'format', supportFormat).onChange(
+    var availableFormat = ['drc', 'gltf', 'ply', 'png', 'stl', 'svg', 'video'];
+    var supportFormat = ['png', 'video'];
+    exporterGUI.add(expparam, 'format', supportFormat).onChange(
       val => expparam.format = val
     );
-    this.gui.add(expparam, 'export');
+    exporterGUI.add(expparam, 'export');
     this.layer = {};
+    
+    // spotlight GUI
+    let directionalLight; 
+    directionalLight = new THREE.DirectionalLight( 0xffffff, 200 );
+    directionalLight.position.set( 2.5, 5, 2.5 );
+    this.scene.add( directionalLight );
+    
+    const lightparams = {
+      color: directionalLight.color.getHex(),
+      intensity: directionalLight.intensity
+    };
+    const spotlightGUI = this.gui.addFolder('light settings');
+    spotlightGUI.addColor( lightparams, 'color' ).onChange( function ( val ) {
+      directionalLight.color.setHex( val );
+    } );
+    spotlightGUI.add( lightparams, 'intensity', 0, 500 ).onChange( function ( val ) {
+      directionalLight.intensity = val;
+    } );
   }
   
   getLayer(tag){
@@ -206,6 +275,9 @@ class tjViewer{
       const labelLayer = {};
       const layerFolder = this.gui.addFolder('show/hide');
       var lay=0;
+      if(!Array.isArray(x.layers)){
+        x.layers=[x.layers];
+      }
       for(var i=0; i<x.layers.length&&i<32; i++){
         lay = x.layers[i];
         this.layer[lay] = i+1;
@@ -268,10 +340,12 @@ class tjViewer{
         const folder = this.gui.addFolder(ele.type+' '+k);
         let geometry = new THREE.BufferGeometry();
         let obj = new THREE.InstancedMesh();
-        let material = new THREE.MeshBasicMaterial( {
+        let material = new THREE.MeshStandardMaterial( {
               color: 0xffffff,
               opacity: 1,
-              transparent: true
+              transparent: true,
+              metalness: 0,
+              roughness: 0
             } );
         switch(ele.type){
           case 'arrow':
@@ -675,11 +749,11 @@ class tjViewer{
         })
         folder.close();
         this.materials.push(material);
-        this.objects.push(obj);
-        this.scene.add(obj);
+        this.objects.add(obj);
       }
     }
     
+    this.scene.add(this.objects);
     this.gui.close();
   }
   
@@ -705,6 +779,12 @@ class tjViewer{
     this.renderer.setViewport( 0, 0, this.width, this.height );
     this.controls.update();
     //controls
+    // animate
+    const delta = this.clock.getDelta();
+    if ( this.animateparam.play ) {
+        this.objects.rotation.x += delta * this.animateparam.stepX;
+        this.objects.rotation.y += delta * this.animateparam.stepY;
+    }
     //this.gpuPanel.startQuery();
     this.renderer.render( this.scene, this.camera );
     this.labelRenderer.render(this.scene, this.camera );

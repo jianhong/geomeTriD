@@ -1,0 +1,15 @@
+url: https://jianhong.github.io/geometrid
+
+template:
+  params:
+    bootswatch: flatly
+
+home:
+  title: "geometrid"
+  type: inverse
+
+
+navbar:
+  right:
+   - icon: fa-github
+     href: https://github.com/jianhong/geometrid

@@ -39,7 +39,9 @@
 #' @importFrom IRanges IRanges subsetByOverlaps viewMeans countOverlaps reduce
 #' findOverlaps distance
 #' @importFrom trackViewer parseWIG
-#' @importFrom grid unit
+#' @importFrom grid unit grid.newpage viewport pushViewport popViewport
+#'  stringWidth convertWidth convertHeight grid.circle gpar grid.segments
+#'  grid.points grid.text
 #' @export
 #' @examples
 #' library(InteractionSet) 
@@ -1001,6 +1003,7 @@ calGenePos <- function(fgf, curve_gr, arrowLen, kd=2, rate=72){
        missing_start=ifelse(neg_strand,missing_end,missing_start))
 }
 
+#' @importFrom grid convertHeight grobHeight convertWidth grobWidth grobX grobY
 objWidth <- function(xlim, ...){ 
   convertWidth(grobWidth(...),
                unitTo = 'npc', valueOnly = TRUE)*diff(xlim) }
@@ -1014,6 +1017,7 @@ objY <- function(theta, ...){
   convertHeight(grobY(..., theta = theta),
                 unitTo = 'npc', valueOnly = TRUE) }
 
+#' @importFrom grid convertX convertWidth grobWidth convertHeight grobHeight
 getFourPoints <- function(obj, x_r, y_r){
   # x1 <- objX("west", obj)
   # x2 <- objX("east", obj)
@@ -1036,6 +1040,7 @@ safeSeq <- function(range, length){
   x[length(x)] <- x[length(x)] + d
   return(x)
 }
+#' @importFrom grid convertX convertY
 getObjsPos <- function(objs, xlim, ylim, res_row, res_col, resolution=10){
   x_r <- safeSeq(xlim, res_row)
   y_r <- safeSeq(ylim, res_col)
@@ -1171,6 +1176,8 @@ safeObjCoor <- function(objCoor, obj, x, y, xlim, ylim, logic=TRUE, force=6){
   }
   return(c(x, y))
 }
+#' @importFrom grid textGrob grid.segments gpar grid.lines linesGrob grid.text
+#' grid.draw arrow grid.points
 plotBouquet <- function(pP, fgf, atacSig,
                         lwd.backbone, col.backbone,
                         lwd.maxAtacSig,
