@@ -16,7 +16,7 @@
 #' @examples
 #' cells <- readRDS(system.file('extdata', 'pbmc_small.3d.rds',
 #'  package='geometrid'))
-#' view3dCells(cells, x="umap_1", y="umap_2", z="umap_3',
+#' view3dCells(cells, x="umap_1", y="umap_2", z="umap_3",
 #'  renderer='threejs')
 view3dCells <- function(cells, x, y, z,
                         color='blue', shape='sphere',

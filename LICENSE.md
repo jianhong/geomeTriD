@@ -2,8 +2,7 @@ MIT License
 
 Copyright (c) 2024 JIANHONG OU
 
-This package includes the threejs package. The files is located at inst/htmlwidgets/lib/threejs
-under the MIT LICENSE, see https://github.com/mrdoob/three.js/
+This package includes the threejs package under the MIT LICENSE, see https://github.com/mrdoob/three.js/
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

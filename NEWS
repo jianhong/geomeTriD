@@ -1,3 +1,7 @@
+Changes in version 0.0.10
+
+    o move the LICENSE to Rbuildignore.
+    
 Changes in version 0.0.9
 
     o add video exporter for tjviewer.
