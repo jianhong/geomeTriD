@@ -3,7 +3,8 @@ pkgdown: 2.1.0
 pkgdown_sha: ~
 articles:
   plotInteractionData: plotInteractionData.html
-last_built: 2024-07-17T14:14Z
+  plotScCells: plotScCells.html
+last_built: 2024-07-17T14:34Z
 urls:
   reference: https://jianhong.github.io/geometrid/reference
   article: https://jianhong.github.io/geometrid/articles
