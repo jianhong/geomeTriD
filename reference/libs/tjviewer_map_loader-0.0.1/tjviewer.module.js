@@ -273,7 +273,7 @@ class tjViewer{
   }
 
   create_plot(x){
-    console.log(x);
+    //console.log(x);
     //const twoPi = Math.PI * 2;
     //x is a named array
     if('background' in x){
