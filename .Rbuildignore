@@ -1,8 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-inst/htmlwidgets/jsversion
-inst/htmlwidgets/lib/threejs/origin
 ^.*\.DS_Store
-.github
-_pkgdown.yml
-LICENSE.md
+^\.github$
+^_pkgdown\.yml$
+^pkgdown$
+^LICENSE\.md$

@@ -42,7 +42,7 @@ Plot cell xyz data with grid or rgl package.
 }
 \examples{
 cells <- readRDS(system.file('extdata', 'pbmc_small.3d.rds',
- package='geometrid'))
+ package='geomeTriD'))
 view3dCells(cells, x="umap_1", y="umap_2", z="umap_3",
  renderer='threejs')
 }
