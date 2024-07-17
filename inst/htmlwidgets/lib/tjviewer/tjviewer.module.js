@@ -121,6 +121,7 @@ class tjViewer{
     const expparam = {
       filename: 'threejsviewer',
       format: 'png',
+      duration: 10,
       export : function() {
         let exporter;
         switch(expparam.format){
@@ -189,7 +190,15 @@ class tjViewer{
                 recordedChunks.push(event.data);
               }
               mediaRecorder.ondataavailable = handleDataAvailable;
+              var timeout, counter=expparam.duration;
+              var countdown = function(counter){
+                timeout = setInterval(()=>{
+                      counter -= 1;
+                      exporterBotton.name('export in '+counter+'s');
+                  },1000);
+              };
               var animationLoop = function (){
+                countdown(counter);
                 // while we're recording
                 if (mediaRecorder.state !== "inactive") {
                   requestAnimationFrame(this.animate);
@@ -198,7 +207,9 @@ class tjViewer{
               mediaRecorder.onstart = animationLoop;
               mediaRecorder.start();
               var animationStop = function (){
-                console.log(recordedChunks);
+                clearInterval(timeout);
+                counter = expparam.duration;
+                exporterBotton.name('export');
                 saveBlob(new Blob(recordedChunks, {
                 type: 'video/webm'
               }), expparam.filename+'.webm');
@@ -206,7 +217,7 @@ class tjViewer{
               mediaRecorder.onstop = animationStop;
               setTimeout(()=>{
                 mediaRecorder.stop();
-              }, 10000);// 10s for recording.
+              }, 1000*expparam.duration);
             }else{
               alert('Please turn on the animate first.');
             }
@@ -222,10 +233,20 @@ class tjViewer{
     );
     var availableFormat = ['drc', 'gltf', 'ply', 'png', 'stl', 'svg', 'video'];
     var supportFormat = ['png', 'video'];
+    var exporterDuration = exporterGUI.add(expparam, 'duration', 0, 120, 1).onChange(
+      val => expparam.duration = val
+    ).hide();
     exporterGUI.add(expparam, 'format', supportFormat).onChange(
-      val => expparam.format = val
+      val => {
+        expparam.format = val;
+        if(val=='video'){
+          exporterDuration.show();
+        }else{
+          exporterDuration.hide();
+        }
+      }
     );
-    exporterGUI.add(expparam, 'export');
+    const exporterBotton = exporterGUI.add(expparam, 'export');
     this.layer = {};
     
     // spotlight GUI
