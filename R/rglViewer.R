@@ -1,7 +1,7 @@
 #' rgl Viewer
 #' View the 3d structure by rgl.
 #' @importFrom rgl open3d segments3d lines3d arrow3d points3d text3d
-#'  rgl.bringtotop bg3d
+#'  rgl.bringtotop bg3d spheres3d
 #' @export
 #' @param ... objects of threeJsGeometry.
 #' @param background background of the main camera.
@@ -84,7 +84,10 @@ rglViewer <- function(..., background = '#00000088') {
               
             },
             sphere={
-              
+              spheres3d(.ele$x, .ele$y, .ele$z,
+                        radius = .ele$properties$radius,
+                        tag = .ele$tag,
+                        col = .ele$colors)
             },
             tetrahedron={
               

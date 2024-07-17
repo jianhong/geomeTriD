@@ -1,0 +1,61 @@
+---
+title: "geomeTriD Vignette: plot single cells in 3d"
+author: "Jianhong Ou"
+date: "`r BiocStyle::doc_date()`"
+package: "`r BiocStyle::pkg_ver('geomeTriD')`"
+abstract: >
+  Visualize single cell RNA-seq data in 3D plots.
+vignette: >
+  %\VignetteIndexEntry{geomeTriD Vignette: plot single cell data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+  html_document:
+    theme: simplex
+    toc: true
+    toc_float: true
+    toc_depth: 4
+    fig_caption: true
+---
+
+```{r, echo=FALSE, results="hide", warning=FALSE}
+suppressPackageStartupMessages({
+  library(geomeTriD)
+  library(rgl)
+  library(manipulateWidget)
+})
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+# Introduction
+
+
+
+
+# Plot single cell data
+
+```{r}
+library(geomeTriD)
+cells <- readRDS(system.file('extdata', 'pbmc_small.3d.rds',
+                             package='geomeTriD'))
+objs <- view3dCells(cells, x="umap_1", y="umap_2", z="umap_3",
+                    renderer='none')
+```
+
+```{r mdsPlot3d}
+library(manipulateWidget)
+clear3d() # Remove the earlier display
+rglViewer(objs, background = 'white')
+rglwidget()
+```
+
+Plot it by threeJs.
+```{r threejs}
+threeJsViewer(objs)
+```
+
+# Session Info
+```{r sessionInfo, results='asis'}
+sessionInfo()
+```
+

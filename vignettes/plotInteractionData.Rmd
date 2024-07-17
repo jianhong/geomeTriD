@@ -4,9 +4,7 @@ author: "Jianhong Ou"
 date: "`r BiocStyle::doc_date()`"
 package: "`r BiocStyle::pkg_ver('geomeTriD')`"
 abstract: >
-  Visualize chromatin interactions along with annotation as track layers.
-  The interactions can be compared by back to back heatmaps. 
-  The interactions can be plot as heatmap and links.
+  Visualize epigeomic data in 2D or 3D plots.
 vignette: >
   %\VignetteIndexEntry{geomeTriD Vignette: plot interaction data}
   %\VignetteEngine{knitr::rmarkdown}
