@@ -8,13 +8,13 @@ view3dStructure(
   obj,
   k = 3,
   feature.gr,
-  atacSig,
+  genomicSigs,
   renderer = c("rgl", "threejs", "none"),
   lwd.backbone = 2,
   col.backbone = "gray",
-  lwd.maxAtacSig = 8,
-  reverseATACSig = TRUE,
-  col.backbone_background = "gray70",
+  lwd.maxGenomicSigs = 8,
+  reverseGenomicSigs = TRUE,
+  col.backbone_background = if (k == 2) "gray70" else c("white", "darkred"),
   alpha.backbone_background = 0.5,
   lwd.gene = 3,
   coor_mark_interval = 5e+05,
@@ -39,19 +39,19 @@ view3dStructure(
 
 \item{feature.gr}{The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.}
 
-\item{atacSig}{The ATAC-seq signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.}
+\item{genomicSigs}{The Genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.}
 
 \item{renderer}{The renderer of the 3D plots. Could be rgl or threejs.
 The threejs will create a htmlwidgets. If 'none' is set, a list of object
 will be returned.}
 
-\item{lwd.backbone, lwd.gene, lwd.tension_line, lwd.maxAtacSig}{Line width for the 
-linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed ATAC signal.}
+\item{lwd.backbone, lwd.gene, lwd.tension_line, lwd.maxGenomicSigs}{Line width for the 
+linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed genomic signal.}
 
 \item{col.backbone, col.backbone_background, col.tension_line, col.coor}{Color
 for the DNA chain, the compact DNA chain, the node circle, the linker, the tension line and the coordinates marker.}
 
-\item{reverseATACSig}{Plot the ATAC-seq signals in reverse values.}
+\item{reverseGenomicSigs}{Plot the genomic signals in reverse values.}
 
 \item{alpha.backbone_background}{Alpha channel for transparency of backbone background.}
 

@@ -5,15 +5,15 @@
 #' @param range The region to plot. an object of \link[GenomicRanges:GRanges-class]{GRanges}
 #' @param feature.gr The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.
 #' @param k The dimension of plot. 2: 2d, 3: 3d.
-#' @param atacSig The ATAC-seq signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.
+#' @param genomicSigs The genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.
 #' @param show_coor Plot ticks in the line to show the DNA compact tension.
-#' @param reverseATACSig Plot the ATAC-seq signals in reverse values.
+#' @param reverseGenomicSigs Plot the genomic signals in reverse values.
 #' @param coor_tick_unit The bps for every ticks. Default is 1K.
 #' @param coor_mark_interval The coordinates marker interval. Numeric(1). Set to 0
 #' to turn it off. The default value 1e5 means show coordinates every 0.1M bp.
 #' @param label_gene Show gene symbol or not.
-#' @param lwd.backbone,lwd.gene,lwd.tension_line,lwd.maxAtacSig Line width for the 
-#' linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed ATAC signal.
+#' @param lwd.backbone,lwd.gene,lwd.tension_line,lwd.maxGenomicSigs Line width for the 
+#' linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed genomic signal.
 #' @param col.backbone,col.backbone_background,col.tension_line,col.coor Color
 #' for the DNA chain, the compact DNA chain, the node circle, the linker, the tension line and the coordinates marker.
 #' @param alpha.backbone_background Alpha channel for transparency of backbone background.
@@ -53,10 +53,11 @@
 #'                          prob=c(0.1, 0.9))
 #' mdsPlot(gi, range, feature.gr)
 mdsPlot <- function(gi, range, feature.gr, k=2,
-                    atacSig,
+                    genomicSigs,
                     lwd.backbone = 2, col.backbone = 'gray',
-                    lwd.maxAtacSig = 8, reverseATACSig = TRUE,
-                    col.backbone_background = 'gray70',
+                    lwd.maxGenomicSigs = 8, reverseGenomicSigs = TRUE,
+                    col.backbone_background = 
+                      if(k==2) 'gray70' else c('white', 'darkred'),
                     alpha.backbone_background = 0.5,
                     lwd.gene = 3,
                     coor_mark_interval = 5e5, col.coor = "black",
@@ -116,12 +117,12 @@ mdsPlot <- function(gi, range, feature.gr, k=2,
   colnames(mcols(p)) <- c('x', 'y', 'z')[seq.int(k)]
   view3dStructure(obj=p, k=k,
                   feature.gr=feature.gr,
-                  atacSig=atacSig,
+                  genomicSigs=genomicSigs,
                   renderer=renderer,
                   lwd.backbone = lwd.backbone,
                   col.backbone = col.backbone,
-                  lwd.maxAtacSig = lwd.maxAtacSig,
-                  reverseATACSig = reverseATACSig,
+                  lwd.maxGenomicSigs = lwd.maxGenomicSigs,
+                  reverseGenomicSigs = reverseGenomicSigs,
                   col.backbone_background = col.backbone_background,
                   alpha.backbone_background = alpha.backbone_background,
                   lwd.gene = lwd.gene,

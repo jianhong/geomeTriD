@@ -36,29 +36,53 @@ control of gene expression. The development of high-throughput experimental
 techniques, such as HiC-seq, HiCAR-seq, and InTAC-seq, for analyzing both the 
 higher-order structure of chromatin and the interactions between protein and
 their nearby and remote regulatory elements has been developed to reveal how
-gene expression is controlled in genome-wide.
+gene expression is controlled in genome-wide. 
+The geomeTriD package enables users to visualize epigenomic data in both 2D and
+3D.
 
+# Installation
+
+```{r installation, eval=FALSE}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("jianhong/geometrid")
+```
 
 # Plot chromatin interactions data as `loopBouquet` or `MDS` plot
 
 The genomic contact frequency can be converted into spatial distances and then 
 visualized using optimization-based (such as manifold learning techniques)
 or probabilistic approaches (such as Markov Chain Monte Carlo).
-Here `mdsPlot` can be used to plot the bin-based contact matrix by Kruskal's Non-metric Multidimensional Scaling.
+Here `mdsPlot` can be used to plot the bin-based contact matrix by Kruskal's
+Non-metric Multidimensional Scaling.
 
-```{r mdsPlot2d}
+First, load the libraries and data.
+
+```{r propareData}
 library(trackViewer)
 library(InteractionSet)
-gi <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds", package="geomeTriD"))
-head(gi)
-range <- GRanges("chr6", IRanges(51120000, 53200000))
+# load the interaction data.
+# to import your own data, please refer trackViewer help documents
+gi_nij <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds",
+                          package="geomeTriD"))
+# the data is a GInteractions object with metadata score
+head(gi_nij, n=2)
+# define a range to plot
+range_chr6 <- GRanges("chr6", IRanges(51120000, 53200000))
+# one layer of signals. It is a `track` object
 ctcf <- readRDS(system.file("extdata", "ctcf.sample.rds", package="trackViewer"))
-
+# create a random signal for demonstration
+set.seed(1)
+randomSig <- ctcf$dat
+randomSig <- randomSig[sort(sample(seq_along(randomSig), 50))]
+randomSig$score <- randomSig$score*2*runif(50)
+head(randomSig, n=2)
+# create gene annotations
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 library(org.Hs.eg.db)
-set.seed(1)
 feature.gr <- genes(TxDb.Hsapiens.UCSC.hg19.knownGene)
-feature.gr <- subsetByOverlaps(feature.gr, range(regions(gi)))
+feature.gr <- subsetByOverlaps(feature.gr, range(regions(gi_nij)))
 symbols <- mget(feature.gr$gene_id, org.Hs.egSYMBOL, ifnotfound=NA)
 feature.gr$label[lengths(symbols)==1] <- unlist(symbols[lengths(symbols)==1])
 feature.gr$col <- sample(1:7, length(feature.gr), replace=TRUE)
@@ -67,32 +91,46 @@ feature.gr$type <- sample(c("cRE", "gene"),
                           prob=c(0.1, 0.9))
 feature.gr$pch <- rep(NA, length(feature.gr))
 feature.gr$pch[feature.gr$type=='cRE'] <- 11
-mdsPlot(gi, range = range, feature.gr = feature.gr, atacSig = ctcf)
+head(feature.gr, n=2)
 ```
 
-Or plot it in 3d.
-```{r mdsPlot3d}
+Plot the data in 3D using the `mdsPlot` function to generate the 3D coordinates.
+Alternatively, users can input a `GRange` object with pre-calculated x, y, and z
+coordinates into the `view3dStructure` function.
+
+```{r mdsPlot3d, message=FALSE}
 library(rgl)
 library(manipulateWidget)
-clear3d() # Remove the earlier display
-objs <- geomeTriD::mdsPlot(gi, range = range, feature.gr = feature.gr, atacSig = ctcf, k=3, render='none')
-rglViewer(objs, background = 'white')
-rglwidget() %>%
-  toggleWidget(tags = "tick_minor") %>%
+rgl::clear3d() # Remove the earlier display
+objs <- geomeTriD::mdsPlot(gi_nij, range = range_chr6, feature.gr = feature.gr,
+                           genomicSigs = list(ctcf=ctcf, test=randomSig),
+                           reverseGenomicSigs = c(TRUE, FALSE),
+                           k=3, render='none')
+geomeTriD::rglViewer(objs, background = 'white')
+rgl::rglwidget() %>%
+  rgl::toggleWidget(tags = "tick_minor") %>%
   toggleWidget(tags = "tick_major") %>%
   toggleWidget(tags = "tick_labels") %>%
-  toggleWidget(tags = "atac_signal") %>% 
+  toggleWidget(tags = "genomic_signal") %>% 
   toggleWidget(tags = "backbone") %>%
   toggleWidget(tags = "gene_body") %>%
   toggleWidget(tags = "tss_labels") %>%
   toggleWidget(tags = "gene_labels") %>%
   toggleWidget(tags = "cRE") %>%
-  asRow(last = 9)
+  rgl::asRow(last = 9)
 ```
 
-Plot it by threeJs.
+Plot it by [`threeJs`](https://threejs.org/). 
+Unlike `rgl`'s `rglwidget`, which has limited resolutions, 
+`three.js` can create high-resolution widgets.
+
 ```{r threejs}
-threeJsViewer(objs)
+geomeTriD::threeJsViewer(objs)
+```
+
+Or plot it in 2d. Please note that current 2d plot can only handle one genomic signals.
+```{r}
+geomeTriD::mdsPlot(gi_nij, range = range_chr6, feature.gr = feature.gr, genomicSigs = ctcf)
 ```
 
 
@@ -102,38 +140,33 @@ The features could be the cRE or gene. The cRE are shown as
 points with symbol 11.
 
 ```{r plotGInteractions}
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-library(org.Hs.eg.db)
-library(InteractionSet)
-gi <- readRDS(system.file("extdata", "gi.rds", package="trackViewer"))
-range <- GRanges("chr2", IRanges(234300000, 235000000))
+gi_chr2 <- readRDS(system.file("extdata", "gi.rds", package="trackViewer"))
+range_chr2 <- GRanges("chr2", IRanges(234300000, 235000000))
 gene_hg19 <- suppressMessages(genes(TxDb.Hsapiens.UCSC.hg19.knownGene))
-feature.gr <- subsetByOverlaps(gene_hg19, range(regions(gi)))
-feature.gr$col <- sample(2:7, length(feature.gr), replace=TRUE)
-feature.gr$type <- sample(c("cRE", "gene"), 
-                          length(feature.gr), replace=TRUE, 
+feature.gr_chr2 <- subsetByOverlaps(gene_hg19, range(regions(gi_chr2)))
+feature.gr_chr2$col <- sample(2:7, length(feature.gr_chr2), replace=TRUE)
+feature.gr_chr2$type <- sample(c("cRE", "gene"), 
+                          length(feature.gr_chr2), replace=TRUE, 
                           prob=c(0.1, 0.9))
-feature.gr$pch <- rep(NA, length(feature.gr))
-feature.gr$pch[feature.gr$type=='cRE'] <- 11
-symbol <- mget(feature.gr$gene_id, org.Hs.egSYMBOL, ifnotfound = NA)
+feature.gr_chr2$pch <- rep(NA, length(feature.gr_chr2))
+feature.gr_chr2$pch[feature.gr_chr2$type=='cRE'] <- 11
+symbol <- mget(feature.gr_chr2$gene_id, org.Hs.egSYMBOL, ifnotfound = NA)
 symbol <- unlist(lapply(symbol, function(.ele) .ele[1]))
-feature.gr$label <- symbol
-geomeTriD::loopBouquetPlot(gi, range, feature.gr)
+feature.gr_chr2$label <- symbol
+geomeTriD::loopBouquetPlot(gi_chr2, range_chr2, feature.gr_chr2)
 ```
 
 ```{r plotRealData}
-gi <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds", package="geomeTriD"))
-range <- GRanges("chr6", IRanges(51120000, 53200000))
 ## filter the links to simulate the real data
-keep <- distance(first(gi), second(gi)) > 5e5 & gi$score>35
-gi <- gi[keep]
+keep <- distance(first(gi_nij), second(gi_nij)) > 5e5 & gi_nij$score>35
+gi_nij <- gi_nij[keep]
 # narrow the width of anchors to ehance the plots
-reg <- regions(gi)
+reg <- regions(gi_nij)
 wr <- floor(width(reg)/4)
 start(reg) <- start(reg) + wr
 end(reg) <- end(reg) - wr
-regions(gi) <- reg
-feature.gr <- subsetByOverlaps(gene_hg19, range(regions(gi)))
+regions(gi_nij) <- reg
+feature.gr <- subsetByOverlaps(gene_hg19, range(regions(gi_nij)))
 feature.gr$col <- sample(2:7, length(feature.gr), replace=TRUE)
 feature.gr$type <- sample(c("cRE", "gene"), 
                           length(feature.gr), replace=TRUE, 
@@ -144,10 +177,10 @@ feature.gr$label <- symbol
 feature.gr <- c(feature.gr[sample(seq_along(feature.gr), 5)],
                 feature.gr[feature.gr$type=='cRE'][1])
 feature.gr <- unique(sort(feature.gr))
-geomeTriD::loopBouquetPlot(gi, range, feature.gr,
+geomeTriD::loopBouquetPlot(gi_nij, range_chr6, feature.gr,
                 coor_tick_unit = 5e4,
                 coor_mark_interval = 5e5,
-                atacSig = ctcf)
+                genomicSigs = ctcf)
 ```
 
 # Session Info

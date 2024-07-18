@@ -8,14 +8,14 @@ loopBouquetPlot(
   gi,
   range,
   feature.gr,
-  atacSig,
+  genomicSigs,
   label_region = FALSE,
   show_edges = TRUE,
   show_cluster = TRUE,
   lwd.backbone = 2,
   col.backbone = "gray",
-  lwd.maxAtacSig = 8,
-  reverseATACSig = TRUE,
+  lwd.maxGenomicSigs = 8,
+  reverseGenomicSigs = TRUE,
   col.backbone_background = "gray70",
   alpha.backbone_background = 0.5,
   lwd.gene = 2,
@@ -44,7 +44,7 @@ loopBouquetPlot(
 
 \item{feature.gr}{The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.}
 
-\item{atacSig}{The ATAC-seq signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.}
+\item{genomicSigs}{The genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.}
 
 \item{label_region}{Label the region node or not.}
 
@@ -52,20 +52,20 @@ loopBouquetPlot(
 
 \item{show_cluster}{Plot the cluster background or not.}
 
-\item{lwd.backbone, lwd.gene, lwd.nodeCircle, lwd.edge, lwd.tension_line, lwd.maxAtacSig}{Line width for the 
-linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed ATAC signal.}
+\item{lwd.backbone, lwd.gene, lwd.nodeCircle, lwd.edge, lwd.tension_line, lwd.maxGenomicSigs}{Line width for the 
+linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed genomic signal.}
 
 \item{col.backbone, col.backbone_background, col.nodeCircle, col.edge, col.tension_line, col.coor}{Color
 for the DNA chain, the compact DNA chain, the node circle, the linker, the tension line and the coordinates marker.}
 
-\item{reverseATACSig}{Plot the ATAC-seq signals in reverse values.}
+\item{reverseGenomicSigs}{Plot the Genomic signals in reverse values.}
 
 \item{alpha.backbone_background}{Alpha channel for transparency of backbone background.}
 
 \item{coor_mark_interval}{The coordinates marker interval. Numeric(1). Set to 0
 to turn it off. The default value 1e5 means show coordinates every 0.1M bp.}
 
-\item{show_coor}{Plot ticks in the line to show the DNA compact tension.}
+\item{show_coor}{Show coordinates or not.}
 
 \item{coor_tick_unit}{The bps for every ticks. Default is 1K.}
 

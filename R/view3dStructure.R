@@ -4,18 +4,18 @@
 #' @param obj GRanges object with mcols x, y, and/or z
 #' @param k The dimension of plot. 2: 2d, 3: 3d.
 #' @param feature.gr The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.
-#' @param atacSig The ATAC-seq signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.
+#' @param genomicSigs The Genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.
 #' @param renderer The renderer of the 3D plots. Could be rgl or threejs.
 #' The threejs will create a htmlwidgets. If 'none' is set, a list of object
 #' will be returned.
 #' @param show_coor Plot ticks in the line to show the DNA compact tension.
-#' @param reverseATACSig Plot the ATAC-seq signals in reverse values.
+#' @param reverseGenomicSigs Plot the genomic signals in reverse values.
 #' @param coor_tick_unit The bps for every ticks. Default is 1K.
 #' @param coor_mark_interval The coordinates marker interval. Numeric(1). Set to 0
 #' to turn it off. The default value 1e5 means show coordinates every 0.1M bp.
 #' @param label_gene Show gene symbol or not.
-#' @param lwd.backbone,lwd.gene,lwd.tension_line,lwd.maxAtacSig Line width for the 
-#' linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed ATAC signal.
+#' @param lwd.backbone,lwd.gene,lwd.tension_line,lwd.maxGenomicSigs Line width for the 
+#' linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed genomic signal.
 #' @param col.backbone,col.backbone_background,col.tension_line,col.coor Color
 #' for the DNA chain, the compact DNA chain, the node circle, the linker, the tension line and the coordinates marker.
 #' @param alpha.backbone_background Alpha channel for transparency of backbone background.
@@ -32,6 +32,7 @@
 #' @importFrom GenomeInfoDb seqnames 
 #' @importFrom BiocGenerics start<- end<- strand<-
 #' @importFrom utils tail
+#' @importFrom grDevices colorRampPalette
 #' @importFrom grid convertUnit grid.newpage viewport pushViewport popViewport 
 #' convertWidth convertHeight xsplineGrob grobCoords convertX convertY
 #' @export
@@ -43,11 +44,12 @@
 #' tjg <- view3dStructure(obj, k=3, feature.gr=feature.gr, renderer='none',
 #'    length.arrow=grid::unit(0.000006, 'native'))
 view3dStructure <- function(obj, k=3, feature.gr,
-                            atacSig,
+                            genomicSigs,
                             renderer = c('rgl', 'threejs', 'none'),
                             lwd.backbone = 2, col.backbone = 'gray',
-                            lwd.maxAtacSig = 8, reverseATACSig = TRUE,
-                            col.backbone_background = 'gray70',
+                            lwd.maxGenomicSigs = 8, reverseGenomicSigs = TRUE,
+                            col.backbone_background = 
+                              if(k==2) 'gray70' else c('white', 'darkred'),
                             alpha.backbone_background = 0.5,
                             lwd.gene = 3,
                             coor_mark_interval = 5e5, col.coor = "black",
@@ -158,11 +160,11 @@ view3dStructure <- function(obj, k=3, feature.gr,
                  }, SIMPLIFY = FALSE)
     objCoor <- plotBouquet(pP=pP,
                            fgf=feature.gr,
-                           atacSig=atacSig,
+                           genomicSigs=genomicSigs,
                            lwd.backbone=lwd.backbone,
                            col.backbone=col.backbone,
-                           lwd.maxAtacSig = lwd.maxAtacSig,
-                           reverseATACSig = reverseATACSig,
+                           lwd.maxGenomicSigs = lwd.maxGenomicSigs,
+                           reverseGenomicSigs = reverseGenomicSigs,
                            col.backbone_background=col.backbone_background,
                            alpha.backbone_background=alpha.backbone_background,
                            lwd.gene=lwd.gene,
@@ -220,81 +222,99 @@ view3dStructure <- function(obj, k=3, feature.gr,
     }
     rate <- 50
     
-    ## atacSig
-    missing_atacSig <- FALSE
-    if(missing(atacSig)){
-      missing_atacSig <- TRUE
+    ## genomicSigs
+    missing_genomicSigs <- FALSE
+    if(missing(genomicSigs)){
+      missing_genomicSigs <- TRUE
     }else{
-      if(length(atacSig)==0){
-        missing_atacSig <- TRUE
+      if(length(genomicSigs)==0){
+        missing_genomicSigs <- TRUE
       }
     }
-    if(!missing_atacSig){
-      if(is(atacSig, 'track')){
-        if(atacSig$format=='WIG'){
-          atacSig <- parseWIG(trackScore=atacSig,
-                              chrom=seqn,
-                              from=start(range(obj)),
-                              to=end(range(obj)))
-        }
-        atacSig <- atacSig$dat
+    if(!missing_genomicSigs){
+      if(!is.list(genomicSigs)){
+        genomicSigs <- list('genomic_signal'=genomicSigs)
       }
-      stopifnot(is(atacSig, 'GRanges'))
-      stopifnot('score' %in% colnames(mcols(atacSig)))
-      atacSig <- resampleDataByFun(atacSig, obj, dropZERO = FALSE,
-                                   na.rm = TRUE)
-      atacSigScoreRange <- quantile(log2(atacSig$score+1),
-                                    probs = c(.1, .99))
-      if(atacSigScoreRange[1]==atacSigScoreRange[2]){
-        atacSigScoreRange <- range(log2(atacSig$score+1))
+      if(length(names(genomicSigs))!=length(genomicSigs)){
+        names(genomicSigs) <- paste0('Signal_', seq_along(genomicSigs))
       }
-      if(atacSigScoreRange[1]!=atacSigScoreRange[2]){
-        atacSigBreaks <- c(-1,
-                           seq(atacSigScoreRange[1],
-                               atacSigScoreRange[2],
-                               length.out = lwd.maxAtacSig-1),
-                           max(log2(atacSig$score+1))+1)
-        atacSiglabels <- seq_along(atacSigBreaks)[-length(atacSigBreaks)]
-        if(reverseATACSig){
-          atacSiglabels <- rev(atacSiglabels)
+      genomic_signal_geometry <- mapply(function(GenoSig, .name, revGenoSig){
+        this.col.backbone_background <- col.backbone_background
+        if(is(GenoSig, 'track')){
+          if(GenoSig$format=='WIG'){
+            GenoSig <- parseWIG(trackScore=GenoSig,
+                                chrom=seqn,
+                                from=start(range(obj)),
+                                to=end(range(obj)))
+          }
+          if(length(GenoSig@style@color)){
+            if(!all(GenoSig@style@color=="black")){
+              this.col.backbone_background <- GenoSig@style@color
+            }
+          }
+          GenoSig <- GenoSig$dat
         }
-        atacSig$lwd <- as.numeric(as.character(
-          cut(log2(atacSig$score+1),
-              breaks=atacSigBreaks,
-              labels = atacSiglabels)))
-        ## add atac signals
-        ## add signal to -z axis
-        
-        # geometries$atac_signal <- threeJsGeometry(
-        #   x = as.numeric(t(as.matrix(mcols(obj)[, c('x0', 'x1')])))/scale_factor,
-        #   y = as.numeric(t(as.matrix(mcols(obj)[, c('y0', 'y1')])))/scale_factor,
-        #   z = as.numeric(t(as.matrix(mcols(obj)[, c('z0', 'z1')]) -
-        #                      data.frame(z0=atacSig$lwd/rate,
-        #                                 z1=0)))/scale_factor,
-        #   type = 'line',
-        #   colors = col.backbone_background,
-        #   tag='atac_signal',
-        #   properties = list(size=1,
-        #                     alpha= alpha.backbone_background)
-        # )
-        atacSigLwd <- sort(unique(atacSig$lwd))
-        atac_signal <- lapply(atacSigLwd, function(lwd){
-          idx <- which(atacSig$lwd==lwd)
-          threeJsGeometry(
-              x = as.numeric(t(as.matrix(mcols(obj)[idx, c('x0', 'x1')])))/scale_factor,
-              y = as.numeric(t(as.matrix(mcols(obj)[idx, c('y0', 'y1')])))/scale_factor,
-              z = as.numeric(t(as.matrix(mcols(obj)[idx, c('z0', 'z1')])))/scale_factor,
+        stopifnot(is(GenoSig, 'GRanges'))
+        stopifnot('score' %in% colnames(mcols(GenoSig)))
+        GenoSig <- resampleDataByFun(GenoSig, obj, dropZERO = FALSE,
+                                     na.rm = TRUE)
+        genomicSigScoreRange <- quantile(log2(GenoSig$score+1),
+                                      probs = c(.1, .99))
+        if(genomicSigScoreRange[1]==genomicSigScoreRange[2]){
+          genomicSigScoreRange <- range(log2(GenoSig$score+1))
+        }
+        if(genomicSigScoreRange[1]!=genomicSigScoreRange[2]){
+          genomicSigBreaks <- c(-1,
+                             seq(genomicSigScoreRange[1],
+                                 genomicSigScoreRange[2],
+                                 length.out = lwd.maxGenomicSigs-1),
+                             max(log2(GenoSig$score+1))+1)
+          genomicSiglabels <- seq_along(genomicSigBreaks)[-length(genomicSigBreaks)]
+          if(revGenoSig){
+            genomicSiglabels <- rev(genomicSiglabels)
+            this.col.backbone_background <- rev(this.col.backbone_background)
+          }
+          GenoSig$lwd <- as.numeric(as.character(
+            cut(log2(GenoSig$score+1),
+                breaks=genomicSigBreaks,
+                labels = genomicSiglabels)))
+          genomicSigLwd <- sort(unique(GenoSig$lwd))
+          if(length(this.col.backbone_background)>1){
+            this.col.backbone_background <-
+              colorRampPalette(colors=this.col.backbone_background)(
+                max(genomicSigLwd))
+            names(this.col.backbone_background) <- genomicSiglabels
+          }else{
+            this.col.backbone_background <- rep(this.col.backbone_background,
+                                           length(genomicSigLwd))
+            names(this.col.backbone_background) = genomicSigLwd
+          }
+          genomic_signal <- lapply(genomicSigLwd, function(lwd){
+            idx <- which(GenoSig$lwd==lwd)
+            threeJsGeometry(
+              x = as.numeric(t(as.matrix(mcols(obj)[idx, c('x0', 'x1')])))/
+                scale_factor,
+              y = as.numeric(t(as.matrix(mcols(obj)[idx, c('y0', 'y1')])))/
+                scale_factor,
+              z = as.numeric(t(as.matrix(mcols(obj)[idx, c('z0', 'z1')])))/
+                scale_factor,
               type = 'segment',
-              colors = col.backbone_background,
-              tag='atac_signal',
+              colors = this.col.backbone_background[lwd],
+              tag=.name,
               properties = list(size=lwd,
                                 alpha= alpha.backbone_background)
             )
-        })
-        
-        names(atac_signal) <- paste0('atac_signal_lwd_', atacSigLwd)
-        geometries <- c(geometries, atac_signal)
-      }
+          })
+          names(genomic_signal) <- paste0(.name, '_lwd_', genomicSigLwd)
+          genomic_signal
+        }else{
+          NULL
+        }
+      }, genomicSigs, names(genomicSigs), reverseGenomicSigs, SIMPLIFY = FALSE)
+      geometries <- c(geometries,
+                      unlist(genomic_signal_geometry[
+                        lengths(genomic_signal_geometry)>0]))
+      geometries <- geometries[lengths(geometries)>0]
     }
     
     ## add genomic coordinates

@@ -30,6 +30,14 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 # Introduction
 
 
+# Installation
+
+```{r installation, eval=FALSE}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("jianhong/geometrid")
+```
 
 
 # Plot single cell data

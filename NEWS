@@ -1,5 +1,9 @@
 Changes in version 0.0.12
 
+    o update ATAC-seq signals to Genomic signals.
+    
+Changes in version 0.0.12
+
     o add plotScCells vignettes.
 
 Changes in version 0.0.11

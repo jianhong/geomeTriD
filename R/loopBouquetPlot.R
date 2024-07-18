@@ -3,18 +3,18 @@
 #' @param gi An object of \link[InteractionSet:GInteractions-class]{GInteractions}
 #' @param range The region to plot. an object of \link[GenomicRanges:GRanges-class]{GRanges}
 #' @param feature.gr The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.
-#' @param atacSig The ATAC-seq signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.
+#' @param genomicSigs The genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.
 #' @param label_region Label the region node or not.
 #' @param show_edges Plot the interaction edges or not.
 #' @param show_cluster Plot the cluster background or not.
-#' @param show_coor Plot ticks in the line to show the DNA compact tension.
-#' @param reverseATACSig Plot the ATAC-seq signals in reverse values.
+#' @param reverseGenomicSigs Plot the Genomic signals in reverse values.
 #' @param coor_tick_unit The bps for every ticks. Default is 1K.
 #' @param coor_mark_interval The coordinates marker interval. Numeric(1). Set to 0
 #' to turn it off. The default value 1e5 means show coordinates every 0.1M bp.
+#' @param show_coor Show coordinates or not.
 #' @param label_gene Show gene symbol or not.
-#' @param lwd.backbone,lwd.gene,lwd.nodeCircle,lwd.edge,lwd.tension_line,lwd.maxAtacSig Line width for the 
-#' linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed ATAC signal.
+#' @param lwd.backbone,lwd.gene,lwd.nodeCircle,lwd.edge,lwd.tension_line,lwd.maxGenomicSigs Line width for the 
+#' linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed genomic signal.
 #' @param col.backbone,col.backbone_background,col.nodeCircle,col.edge,col.tension_line,col.coor Color
 #' for the DNA chain, the compact DNA chain, the node circle, the linker, the tension line and the coordinates marker.
 #' @param alpha.backbone_background Alpha channel for transparency of backbone background.
@@ -60,11 +60,11 @@
 #' feature.gr$pch <- rep(NA, length(feature.gr))
 #' feature.gr$pch[feature.gr$type=='cRE'] <- 11
 #' loopBouquetPlot(gi, range, feature.gr)
-loopBouquetPlot <- function(gi, range, feature.gr, atacSig,
+loopBouquetPlot <- function(gi, range, feature.gr, genomicSigs,
                             label_region=FALSE, show_edges=TRUE, 
                             show_cluster=TRUE,
                             lwd.backbone = 2, col.backbone = 'gray',
-                            lwd.maxAtacSig = 8, reverseATACSig = TRUE,
+                            lwd.maxGenomicSigs = 8, reverseGenomicSigs = TRUE,
                             col.backbone_background = 'gray70',
                             alpha.backbone_background = 0.5,
                             lwd.gene = 2,
@@ -335,11 +335,11 @@ loopBouquetPlot <- function(gi, range, feature.gr, atacSig,
   ## plot the bouquet
   objCoor <- plotBouquet(pP=plotPoints,
                          fgf=feature.gr,
-                         atacSig=atacSig,
+                         genomicSigs=genomicSigs,
                          lwd.backbone=lwd.backbone,
                          col.backbone=col.backbone,
-                         lwd.maxAtacSig = lwd.maxAtacSig,
-                         reverseATACSig = reverseATACSig,
+                         lwd.maxGenomicSigs = lwd.maxGenomicSigs,
+                         reverseGenomicSigs = reverseGenomicSigs,
                          col.backbone_background=col.backbone_background,
                          alpha.backbone_background=alpha.backbone_background,
                          lwd.gene=lwd.gene,
@@ -1178,10 +1178,10 @@ safeObjCoor <- function(objCoor, obj, x, y, xlim, ylim, logic=TRUE, force=6){
 }
 #' @importFrom grid textGrob grid.segments gpar grid.lines linesGrob grid.text
 #' grid.draw arrow grid.points
-plotBouquet <- function(pP, fgf, atacSig,
+plotBouquet <- function(pP, fgf, genomicSigs,
                         lwd.backbone, col.backbone,
-                        lwd.maxAtacSig,
-                        reverseATACSig,
+                        lwd.maxGenomicSigs,
+                        reverseGenomicSigs,
                         col.backbone_background,
                         alpha.backbone_background,
                         lwd.gene,
@@ -1205,52 +1205,52 @@ plotBouquet <- function(pP, fgf, atacSig,
     do.call(breakPointByBin, .ele)
   })
   curve_gr <- unlist(GRangesList(curve_gr))
-  missing_atacSig <- FALSE
-  if(missing(atacSig)){
-    missing_atacSig <- TRUE
+  missing_genomicSigs <- FALSE
+  if(missing(genomicSigs)){
+    missing_genomicSigs <- TRUE
   }else{
-    if(length(atacSig)==0){
-      missing_atacSig <- TRUE
+    if(length(genomicSigs)==0){
+      missing_genomicSigs <- TRUE
     }
   }
-  if(!missing_atacSig){
-    if(is(atacSig, 'track')){
-      if(atacSig$format=='WIG'){
-        atacSig <- parseWIG(trackScore=atacSig,
+  if(!missing_genomicSigs){
+    if(is(genomicSigs, 'track')){
+      if(genomicSigs$format=='WIG'){
+        genomicSigs <- parseWIG(trackScore=genomicSigs,
                             chrom=seqn,
                             from=start(range(curve_gr)),
                             to=end(range(curve_gr)))
       }
-      atacSig <- atacSig$dat
+      genomicSigs <- genomicSigs$dat
     }
-    stopifnot(is(atacSig, 'GRanges'))
-    stopifnot('score' %in% colnames(mcols(atacSig)))
-    atacSig <- resampleDataByFun(atacSig, curve_gr, dropZERO = FALSE,
+    stopifnot(is(genomicSigs, 'GRanges'))
+    stopifnot('score' %in% colnames(mcols(genomicSigs)))
+    genomicSigs <- resampleDataByFun(genomicSigs, curve_gr, dropZERO = FALSE,
                                  na.rm = TRUE)
-    atacSigScoreRange <- quantile(log2(atacSig$score+1),
+    genomicSigScoreRange <- quantile(log2(genomicSigs$score+1),
                                   probs = c(.1, .99))
-    if(atacSigScoreRange[1]==atacSigScoreRange[2]){
-      atacSigScoreRange <- range(log2(atacSig$score+1))
+    if(genomicSigScoreRange[1]==genomicSigScoreRange[2]){
+      genomicSigScoreRange <- range(log2(genomicSigs$score+1))
     }
-    if(atacSigScoreRange[1]!=atacSigScoreRange[2]){
-      atacSigBreaks <- c(-1,
-                         seq(atacSigScoreRange[1],
-                             atacSigScoreRange[2],
-                             length.out = lwd.maxAtacSig-1),
-                         max(log2(atacSig$score+1))+1)
-      atacSiglabels <- seq_along(atacSigBreaks)[-length(atacSigBreaks)]
-      if(reverseATACSig){
-        atacSiglabels <- rev(atacSiglabels)
+    if(genomicSigScoreRange[1]!=genomicSigScoreRange[2]){
+      genomicSigBreaks <- c(-1,
+                         seq(genomicSigScoreRange[1],
+                             genomicSigScoreRange[2],
+                             length.out = lwd.maxGenomicSigs-1),
+                         max(log2(genomicSigs$score+1))+1)
+      genomicSiglabels <- seq_along(genomicSigBreaks)[-length(genomicSigBreaks)]
+      if(reverseGenomicSigs){
+        genomicSiglabels <- rev(genomicSiglabels)
       }
-      atacSig$lwd <- as.numeric(as.character(
-        cut(log2(atacSig$score+1),
-            breaks=atacSigBreaks,
-            labels = atacSiglabels)))
-      ## add atac signals
+      genomicSigs$lwd <- as.numeric(as.character(
+        cut(log2(genomicSigs$score+1),
+            breaks=genomicSigBreaks,
+            labels = genomicSiglabels)))
+      ## add genomic signals
       grid.segments(curve_gr$x0, curve_gr$y0,
                     curve_gr$x1, curve_gr$y1,
                     default.units = "native",
-                    gp=gpar(lwd=lwd.backbone+atacSig$lwd,
+                    gp=gpar(lwd=lwd.backbone+genomicSigs$lwd,
                             col=col.backbone_background,
                             alpha=alpha.backbone_background,
                             lineend=1))
@@ -1259,7 +1259,7 @@ plotBouquet <- function(pP, fgf, atacSig,
     grid.lines(c(curve_gr$x0,curve_gr$x1[length(curve_gr)]),
                c(curve_gr$y0,curve_gr$y1[length(curve_gr)]),
                default.units = "native",
-               gp=gpar(lwd=lwd.maxAtacSig/2,
+               gp=gpar(lwd=lwd.maxGenomicSigs/2,
                        lty=1,
                        col=col.backbone_background))
   }
