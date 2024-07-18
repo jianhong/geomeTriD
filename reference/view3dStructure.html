@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geomeTriD</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.12</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.13</span>
       </span>
     </div>
 
@@ -67,13 +67,13 @@
 <span>  <span class="va">obj</span>,</span>
 <span>  k <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  <span class="va">feature.gr</span>,</span>
-<span>  <span class="va">atacSig</span>,</span>
+<span>  <span class="va">genomicSigs</span>,</span>
 <span>  renderer <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rgl"</span>, <span class="st">"threejs"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  lwd.backbone <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  col.backbone <span class="op">=</span> <span class="st">"gray"</span>,</span>
-<span>  lwd.maxAtacSig <span class="op">=</span> <span class="fl">8</span>,</span>
-<span>  reverseATACSig <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  col.backbone_background <span class="op">=</span> <span class="st">"gray70"</span>,</span>
+<span>  lwd.maxGenomicSigs <span class="op">=</span> <span class="fl">8</span>,</span>
+<span>  reverseGenomicSigs <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  col.backbone_background <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="va">k</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span> <span class="st">"gray70"</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"darkred"</span><span class="op">)</span>,</span>
 <span>  alpha.backbone_background <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  lwd.gene <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  coor_mark_interval <span class="op">=</span> <span class="fl">5e+05</span>,</span>
@@ -108,8 +108,8 @@
 <dd><p>The annotation features to be added. An object of <a href="https://rdrr.io/pkg/GenomicRanges/man/GRanges-class.html" class="external-link">GRanges</a>.</p></dd>
 
 
-<dt id="arg-atacsig">atacSig<a class="anchor" aria-label="anchor" href="#arg-atacsig"></a></dt>
-<dd><p>The ATAC-seq signals. An object of <a href="https://rdrr.io/pkg/GenomicRanges/man/GRanges-class.html" class="external-link">GRanges</a> with scores or an object of <a href="https://rdrr.io/pkg/trackViewer/man/trackStyle-class.html" class="external-link">track</a>.</p></dd>
+<dt id="arg-genomicsigs">genomicSigs<a class="anchor" aria-label="anchor" href="#arg-genomicsigs"></a></dt>
+<dd><p>The Genomic signals. An object of <a href="https://rdrr.io/pkg/GenomicRanges/man/GRanges-class.html" class="external-link">GRanges</a> with scores or an object of <a href="https://rdrr.io/pkg/trackViewer/man/trackStyle-class.html" class="external-link">track</a>.</p></dd>
 
 
 <dt id="arg-renderer">renderer<a class="anchor" aria-label="anchor" href="#arg-renderer"></a></dt>
@@ -118,9 +118,9 @@ The threejs will create a htmlwidgets. If 'none' is set, a list of object
 will be returned.</p></dd>
 
 
-<dt id="arg-lwd-backbone-lwd-gene-lwd-tension-line-lwd-maxatacsig">lwd.backbone, lwd.gene, lwd.tension_line, lwd.maxAtacSig<a class="anchor" aria-label="anchor" href="#arg-lwd-backbone-lwd-gene-lwd-tension-line-lwd-maxatacsig"></a></dt>
+<dt id="arg-lwd-backbone-lwd-gene-lwd-tension-line-lwd-maxgenomicsigs">lwd.backbone, lwd.gene, lwd.tension_line, lwd.maxGenomicSigs<a class="anchor" aria-label="anchor" href="#arg-lwd-backbone-lwd-gene-lwd-tension-line-lwd-maxgenomicsigs"></a></dt>
 <dd><p>Line width for the
-linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed ATAC signal.</p></dd>
+linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed genomic signal.</p></dd>
 
 
 <dt id="arg-col-backbone-col-backbone-background-col-tension-line-col-coor">col.backbone, col.backbone_background, col.tension_line, col.coor<a class="anchor" aria-label="anchor" href="#arg-col-backbone-col-backbone-background-col-tension-line-col-coor"></a></dt>
@@ -128,8 +128,8 @@ linker, gene, interaction node circle, the dashed line of interaction edges, the
 for the DNA chain, the compact DNA chain, the node circle, the linker, the tension line and the coordinates marker.</p></dd>
 
 
-<dt id="arg-reverseatacsig">reverseATACSig<a class="anchor" aria-label="anchor" href="#arg-reverseatacsig"></a></dt>
-<dd><p>Plot the ATAC-seq signals in reverse values.</p></dd>
+<dt id="arg-reversegenomicsigs">reverseGenomicSigs<a class="anchor" aria-label="anchor" href="#arg-reversegenomicsigs"></a></dt>
+<dd><p>Plot the genomic signals in reverse values.</p></dd>
 
 
 <dt id="arg-alpha-backbone-background">alpha.backbone_background<a class="anchor" aria-label="anchor" href="#arg-alpha-backbone-background"></a></dt>
