@@ -14,7 +14,7 @@ view3dStructure(
   col.backbone = "gray",
   lwd.maxGenomicSigs = 8,
   reverseGenomicSigs = TRUE,
-  col.backbone_background = if (k == 2) "gray70" else c("white", "darkred"),
+  col.backbone_background = if (k == 2) "gray70" else c("gray30", "darkred"),
   alpha.backbone_background = 0.5,
   lwd.gene = 3,
   coor_mark_interval = 5e+05,
@@ -27,8 +27,6 @@ view3dStructure(
   length.arrow = NULL,
   safe_text_force = 3,
   square = TRUE,
-  font = readLines(system.file("extdata", "fonts", "helvetiker_regular.typeface.json",
-    package = "geomeTriD")),
   ...
 )
 }
@@ -69,8 +67,6 @@ to turn it off. The default value 1e5 means show coordinates every 0.1M bp.}
 \item{safe_text_force}{The loops to avoid the text overlapping.}
 
 \item{square}{A logical value that controls whether control points for the curve are created city-block fashion or obliquely. See \link[grid]{grid.curve}.}
-
-\item{font}{A font json file for three.js text geometry. See \url{https://threejs.org/docs/index.html?q=font#examples/en/loaders/FontLoader}.}
 
 \item{...}{Not used.}
 }

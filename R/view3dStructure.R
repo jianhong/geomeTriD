@@ -22,7 +22,6 @@
 #' @param length.arrow Length of the edges of the arrow head (in inches).
 #' @param safe_text_force The loops to avoid the text overlapping.
 #' @param square A logical value that controls whether control points for the curve are created city-block fashion or obliquely. See \link[grid]{grid.curve}.
-#' @param font A font json file for three.js text geometry. See \url{https://threejs.org/docs/index.html?q=font#examples/en/loaders/FontLoader}.
 #' @param ... Not used.
 #' @return Coordinates for 2d or a list of threeJsGeometry objects or a 
 #' htmlwidget.
@@ -49,7 +48,7 @@ view3dStructure <- function(obj, k=3, feature.gr,
                             lwd.backbone = 2, col.backbone = 'gray',
                             lwd.maxGenomicSigs = 8, reverseGenomicSigs = TRUE,
                             col.backbone_background = 
-                              if(k==2) 'gray70' else c('white', 'darkred'),
+                              if(k==2) 'gray70' else c('gray30', 'darkred'),
                             alpha.backbone_background = 0.5,
                             lwd.gene = 3,
                             coor_mark_interval = 5e5, col.coor = "black",
@@ -61,10 +60,6 @@ view3dStructure <- function(obj, k=3, feature.gr,
                             length.arrow = NULL,
                             safe_text_force = 3,
                             square = TRUE,
-                            font = readLines(system.file(
-                              'extdata', "fonts", 
-                              'helvetiker_regular.typeface.json',
-                              package='geomeTriD')),
                             ...){
   stopifnot(is(obj, 'GRanges'))
   stopifnot(
@@ -180,6 +175,17 @@ view3dStructure <- function(obj, k=3, feature.gr,
                            xlim=xlim, ylim=ylim)
   }else{
     ## plot 3D
+    # recenter the x,y,z
+    xcenter <- mean(xlim)
+    ycenter <- mean(ylim)
+    zcenter <- mean(zlim)
+    obj$x <- obj$x - xcenter
+    obj$y <- obj$y - ycenter
+    obj$z <- obj$z - zcenter
+    mf <- 5*scale_factor/max(abs(obj$x), abs(obj$y), abs(obj$z)) ## change to around -5:5
+    obj$x <- obj$x * mf
+    obj$y <- obj$y * mf
+    obj$z <- obj$z * mf
     t <- seq_along(obj)
     ## spline smooth for each bin with 30 points
     resolusion <- 30
@@ -363,7 +369,6 @@ view3dStructure <- function(obj, k=3, feature.gr,
               colors = col.coor,
               tag='tick_labels',
               properties = list(label = coor_text[idx],
-                                font = font,
                                 size = .1,
                                 depth = .02,
                                 pos=3)
@@ -392,7 +397,7 @@ view3dStructure <- function(obj, k=3, feature.gr,
           )
         )
       })
-      names(gene_body_geometries) <- paste0('gene_body_', genePos$fgf$gene_id)
+      names(gene_body_geometries) <- paste0('gene_body_', genePos$fgf$label)
       geometries <- c(geometries, gene_body_geometries)
       
       ## add a vertical line at the TSS.
@@ -455,8 +460,7 @@ view3dStructure <- function(obj, k=3, feature.gr,
               colors = genePos$fgf$col[idx],
               tag='gene_labels',
               properties = list(
-                label = genePos$fgf$label[idx],
-                font = font,
+                label = unname(genePos$fgf$label[idx]),
                 size = 0.1,
                 depth = 0.02,
                 pos = 4

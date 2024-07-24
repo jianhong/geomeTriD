@@ -273,7 +273,7 @@ class tjViewer{
   }
 
   create_plot(x){
-    //console.log(x);
+    console.log(x);
     //const twoPi = Math.PI * 2;
     //x is a named array
     if('background' in x){
@@ -438,7 +438,9 @@ class tjViewer{
             material = new LineMaterial({ 
               color: 0xffffff,
               linewidth: ele.size,
-              vertexColors: true});
+              vertexColors: true,
+              opacity: ele.alpha,
+            });
             obj = new LineSegments2(geometry, material);
             obj.layers.set(this.getLayer(ele.tag));
             folder.add(param, 'size', 0, this.maxLineWidth).onChange( function( val){

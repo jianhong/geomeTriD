@@ -1,7 +1,9 @@
 #' rgl Viewer
 #' View the 3d structure by rgl.
 #' @importFrom rgl open3d segments3d lines3d arrow3d points3d text3d
-#'  rgl.bringtotop bg3d spheres3d
+#'  rgl.bringtotop bg3d spheres3d cylinder3d shade3d addNormals subdivision3d
+#'  translate3d tetrahedron3d octahedron3d icosahedron3d dodecahedron3d
+#'  cube3d
 #' @export
 #' @param ... objects of threeJsGeometry.
 #' @param background background of the main camera.
@@ -59,11 +61,17 @@ rglViewer <- function(..., background = '#00000088') {
                 z=.ele$z,
                 col=.ele$colors,
                 lwd=.ele$properties$size,
+                alpha=ifelse(length(.ele$properties$alpha)==1,
+                             .ele$properties$alpha, 1),
                 tag=.ele$tag
               )
             },
             box={
-              
+              shae3d(translate3d(cube3d(col=.ele$colors,
+                                        tag = .ele$tag),
+                                 x = .ele$x,
+                                 y = .ele$y,
+                                 z = .ele$z))
             },
             capsule={
               
@@ -72,16 +80,34 @@ rglViewer <- function(..., background = '#00000088') {
               
             },
             cylinder={
-              
+              c3 <- cylinder3d(
+                center = cbind(x=.ele$x,
+                               y=.ele$y,
+                               z=.ele$z),
+                radius=.ele$properties$radiusTop
+              )
+              shade3d(addNormals(subdivision3d(c3, depth=2)))
             },
             dodecahedron={
-              
+              shae3d(translate3d(dodecahedron3d(col=.ele$colors,
+                                               tag = .ele$tag),
+                                 x = .ele$x,
+                                 y = .ele$y,
+                                 z = .ele$z))
             },
             icosahedron={
-              
+              shae3d(translate3d(icosahedron3d(col=.ele$colors,
+                                              tag = .ele$tag),
+                                 x = .ele$x,
+                                 y = .ele$y,
+                                 z = .ele$z))
             },
             octahedron={
-              
+              shae3d(translate3d(octahedron3d(col=.ele$colors,
+                                               tag = .ele$tag),
+                                 x = .ele$x,
+                                 y = .ele$y,
+                                 z = .ele$z))
             },
             sphere={
               spheres3d(.ele$x, .ele$y, .ele$z,
@@ -90,7 +116,11 @@ rglViewer <- function(..., background = '#00000088') {
                         col = .ele$colors)
             },
             tetrahedron={
-              
+              shae3d(translate3d(tetrahedron3d(col=.ele$colors,
+                                               tag = .ele$tag),
+                                 x = .ele$x,
+                                 y = .ele$y,
+                                 z = .ele$z))
             },
             label={
               text3d(.ele$x, .ele$y, .ele$z,

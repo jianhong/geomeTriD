@@ -106,12 +106,14 @@ objs <- geomeTriD::mdsPlot(gi_nij, range = range_chr6, feature.gr = feature.gr,
                            genomicSigs = list(ctcf=ctcf, test=randomSig),
                            reverseGenomicSigs = c(TRUE, FALSE),
                            k=3, render='none')
+unique(sapply(objs, function(.ele) .ele$tag))
 geomeTriD::rglViewer(objs, background = 'white')
 rgl::rglwidget() %>%
   rgl::toggleWidget(tags = "tick_minor") %>%
   toggleWidget(tags = "tick_major") %>%
   toggleWidget(tags = "tick_labels") %>%
-  toggleWidget(tags = "genomic_signal") %>% 
+  toggleWidget(tags = "ctcf") %>% 
+  toggleWidget(tags = "test") %>% 
   toggleWidget(tags = "backbone") %>%
   toggleWidget(tags = "gene_body") %>%
   toggleWidget(tags = "tss_labels") %>%
