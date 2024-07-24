@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geomeTriD</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.13</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.14</span>
       </span>
     </div>
 
@@ -73,7 +73,7 @@
 <span>  col.backbone <span class="op">=</span> <span class="st">"gray"</span>,</span>
 <span>  lwd.maxGenomicSigs <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>  reverseGenomicSigs <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  col.backbone_background <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="va">k</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span> <span class="st">"gray70"</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"darkred"</span><span class="op">)</span>,</span>
+<span>  col.backbone_background <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="va">k</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span> <span class="st">"gray70"</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gray30"</span>, <span class="st">"darkred"</span><span class="op">)</span>,</span>
 <span>  alpha.backbone_background <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  lwd.gene <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  coor_mark_interval <span class="op">=</span> <span class="fl">5e+05</span>,</span>
@@ -86,8 +86,6 @@
 <span>  length.arrow <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  safe_text_force <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  square <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  font <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"fonts"</span>, <span class="st">"helvetiker_regular.typeface.json"</span>,</span>
-<span>    package <span class="op">=</span> <span class="st">"geomeTriD"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -163,10 +161,6 @@ to turn it off. The default value 1e5 means show coordinates every 0.1M bp.</p><
 
 <dt id="arg-square">square<a class="anchor" aria-label="anchor" href="#arg-square"></a></dt>
 <dd><p>A logical value that controls whether control points for the curve are created city-block fashion or obliquely. See <a href="https://rdrr.io/r/grid/grid.curve.html" class="external-link">grid.curve</a>.</p></dd>
-
-
-<dt id="arg-font">font<a class="anchor" aria-label="anchor" href="#arg-font"></a></dt>
-<dd><p>A font json file for three.js text geometry. See <a href="https://threejs.org/docs/index.html?q=font#examples/en/loaders/FontLoader" class="external-link">https://threejs.org/docs/index.html?q=font#examples/en/loaders/FontLoader</a>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
