@@ -905,10 +905,14 @@ calGenePos <- function(fgf, curve_gr, arrowLen, kd=2, rate=72){
   start(e) <- end(e)
   ol_s <- calTickPos(s, curve_gr, arrowLen, kd=kd, rate=rate)
   ol_e <- calTickPos(e, curve_gr, arrowLen, kd=kd, rate=rate)
-  f <- ifelse(as.character(strand(fgf))=='-',
-              ol_e$ol, ol_s$ol)
-  t <- ifelse(as.character(strand(fgf))=='-',
-              ol_s$ol, ol_e$ol)
+  keep <- intersect(ol_s$id, ol_e$id) ## will delete some small element
+  ol_s <- lapply(ol_s, function(.ele){
+    .ele[ol_s$id %in% keep]
+  })
+  ol_e <- lapply(ol_e, function(.ele){
+    .ele[ol_e$id %in% keep]
+  })
+  fgf <- fgf[keep]
   via_points <- mapply(seq, ol_s$ol, ol_e$ol, SIMPLIFY = FALSE)
   via_points <- lapply(via_points, function(.ele){
     .ele[-unique(c(1, length(.ele)))]

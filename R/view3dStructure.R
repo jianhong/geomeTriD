@@ -449,9 +449,10 @@ view3dStructure <- function(obj, k=3, feature.gr,
           )
         )
       }
-      if(label_gene){
+      if(label_gene && any(!is.na(genePos$fgf$label))){
         gene_labels_geometries <- lapply(
-          seq_along(genePos$fgf$label), function(idx){
+          seq_along(genePos$fgf$label)[!is.na(genePos$fgf$label)],
+          function(idx){
             threeJsGeometry(
               x = genePos$x2[idx]/scale_factor,
               y = genePos$y2[idx]/scale_factor,
@@ -467,8 +468,8 @@ view3dStructure <- function(obj, k=3, feature.gr,
               )
             )
           })
-        names(gene_labels_geometries) <- paste0('gene_label_',
-                                                genePos$fgf$label)
+        names(gene_labels_geometries) <- 
+          paste0('gene_label_', genePos$fgf$label[!is.na(genePos$fgf$label)])
         geometries <- c(geometries, gene_labels_geometries)
       }
     }
