@@ -89,7 +89,30 @@ class tjViewer{
     this.gui = new GUI();
     this.maxRadius = 1;
     this.maxLineWidth = 50;
-    
+    // search GUI
+    const searchGUI = this.gui.addFolder('search');
+    const searchparam = {
+      keyword : '',
+      search : function(){
+        const result = [];
+        this.scene.traverse(obj =>  {
+          if(obj.isCSS2DObject === true){
+            if(obj.name==searchparam.keyword){
+              result.push(obj);
+            }
+          }
+        });
+        //console.log(result);
+        if(result.length>0){
+          const pos = result[0].position;
+          this.camera.position.set( pos.x, pos.y, pos.z );
+        }
+      }.bind(this)
+    }
+    searchGUI.add(searchparam, 'keyword').onChange(function(val){
+      searchparam.keyword = val;
+    });
+    searchGUI.add(searchparam, 'search');
     // animate GUI
     this.clock = new THREE.Clock();
     this.animateparam = {
@@ -424,6 +447,9 @@ class tjViewer{
             break;
           case 'segment':
             param.size = ele.size;
+            if(ele.alpha != null){
+              param.opacity = ele.alpha
+            }
             geometry = new LineSegmentsGeometry();
             geometry.setPositions( ele.positions );
             if(ele.colors.length!=ele.positions.length){
@@ -437,15 +463,16 @@ class tjViewer{
             geometry.setColors( ele.colors );
             material = new LineMaterial({ 
               color: 0xffffff,
-              linewidth: ele.size,
+              linewidth: param.size,
               vertexColors: true,
-              opacity: ele.alpha,
+              opacity: param.opacity
             });
             obj = new LineSegments2(geometry, material);
             obj.layers.set(this.getLayer(ele.tag));
             folder.add(param, 'size', 0, this.maxLineWidth).onChange( function( val){
               material.linewidth = val;
             });
+            param.opacity = 1;
             break;
           case 'sphere':
             param.radius = ele.radius;
@@ -637,6 +664,9 @@ class tjViewer{
             let css2obj = new CSS2DObject();
             const color = new THREE.Color();
             labelDiv.style.backgroundColor = 'transparent';
+            if(!Array.isArray(ele.label)){
+              ele.label = [ele.label];
+            }
             for(var i=0; i<ele.label.length; i++){
               labelDiv.textContent = ele.label;
               if(ele.colors.length==ele.positions.length){
@@ -659,6 +689,7 @@ class tjViewer{
                 ele.positions[i*3+2]);
               css2obj.center.set(0.5,0.5);
               css2obj.layers.set(this.getLayer(ele.tag));
+              css2obj.name = ele.label;
               obj.add(css2obj);
             }
             obj.layers.enableAll();
