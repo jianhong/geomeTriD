@@ -67,7 +67,7 @@ rglViewer <- function(..., background = '#00000088') {
               )
             },
             box={
-              shae3d(translate3d(cube3d(col=.ele$colors,
+              shade3d(translate3d(cube3d(col=.ele$colors,
                                         tag = .ele$tag),
                                  x = .ele$x,
                                  y = .ele$y,
@@ -89,21 +89,21 @@ rglViewer <- function(..., background = '#00000088') {
               shade3d(addNormals(subdivision3d(c3, depth=2)))
             },
             dodecahedron={
-              shae3d(translate3d(dodecahedron3d(col=.ele$colors,
+              shade3d(translate3d(dodecahedron3d(col=.ele$colors,
                                                tag = .ele$tag),
                                  x = .ele$x,
                                  y = .ele$y,
                                  z = .ele$z))
             },
             icosahedron={
-              shae3d(translate3d(icosahedron3d(col=.ele$colors,
+              shade3d(translate3d(icosahedron3d(col=.ele$colors,
                                               tag = .ele$tag),
                                  x = .ele$x,
                                  y = .ele$y,
                                  z = .ele$z))
             },
             octahedron={
-              shae3d(translate3d(octahedron3d(col=.ele$colors,
+              shade3d(translate3d(octahedron3d(col=.ele$colors,
                                                tag = .ele$tag),
                                  x = .ele$x,
                                  y = .ele$y,
@@ -116,7 +116,7 @@ rglViewer <- function(..., background = '#00000088') {
                         col = .ele$colors)
             },
             tetrahedron={
-              shae3d(translate3d(tetrahedron3d(col=.ele$colors,
+              shade3d(translate3d(tetrahedron3d(col=.ele$colors,
                                                tag = .ele$tag),
                                  x = .ele$x,
                                  y = .ele$y,
