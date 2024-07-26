@@ -119,7 +119,7 @@ rgl::rglwidget() %>%
   toggleWidget(tags = "tss_labels") %>%
   toggleWidget(tags = "gene_labels") %>%
   toggleWidget(tags = "cRE") %>%
-  rgl::asRow(last = 9)
+  rgl::asRow(last = 10)
 ```
 
 Plot it by [`threeJs`](https://threejs.org/). 

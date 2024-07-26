@@ -13,3 +13,5 @@ dependencies:
         type: module
       - src: 'CSS2DRenderer.js'
         type: module
+    stylesheet:
+      - 'tjviewer.module.css'

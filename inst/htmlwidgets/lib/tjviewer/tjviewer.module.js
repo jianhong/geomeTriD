@@ -86,7 +86,7 @@ class tjViewer{
       this.camera.updateProjectionMatrix();
     })
     
-    this.gui = new GUI();
+    this.gui = new GUI({ container: el.parentElement });
     this.maxRadius = 1;
     this.maxLineWidth = 50;
     // search GUI
