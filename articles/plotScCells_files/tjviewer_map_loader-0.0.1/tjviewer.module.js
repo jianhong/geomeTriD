@@ -111,7 +111,7 @@ class tjViewer{
     }
     searchGUI.add(searchparam, 'keyword').onChange(function(val){
       searchparam.keyword = val;
-    });
+    }).onFinishChange(searchparam.search);
     searchGUI.add(searchparam, 'search');
     // animate GUI
     this.clock = new THREE.Clock();
