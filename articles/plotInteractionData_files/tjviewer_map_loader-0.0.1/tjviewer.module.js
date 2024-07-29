@@ -24,6 +24,9 @@ import { DRACOExporter } from 'three/addons/exporters/DRACOExporter.js';
 // module Widget
 class tjViewer{
   constructor(el, width, height){
+    //add gui first
+    this.gui = new GUI({container:el});
+    
     //viewer
     this.width = width;
     this.height = height;
@@ -86,7 +89,6 @@ class tjViewer{
       this.camera.updateProjectionMatrix();
     })
     
-    this.gui = new GUI({container:el.parentElement});
     this.maxRadius = 1;
     this.maxLineWidth = 50;
     // search GUI
