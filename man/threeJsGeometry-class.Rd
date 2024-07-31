@@ -45,6 +45,12 @@ An object of class \code{"threeJsGeometry"}
 'icosahedron', 'octahedron', 'segment', 'sphere', 'tetrahedron', 'text',
  and 'torus'.}
 
+\item{\code{side}}{\code{'character'}, the side for side by side plot in 
+\link{threeJsViewer}.}
+
+\item{\code{layer}}{\code{'character'}, the two layer plot in 
+\link{threeJsViewer}.}
+
 \item{\code{tag}}{\code{'character'}, the tag used to group geometries.}
 
 \item{\code{properties}}{A \code{"list"}, the properties to control the geometry.}

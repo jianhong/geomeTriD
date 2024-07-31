@@ -13,6 +13,10 @@ setClassUnion("maybeColor", c("numeric", "character"))
 #' 'label',
 #' 'icosahedron', 'octahedron', 'segment', 'sphere', 'tetrahedron', 'text',
 #'  and 'torus'.
+#' @slot side \code{'character'}, the side for side by side plot in 
+#' \link{threeJsViewer}.
+#' @slot layer \code{'character'}, the two layer plot in 
+#' \link{threeJsViewer}.
 #' @slot tag \code{'character'}, the tag used to group geometries.
 #' @slot properties A \code{"list"}, the properties to control the geometry.
 #' @import methods
@@ -27,6 +31,8 @@ setClass("threeJsGeometry",
            z = "numeric",
            colors = 'maybeColor',
            type = 'character',
+           side = 'character',
+           layer = 'character',
            properties = 'list',
            tag = 'character'
          ),
@@ -36,6 +42,8 @@ setClass("threeJsGeometry",
            z = 0,
            colors = 'black',
            type = 'sphere',
+           side = 'left',
+           layer = 'top',
            tag = 'sphere',
            properties = list(radius=0.05)
          ),
@@ -53,6 +61,12 @@ setClass("threeJsGeometry",
               'box', 'capsule', 'cone', 'cylinder',
               'dodecahedron', 'icosahedron', 'line', 'label', 'octahedron',
               'segment', 'sphere', 'tetrahedron', 'text', and 'torus'.")
+           }
+           if(!object@side %in% c('left', 'right')){
+             return('side should be "left" or "right"')
+           }
+           if(!object@layer %in% c('top', 'bottom')){
+             return('layer should be "top" or "bottom"')
            }
            switch(object@type,
                   arrow = {

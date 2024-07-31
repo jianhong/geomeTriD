@@ -9,7 +9,13 @@
 #' @param background background of the main camera.
 #' @return MULL
 #' @examples
-#' # example code
+#' obj <- readRDS(system.file('extdata', '4DNFI1UEG1HD.chr21.FLAMINGO.res.rds',
+#'     package='geomeTriD'))
+#' feature.gr <- readRDS(system.file('extdata', '4DNFI1UEG1HD.feature.gr.rds',
+#'     package='geomeTriD'))
+#' tjg <- view3dStructure(obj, k=3, feature.gr=feature.gr, renderer='none',
+#'    length.arrow=grid::unit(0.000006, 'native'))
+#' rglViewer(tjg)
 
 rglViewer <- function(..., background = '#00000088') {
   geos <- list(...)

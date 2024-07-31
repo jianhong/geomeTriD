@@ -3,7 +3,7 @@
 #' @importFrom htmlwidgets createWidget
 #' @export
 #' @param ... objects of threeJsGeometry.
-#' @param background background of the main camera.
+#' @param background background of the main camera (left and right).
 #' @param maxRadius max value of the controls for radius.
 #' @param maxLineWidth max value of the controls for line width.
 #' @param width,height width and height of the widgets.
@@ -49,7 +49,9 @@
 #'                             'size'=.5,
 #'                             'depth'=.1))
 #' threeJsViewer(line, sphere, torus, cylinder, labels)
-threeJsViewer <- function(..., background = '#00000088',
+threeJsViewer <- function(...,
+                          background = c('#33333388', '#FFFFFFDD',
+                                         '#FFFFFFDD', '#33333388'),
                           maxRadius = 1,
                           maxLineWidth = 50,
                           width = NULL, height = NULL) {
@@ -71,18 +73,27 @@ threeJsViewer <- function(..., background = '#00000088',
     stopifnot('input must be an object of threeJsGeometry.'=
                 is(.ele, 'threeJsGeometry'))
   })
-
+  
+  if(length(background)<4){
+    background <- rep(background, 4)[seq.int(4)]
+  }
   background <- grDevices::col2rgb(background, alpha = TRUE)
   background <- background/255
   # pass the data and settings using 'x'
   x <- list(
-    background=list(r=unname(background['red', 1, drop=TRUE]),
-                    g=unname(background['green', 1, drop=TRUE]),
-                    b=unname(background['blue', 1, drop=TRUE]),
-                    alpha=unname(background['alpha', 1, drop=TRUE])),
+    background=list(r=unname(background['red', , drop=TRUE]),
+                    g=unname(background['green', , drop=TRUE]),
+                    b=unname(background['blue', , drop=TRUE]),
+                    alpha=unname(background['alpha', , drop=TRUE])),
     maxRadius=maxRadius,
     maxLineWidth=maxLineWidth,
-    layers=unique(unname(vapply(geos, function(.geo){
+    sideBySide=any(vapply(geos, function(.geo){
+      .geo$side[1]=='right'
+    }, FUN.VALUE = logical(1L))),
+    overlay=any(vapply(geos, function(.geo){
+      .geo$layer[1]=='bottom'
+    }, FUN.VALUE = logical(1L))),
+    taglayers=unique(unname(vapply(geos, function(.geo){
       .geo$tag[1]
     }, FUN.VALUE = character(1L))))
   )
@@ -98,7 +109,10 @@ threeJsViewer <- function(..., background = '#00000088',
            c(list(type = .geo$type,
                   positions = positions,
                   colors = colors,
-                  tag = .geo$tag),
+                  tag = .geo$tag,
+                  side = .geo$side,
+                  layer = .geo$layer
+                  ),
              .geo$properties)
          }))
   # create the widget

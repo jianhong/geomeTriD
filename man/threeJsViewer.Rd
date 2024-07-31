@@ -7,7 +7,7 @@ The htmlwidgets viewer for threeJs.}
 \usage{
 threeJsViewer(
   ...,
-  background = "#00000088",
+  background = c("#33333388", "#FFFFFFDD", "#FFFFFFDD", "#33333388"),
   maxRadius = 1,
   maxLineWidth = 50,
   width = NULL,
@@ -17,7 +17,7 @@ threeJsViewer(
 \arguments{
 \item{...}{objects of threeJsGeometry.}
 
-\item{background}{background of the main camera.}
+\item{background}{background of the main camera (left and right).}
 
 \item{maxRadius}{max value of the controls for radius.}
 

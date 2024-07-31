@@ -2,7 +2,7 @@ Package: geomeTriD
 Type: Package
 Title: A R/Bioconductor package for interactive 3D plot of epigenetic data or
   single cell data
-Version: 0.0.15
+Version: 0.0.16
 Authors@R: c(person(given="Jianhong", family="Ou", email="jianhong.ou@duke.edu", 
         role=c("aut", "cre"), comment=c(ORCID="0000-0002-8652-2488")))
 Maintainer: Jianhong Ou <jianhong.ou@duke.edu>
@@ -44,5 +44,5 @@ Suggests:
   BiocStyle, knitr, rmarkdown
 biocViews: Visualization
 VignetteBuilder: knitr
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Encoding: UTF-8

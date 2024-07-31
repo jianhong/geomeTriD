@@ -57,7 +57,7 @@ view3dStructure <- function(obj, k=3, feature.gr,
                             label_gene = TRUE,
                             col.tension_line = 'black',
                             lwd.tension_line = 1,
-                            length.arrow = NULL,
+                            length.arrow = unit(abs(diff(obj$x))/20, 'native'),
                             safe_text_force = 3,
                             square = TRUE,
                             ...){
@@ -84,6 +84,16 @@ view3dStructure <- function(obj, k=3, feature.gr,
   ylim <- c(ylim[1] - d_ylim, ylim[2] + d_ylim)
   zlim <- c(zlim[1] - d_zlim, zlim[2] + d_zlim)
   scale_factor <- 10^floor(log10(diff(range(c(xlim, ylim, zlim)))))
+  ## fix the arrow length
+  if(!is.numeric(length.arrow)){
+    arrowLen <- grid::convertUnit(grid::stringHeight("0"),
+                                  unitTo = "inch",
+                                  valueOnly = FALSE)
+  }else{
+    arrowLen <- length.arrow[1]
+    stopifnot(is(arrowLen, 'unit'))
+  }
+  
   if(k==2){
     ## plot 2D
     grid.newpage()
@@ -92,15 +102,6 @@ view3dStructure <- function(obj, k=3, feature.gr,
     on.exit({
       popViewport()
     })
-    ## fix the arrow length
-    if(!is.numeric(length.arrow)){
-      arrowLen <- grid::convertUnit(grid::stringHeight("0"),
-                                    unitTo = "inch",
-                                    valueOnly = FALSE)
-    }else{
-      arrowLen <- length.arrow[1]
-      stopifnot(is(arrowLen, 'unit'))
-    }
     rate <- max(abs(
       c(convertWidth(unit(diff(xlim), 'native'),
                      unitTo = "inch", valueOnly = TRUE),
@@ -217,15 +218,6 @@ view3dStructure <- function(obj, k=3, feature.gr,
       properties = list(size = lwd.backbone)
     )
     
-    ## fix the arrow length
-    if(!is.numeric(length.arrow)){
-      arrowLen <- grid::convertUnit(grid::stringHeight("0"),
-                                    unitTo = "inch",
-                                    valueOnly = FALSE)
-    }else{
-      arrowLen <- length.arrow[1]
-      stopifnot(is(arrowLen, 'unit'))
-    }
     rate <- 50
     
     ## genomicSigs

@@ -414,7 +414,9 @@ parseFeature <- function(feature.gr){
     feature.gr$pch <- rep(11, length(feature.gr))
   }
   if(length(feature.gr$size)==0) {
-    feature.gr$size <- rep(unit(0.25, "char"), length(feature.gr))
+    if(length(feature.gr)){
+      feature.gr$size <- rep(unit(0.25, "char"), length(feature.gr))
+    }
   }
   stopifnot(length(feature.gr$type)==length(feature.gr))
   stopifnot(length(feature.gr$label)==length(feature.gr))

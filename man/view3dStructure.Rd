@@ -24,7 +24,7 @@ view3dStructure(
   label_gene = TRUE,
   col.tension_line = "black",
   lwd.tension_line = 1,
-  length.arrow = NULL,
+  length.arrow = unit(abs(diff(obj$x))/20, "native"),
   safe_text_force = 3,
   square = TRUE,
   ...
