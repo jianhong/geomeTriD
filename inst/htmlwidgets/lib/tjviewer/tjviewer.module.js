@@ -98,6 +98,7 @@ class tjViewer{
     this.cameraInsert.position.copy( this.camera.position );
     this.cameraInsert.layers.enableAll();
     
+    // mouse controls
     this.controls = new OrbitControls( this.camera, this.labelRenderer.domElement );
     this.controls.enableDamping = true;
     this.controls.minDistance = near*2;
@@ -204,7 +205,14 @@ class tjViewer{
     this.animateparam = {
       play : false,
       stepX : 0.3,
-      stepY : 0.3
+      stepY : 0.3,
+      linked: true,
+      up : false,
+      down : false,
+      left : false,
+      right : false,
+      ctrl : false,
+      option : false
     };
     const animateGUI = this.gui.addFolder('animate');
     animateGUI.add(this.animateparam, 'play');
@@ -214,6 +222,76 @@ class tjViewer{
     animateGUI.add(this.animateparam, 'stepY', 0, 5 ).onChange( function ( val ) {
       this.animateparam.stepY = val;
     }.bind(this) );
+    this.gui.add(this.animateparam, 'linked').onChange( function(val){
+      this.animateparam.linked = val;
+    })
+    // keyboard
+    window.addEventListener("keydown", (event)=>{
+      switch (event.keyCode) {
+          case 87: // W
+          case 38: // ArrowUp
+            this.animateparam.up = true;
+            break;
+          case 65: // A
+          case 37: // ArrowLeft
+            this.animateparam.left = true;
+            break;
+          case 83: // S
+          case 40: // ArrowDown
+            this.animateparam.down = true;
+            break;
+          case 68: // D
+          case 39: // ArrowRight
+            this.animateparam.right = true;
+            break;
+          case 17: // Control
+            this.animateparam.ctrl = true;
+            break;
+          case 18: // Alt
+            this.animateparam.option = true;
+        }
+    });
+    window.addEventListener("keyup", (event)=>{
+      switch (event.keyCode) {
+          case 87: // W
+          case 38: // ArrowUp
+            this.animateparam.up = false;
+            break;
+          case 65: // A
+          case 37: // ArrowLeft
+            this.animateparam.left = false;
+            break;
+          case 83: // S
+          case 40: // ArrowDown
+            this.animateparam.down = false;
+            break;
+          case 68: // D
+          case 39: // ArrowRight
+            this.animateparam.right = false;
+            break;
+          case 17: // Control
+            this.animateparam.ctrl = false;
+            break;
+          case 18: // Alt
+            this.animateparam.option = false;
+        }
+    });
+        
+    // link the cameras
+    this.controls.addEventListener('change', () => {
+      if(this.animateparam.linked){
+        this.camera2.position.copy( this.camera.position );
+        this.camera2.rotation.copy( this.camera.rotation );
+        this.controls2.target.copy( this.controls.target );
+      }
+    });
+    this.controls2.addEventListener('change', () => {
+      if(this.animateparam.linked){
+        this.camera.position.copy( this.camera2.position );
+        this.camera.rotation.copy( this.camera2.rotation );
+        this.controls.target.copy( this.controls2.target );
+      }
+    });
     
     // exporter GUI
     const saveBlob = (function(){
@@ -403,7 +481,7 @@ class tjViewer{
     var onPointerMove = function ( e ) {
       if ( event.isPrimary === false ) return;
       var offset = this.container.getBoundingClientRect().top;
-      this.sliderPos = Math.max( 0, Math.min( this.width, e.pageY -
+      this.sliderPos = Math.max( 0, Math.min( this.height, e.pageY -
         offset ) );
       this.slider.style.top = this.sliderPos + offset + 'px';
     }.bind(this);
@@ -1038,10 +1116,10 @@ class tjViewer{
   animate(inset=true){
     // main scene
     this.renderer.setClearColor( this.background, this.bckalpha );
-    this.controls.update();
+    
     //controls
-    // animate
     const delta = this.clock.getDelta();
+    // animate
     if ( this.animateparam.play ) {
         this.objects.rotation.x += delta * this.animateparam.stepX;
         this.objects.rotation.y += delta * this.animateparam.stepY;
@@ -1058,6 +1136,108 @@ class tjViewer{
           }
         }
     }
+    
+    if(this.animateparam.ctrl || this.animateparam.option){
+      if (this.animateparam.up) {
+          this.objects.rotation.x += delta * this.animateparam.stepX;
+          if(this.sideBySide){
+            this.objects2.rotation.x += delta * this.animateparam.stepX;
+          }
+          if(this.overlay){
+            this.objectsBottom.rotation.x += delta * this.animateparam.stepX;
+            if(this.sideBySide){
+              this.objectsBottom2.rotation.x += delta * this.animateparam.stepX;
+            }
+          }
+      }
+      if (this.animateparam.down) {
+            this.objects.rotation.x -= delta * this.animateparam.stepX;
+            if(this.sideBySide){
+              this.objects2.rotation.x -= delta * this.animateparam.stepX;
+            }
+            if(this.overlay){
+              this.objectsBottom.rotation.x -= delta * this.animateparam.stepX;
+              if(this.sideBySide){
+                this.objectsBottom2.rotation.x -= delta * this.animateparam.stepX;
+              }
+            }
+      }
+      if (this.animateparam.left) {
+            this.objects.rotation.y -= delta * this.animateparam.stepX;
+            if(this.sideBySide){
+              this.objects2.rotation.y -= delta * this.animateparam.stepX;
+            }
+            if(this.overlay){
+              this.objectsBottom.rotation.y -= delta * this.animateparam.stepX;
+              if(this.sideBySide){
+                this.objectsBottom2.rotation.y -= delta * this.animateparam.stepX;
+              }
+            }
+      }
+      if (this.animateparam.right) {
+            this.objects.rotation.y += delta * this.animateparam.stepY;
+            if(this.sideBySide){
+              this.objects2.rotation.y += delta * this.animateparam.stepY;
+            }
+            if(this.overlay){
+              this.objectsBottom.rotation.y += delta * this.animateparam.stepY;
+              if(this.sideBySide){
+                this.objectsBottom2.rotation.y += delta * this.animateparam.stepY;
+              }
+            }
+      }
+    }else{
+      if (this.animateparam.up) {
+          this.objects.translateY(this.animateparam.stepY * delta);
+          if(this.sideBySide){
+            this.objects2.translateY(this.animateparam.stepY * delta);
+          }
+          if(this.overlay){
+            this.objectsBottom.translateY(this.animateparam.stepY * delta);
+            if(this.sideBySide){
+              this.objectsBottom2.translateY(this.animateparam.stepY * delta);
+            }
+          }
+      }
+      if (this.animateparam.down) {
+            this.objects.translateY(-this.animateparam.stepY * delta);
+            if(this.sideBySide){
+              this.objects2.translateY(-this.animateparam.stepY * delta);
+            }
+            if(this.overlay){
+              this.objectsBottom.translateY(-this.animateparam.stepY * delta);
+              if(this.sideBySide){
+                this.objectsBottom2.translateY(-this.animateparam.stepY * delta);
+              }
+            }
+      }
+      if (this.animateparam.left) {
+            this.objects.translateX(this.animateparam.stepX * delta);
+            if(this.sideBySide){
+              this.objects2.translateX(this.animateparam.stepX * delta);
+            }
+            if(this.overlay){
+              this.objectsBottom.translateX(this.animateparam.stepX * delta);
+              if(this.sideBySide){
+                this.objectsBottom2.translateX(this.animateparam.stepX * delta);
+              }
+            }
+      }
+      if (this.animateparam.right) {
+            this.objects.translateX(-this.animateparam.stepX * delta);
+            if(this.sideBySide){
+              this.objects2.translateX(-this.animateparam.stepX * delta);
+            }
+            if(this.overlay){
+              this.objectsBottom.translateX(-this.animateparam.stepX * delta);
+              if(this.sideBySide){
+                this.objectsBottom2.translateX(-this.animateparam.stepX * delta);
+              }
+            }
+      }
+    }
+    
+    this.controls.update();
     //this.gpuPanel.startQuery();
     if(this.overlay){
       if(this.sideBySide){
