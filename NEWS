@@ -1,4 +1,8 @@
-Changes in version 0.0.16
+Changes in version 0.0.18
+
+    o Add search by coordinates for threeJsViewer.
+    
+Changes in version 0.0.17
 
     o Add key control and linked OribitControl for threeJsViewer.
     

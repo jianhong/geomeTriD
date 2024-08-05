@@ -153,45 +153,302 @@ class tjViewer{
       keyword : '',
       search : function(){
         let result = [];
-        this.scene.traverse(obj =>  {
-          if(obj.isCSS2DObject === true){
-            if(obj.name==searchparam.keyword){
-              result.push(obj);
+        var isCoor = searchparam.keyword.match(/^([^a-zA-Z]+[kKmMgG])(\-[^a-zA-Z]+[kKmMgG])*$/g);
+        if(isCoor){
+          var keyword = searchparam.keyword.replace(',', '')
+                                   .split(/[^0-9.kKmMgG]+/);
+          if(keyword.length>2){
+            alert('More than two number detected. Coordinates should be in the format of 12345-45678.');
+          }else{
+            for(var i=0; i<keyword.length; i++){
+              var ii = parseFloat(keyword[i]);
+              if(keyword[i].match(/[kK]$/)){
+                ii = ii * 1000
+              }
+              if(keyword[i].match(/[mM]$/)){
+                ii = ii * 1000000
+              }
+              if(keyword[i].match(/[gG]$/)){
+                ii = ii * 1000000000
+              }
+              keyword[i] = ii
+            }
+            let pos = [];
+            this.scene.traverse(obj => {
+              if(obj.isLine2 === true){
+                if(typeof obj.geometry.userData.start != "undefined" &&
+                   typeof obj.geometry.userData.end != "undefined"){
+                  const start = obj.geometry.userData.start;
+                  const end = obj.geometry.userData.end;
+                  let seg = [];
+                  if(keyword.length==1){
+                    for(var i=0; i<start.length; i++){
+                      if(start[i]<=keyword[0] && end[i] >= keyword[0]){
+                        seg.push(i);
+                      }
+                    }
+                  }else{
+                    for(var i=0; i<start.length; i++){
+                      if(start[i]>=keyword[0] && end[i] <= keyword[1]){
+                        seg.push(i);
+                      }
+                    }
+                  }
+                  if(seg.length>0){
+                    const instanceStart = obj.geometry.attributes.instanceStart.data.array;
+                    for(var i=0; i<seg.length; i++){
+                      pos.push(instanceStart[seg[i]*6]);
+                      pos.push(instanceStart[seg[i]*6+1]);
+                      pos.push(instanceStart[seg[i]*6+2]);
+                      pos.push(instanceStart[seg[i]*6+3]);
+                      pos.push(instanceStart[seg[i]*6+4]);
+                      pos.push(instanceStart[seg[i]*6+5]);
+                    }
+                  }
+                }
+              }
+            });
+            this.sceneBottom.traverse(obj => {
+              if(obj.isLine2 === true){
+                if(typeof obj.geometry.userData.start != "undefined" &&
+                   typeof obj.geometry.userData.end != "undefined"){
+                  const start = obj.geometry.userData.start;
+                  const end = obj.geometry.userData.end;
+                  let seg = [];
+                  if(keyword.length==1){
+                    for(var i=0; i<start.length; i++){
+                      if(start[i]<=keyword[0] && end[i] >= keyword[0]){
+                        seg.push(i);
+                      }
+                    }
+                  }else{
+                    for(var i=0; i<start.length; i++){
+                      if(start[i]>=keyword[0] && end[i] <= keyword[1]){
+                        seg.push(i);
+                      }
+                    }
+                  }
+                  if(seg.length>0){
+                    const instanceStart = obj.geometry.attributes.instanceStart.data.array;
+                    for(var i=0; i<seg.length; i++){
+                      pos.push(instanceStart[seg[i]*6]);
+                      pos.push(instanceStart[seg[i]*6+1]);
+                      pos.push(instanceStart[seg[i]*6+2]);
+                      pos.push(instanceStart[seg[i]*6+3]);
+                      pos.push(instanceStart[seg[i]*6+4]);
+                      pos.push(instanceStart[seg[i]*6+5]);
+                    }
+                  }
+                }
+              }
+            });
+            if(pos.length>=6){
+                    const geometry = new LineSegmentsGeometry();
+                    geometry.setPositions( pos );
+                    const box = geometry.boundingBox;
+                    this.camera.position.set(
+                      (box.max.x+box.min.x),
+                      (box.max.y+box.min.y),
+                      (box.max.z+box.min.z) );
+                    this.animate();
+            }
+            if(this.sideBySide){
+                pos = [];
+                this.scene2.traverse(obj => {
+                  if(obj.isLine2 === true){
+                    if(typeof obj.geometry.userData.start != "undefined" &&
+                       typeof obj.geometry.userData.end != "undefined"){
+                      const start = obj.geometry.userData.start;
+                      const end = obj.geometry.userData.end;
+                      let seg = [];
+                      if(keyword.length==1){
+                        for(var i=0; i<start.length; i++){
+                          if(start[i]<=keyword[0] && end[i] >= keyword[0]){
+                            seg.push(i);
+                          }
+                        }
+                      }else{
+                        for(var i=0; i<start.length; i++){
+                          if(start[i]>=keyword[0] && end[i] <= keyword[1]){
+                            seg.push(i);
+                          }
+                        }
+                      }
+                      if(seg.length>0){
+                        const instanceStart = obj.geometry.attributes.instanceStart.data.array;
+                        for(var i=0; i<seg.length; i++){
+                          pos.push(instanceStart[seg[i]*6]);
+                          pos.push(instanceStart[seg[i]*6+1]);
+                          pos.push(instanceStart[seg[i]*6+2]);
+                          pos.push(instanceStart[seg[i]*6+3]);
+                          pos.push(instanceStart[seg[i]*6+4]);
+                          pos.push(instanceStart[seg[i]*6+5]);
+                        }
+                      }
+                    }
+                  }
+                });
+                this.sceneBottom2.traverse(obj => {
+                  if(obj.isLine2 === true){
+                    if(typeof obj.geometry.userData.start != "undefined" &&
+                       typeof obj.geometry.userData.end != "undefined"){
+                      const start = obj.geometry.userData.start;
+                      const end = obj.geometry.userData.end;
+                      let seg = [];
+                      if(keyword.length==1){
+                        for(var i=0; i<start.length; i++){
+                          if(start[i]<=keyword[0] && end[i] >= keyword[0]){
+                            seg.push(i);
+                          }
+                        }
+                      }else{
+                        for(var i=0; i<start.length; i++){
+                          if(start[i]>=keyword[0] && end[i] <= keyword[1]){
+                            seg.push(i);
+                          }
+                        }
+                      }
+                      if(seg.length>0){
+                        const instanceStart = obj.geometry.attributes.instanceStart.data.array;
+                        for(var i=0; i<seg.length; i++){
+                          pos.push(instanceStart[seg[i]*6]);
+                          pos.push(instanceStart[seg[i]*6+1]);
+                          pos.push(instanceStart[seg[i]*6+2]);
+                          pos.push(instanceStart[seg[i]*6+3]);
+                          pos.push(instanceStart[seg[i]*6+4]);
+                          pos.push(instanceStart[seg[i]*6+5]);
+                        }
+                      }
+                    }
+                  }
+                });
+                if(pos.length>=6){
+                        const geometry = new LineSegmentsGeometry();
+                        geometry.setPositions( pos );
+                        const box = geometry.boundingBox;
+                        this.camera2.position.set(
+                          (box.max.x+box.min.x),
+                          (box.max.y+box.min.y),
+                          (box.max.z+box.min.z) );
+                        this.animate();
+                }
             }
           }
-        });
-        this.sceneBottom.traverse(obj =>  {
-          if(obj.isCSS2DObject === true){
-            if(obj.name==searchparam.keyword){
-              result.push(obj);
-            }
-          }
-        });
-        //console.log(result);
-        if(result.length>0){
-          const pos = result[0].position;
-          this.camera.position.set( pos.x, pos.y, pos.z );
-        }
-        if(this.sideBySide){
-          result = [];
-          this.scene2.traverse(obj =>  {
+        }else{
+          let gene_body = [];
+          this.scene.traverse(obj =>  {
             if(obj.isCSS2DObject === true){
               if(obj.name==searchparam.keyword){
                 result.push(obj);
               }
             }
+            if(obj.isLine2 === true){
+              if(obj.name==searchparam.keyword){
+                gene_body.push(obj);
+              }
+            }
           });
-          this.sceneBottom2.traverse(obj =>  {
+          this.sceneBottom.traverse(obj =>  {
             if(obj.isCSS2DObject === true){
               if(obj.name==searchparam.keyword){
                 result.push(obj);
               }
             }
+            if(obj.isLine2 === true){
+              if(obj.name==searchparam.keyword){
+                gene_body.push(obj);
+              }
+            }
           });
-          //console.log(result);
-          if(result.length>0){
+          if(gene_body.length>0){
+            const lineObj = gene_body[0];
+            //lineObj.geometry.setColors([1, 0, 0]);
+            const linewidth = lineObj.material.uniforms.linewidth.value;
+            lineObj.material.uniforms.linewidth.value = 3*linewidth;
+            const timeInterval = setInterval(function(){
+              if(lineObj.material.uniforms.linewidth.value==linewidth){
+                lineObj.material.uniforms.linewidth.value = 3*linewidth;
+              }else{
+                lineObj.material.uniforms.linewidth.value = linewidth;
+              }
+              this.animate();
+            }.bind(this), 500);
+            const timeOut = setTimeout(function(){
+              clearInterval(timeInterval);
+              lineObj.material.uniforms.linewidth.value = linewidth;
+              this.animate();
+            }.bind(this), 3000);
+            const box = lineObj.geometry.boundingBox;
+            this.camera.position.set(
+              (box.max.x+box.min.x),
+              (box.max.y+box.min.y),
+              (box.max.z+box.min.z) );
+            this.animate();
+          }else{
+            if(result.length>0){
               const pos = result[0].position;
-              this.camera2.position.set( pos.x, pos.y, pos.z );
+              this.camera.position.set( pos.x, pos.y, pos.z );
+              this.animate();
+            }
+          }
+          if(this.sideBySide){
+            result = [];
+            gene_body = [];
+            this.scene2.traverse(obj =>  {
+              if(obj.isCSS2DObject === true){
+                if(obj.name==searchparam.keyword){
+                  result.push(obj);
+                }
+              }
+              if(obj.isLine2 === true){
+                if(obj.name==searchparam.keyword){
+                  gene_body.push(obj);
+                }
+              }
+            });
+            this.sceneBottom2.traverse(obj =>  {
+              if(obj.isCSS2DObject === true){
+                if(obj.name==searchparam.keyword){
+                  result.push(obj);
+                }
+              }
+              if(obj.isLine2 === true){
+                if(obj.name==searchparam.keyword){
+                  gene_body.push(obj);
+                }
+              }
+            });
+            if(gene_body.length>0){
+              const lineObj = gene_body[0];
+              //lineObj.geometry.setColors([1, 0, 0]);
+              const linewidth = lineObj.material.uniforms.linewidth.value;
+              lineObj.material.uniforms.linewidth.value = 3*linewidth;
+              const timeInterval = setInterval(function(){
+                if(lineObj.material.uniforms.linewidth.value==linewidth){
+                  lineObj.material.uniforms.linewidth.value = 3*linewidth;
+                }else{
+                  lineObj.material.uniforms.linewidth.value = linewidth;
+                }
+                this.animate();
+              }.bind(this), 500);
+              const timeOut = setTimeout(function(){
+                clearInterval(timeInterval);
+                lineObj.material.uniforms.linewidth.value = linewidth;
+                this.animate();
+              }.bind(this), 3000);
+              const box = lineObj.geometry.boundingBox;
+              this.camera2.position.set(
+                (box.max.x+box.min.x),
+                (box.max.y+box.min.y),
+                (box.max.z+box.min.z) );
+              this.animate();
+            }else{
+              if(result.length>0){
+                const pos = result[0].position;
+                this.camera2.position.set( pos.x, pos.y, pos.z );
+                this.animate();
+              }
+            }
           }
         }
       }.bind(this)
@@ -224,7 +481,7 @@ class tjViewer{
     }.bind(this) );
     this.gui.add(this.animateparam, 'linked').onChange( function(val){
       this.animateparam.linked = val;
-    })
+    }.bind(this));
     // keyboard
     window.addEventListener("keydown", (event)=>{
       switch (event.keyCode) {
@@ -688,6 +945,24 @@ class tjViewer{
               }
             }
             geometry.setColors( ele.colors );
+            // coordinates
+            if(Array.isArray(ele.target) && ele.target.length==len-1){
+              var start = [];
+              var end = [];
+              for(var i=0; i<len-1; i++ ){
+                var s = ele.target[i].split('-');
+                if(s.length==2){
+                  start.push(parseInt(s[0]));
+                  end.push(parseInt(s[1]));
+                }
+              }
+              if(start.length==len-1){
+                geometry.userData = {
+                  'start':start,
+                  'end': end
+                };
+              }
+            }
             material = new LineMaterial( {
               color: 0xffffff,
               linewidth: ele.size, // in world units with size attenuation, pixels otherwise
@@ -701,6 +976,10 @@ class tjViewer{
             obj.computeLineDistances();
             obj.scale.set( 1, 1, 1 );
             obj.layers.set(this.getLayer(ele.tag));
+            if(typeof ele.target === 'string' || ele.target instanceof String){
+              // gene label
+              obj.name = ele.target;
+            }
             folder.add(param, 'size', 0, this.maxLineWidth).onChange( function( val) {
               material.linewidth = val;
             });

@@ -215,7 +215,8 @@ view3dStructure <- function(obj, k=3, feature.gr,
       colors = col.backbone,
       type = 'line',
       tag = 'backbone',
-      properties = list(size = lwd.backbone)
+      properties = list(size = lwd.backbone,
+                        target = as.character(ranges(obj)))
     )
     
     rate <- 50
@@ -314,7 +315,6 @@ view3dStructure <- function(obj, k=3, feature.gr,
                         lengths(genomic_signal_geometry)>0]))
       geometries <- geometries[lengths(geometries)>0]
     }
-    
     ## add genomic coordinates
     if(show_coor){
       r_tick <- range(obj)
@@ -350,9 +350,9 @@ view3dStructure <- function(obj, k=3, feature.gr,
             tag='tick_major',
             properties = list(size=lwd.tension_line)
           )
-          coor_text <- prettyMark(start(feature.tick.mark[keep]),
+          coor_text <- prettyMark(start(feature.tick.mark),
                                   coor_mark_interval)
-          tick_labels <- lapply(seq_along(tick.xy$x3[keep]), function(idx){
+          tick_labels <- lapply(keep, function(idx){
             threeJsGeometry(
               x = tick.xy$x3[idx]/scale_factor,
               y = tick.xy$y3[idx]/scale_factor,
@@ -367,7 +367,7 @@ view3dStructure <- function(obj, k=3, feature.gr,
             )
           })
           
-          names(tick_labels) <- coor_text
+          names(tick_labels) <- coor_text[keep]
           geometries <- c(geometries, tick_labels)
         }
       }
@@ -385,7 +385,8 @@ view3dStructure <- function(obj, k=3, feature.gr,
           type = 'line',
           tag = 'gene_body',
           properties = list(
-            size = lwd.gene
+            size = lwd.gene,
+            target = genePos$fgf$label[idx]
           )
         )
       })
@@ -418,7 +419,8 @@ view3dStructure <- function(obj, k=3, feature.gr,
             tag = 'tss_labels',
             properties = list(headLength =as.numeric(arrowLen)*.2,
                               headWidth =as.numeric(arrowLen)*.2,
-                              size = lwd.gene/2)
+                              size = lwd.gene/2,
+                              target = genePos$fgf$label[idx])
           )
         })
         names(tss_arrow) <- paste0('arrow_', genePos$fgf$label[isGene])
@@ -437,7 +439,8 @@ view3dStructure <- function(obj, k=3, feature.gr,
           properties = list(
             radius = convertUnit(genePos$fgf$size[notGene], unitTo = 'inch',
                                  valueOnly = TRUE)/5,
-            pch = genePos$fgf$pch[notGene]
+            pch = genePos$fgf$pch[notGene],
+            target = genePos$fgf$label[notGene]
           )
         )
       }
