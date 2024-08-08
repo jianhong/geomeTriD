@@ -17,3 +17,12 @@
   top: calc(50% - 1px);
   left: 0px;
 }
+
+.tjviewer_resizeblock {
+  position: absolute;
+  cursor: nwse-resize;
+  background-color: darkgray;
+  
+  width: 5px;
+  height: 5px;
+}
