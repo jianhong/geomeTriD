@@ -116,6 +116,12 @@ class tjViewer{
     this.container = el;
     el.appendChild(this.slider);
     this.sliderPos = this.height/2;
+    
+    this.resizeBlock = document.createElement('div');
+    this.resizeBlock.className = 'tjviewer_resizeblock';
+    this.setResizeBlockPos();
+    el.appendChild(this.resizeBlock);
+    this.resizeCanvas(this.resizeBlock);
       
     var near = .0001
     var far = 100
@@ -834,6 +840,11 @@ class tjViewer{
   
   getLayer(tag){
     return(this.layer[tag]);
+  }
+  
+  setResizeBlockPos(){
+    this.resizeBlock.style.top = this.container.offsetTop + this.height - 5 + 'px';
+    this.resizeBlock.style.left = this.container.offsetLeft + this.width - 5 + 'px';
   }
   
   initSlider() {
@@ -1832,6 +1843,40 @@ class tjViewer{
     this.gui.close();
   }
   
+  
+  resizeCanvas(elmnt){
+      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      elmnt.onmousedown = dragMouseDown;
+      function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+      }
+      var elementDrag =function(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        //elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+        this.onWindowResize(this.width-pos1, this.height-pos2);
+      }.bind(this)
+      var closeDragElement = function() {
+        // stop moving when mouse button is released:
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+  }
+  
   onWindowResize(width, height){
     this.width = width;
     this.height = height;
@@ -1857,6 +1902,8 @@ class tjViewer{
     
     this.cameraInsert.aspect = this.insetWidth / this.insetHeight;
     this.cameraInsert.updateProjectionMatrix();
+    
+    this.setResizeBlockPos();
   }
   
   animate(inset=true){
@@ -2043,9 +2090,9 @@ class tjViewer{
           this.cameraInsert.quaternion.copy( this.camera.quaternion );
           
           this.scene.background = new THREE.Color(
-            1-this.background.r * this.bckalpha,
-            1-this.background.g * this.bckalpha,
-            1-this.background.b * this.bckalpha
+            Math.max(this.background.r * this.bckalpha - 0.05, 0.01),
+            Math.max(this.background.g * this.bckalpha - 0.05, 0.01),
+            Math.max(this.background.b * this.bckalpha - 0.05, 0.01)
           );
           this.renderer.render(this.scene, this.cameraInsert );
           // set color back
