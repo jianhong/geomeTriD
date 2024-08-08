@@ -4,6 +4,7 @@
 #' @param range The region to plot. an object of \link[GenomicRanges:GRanges-class]{GRanges}
 #' @param feature.gr The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.
 #' @param genomicSigs The genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.
+#' @param signalTransformFun The transformation function for genomic signals.
 #' @param label_region Label the region node or not.
 #' @param show_edges Plot the interaction edges or not.
 #' @param show_cluster Plot the cluster background or not.
@@ -61,6 +62,7 @@
 #' feature.gr$pch[feature.gr$type=='cRE'] <- 11
 #' loopBouquetPlot(gi, range, feature.gr)
 loopBouquetPlot <- function(gi, range, feature.gr, genomicSigs,
+                            signalTransformFun=function(x){log2(x+1)},
                             label_region=FALSE, show_edges=TRUE, 
                             show_cluster=TRUE,
                             lwd.backbone = 2, col.backbone = 'gray',
@@ -82,6 +84,7 @@ loopBouquetPlot <- function(gi, range, feature.gr, genomicSigs,
                             doReduce = FALSE,
                             ...){
   gi <- checkGI(gi)
+  stopifnot(is.function(signalTransformFun))
   stopifnot(is.numeric(coor_mark_interval))
   stopifnot(length(coor_mark_interval)==1)
   if(!missing(range)){
@@ -336,6 +339,7 @@ loopBouquetPlot <- function(gi, range, feature.gr, genomicSigs,
   objCoor <- plotBouquet(pP=plotPoints,
                          fgf=feature.gr,
                          genomicSigs=genomicSigs,
+                         signalTransformFun=signalTransformFun,
                          lwd.backbone=lwd.backbone,
                          col.backbone=col.backbone,
                          lwd.maxGenomicSigs = lwd.maxGenomicSigs,
@@ -1184,7 +1188,7 @@ safeObjCoor <- function(objCoor, obj, x, y, xlim, ylim, logic=TRUE, force=6){
 }
 #' @importFrom grid textGrob grid.segments gpar grid.lines linesGrob grid.text
 #' grid.draw arrow grid.points
-plotBouquet <- function(pP, fgf, genomicSigs,
+plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
                         lwd.backbone, col.backbone,
                         lwd.maxGenomicSigs,
                         reverseGenomicSigs,
@@ -1201,6 +1205,7 @@ plotBouquet <- function(pP, fgf, genomicSigs,
                         safe_text_force = 6,
                         arrowLen, rate=9, kd=2,
                         xlim,ylim){
+  stopifnot(is.function(signalTransformFun))
   ## split the canvas by safe_text_force parameter
   res_row <- ceiling(abs(diff(xlim))/objWidth(xlim, textGrob('w')))*safe_text_force
   res_col <- ceiling(abs(diff(ylim))/objHeight(xlim, textGrob('f')))*safe_text_force
@@ -1233,23 +1238,23 @@ plotBouquet <- function(pP, fgf, genomicSigs,
     stopifnot('score' %in% colnames(mcols(genomicSigs)))
     genomicSigs <- resampleDataByFun(genomicSigs, curve_gr, dropZERO = FALSE,
                                  na.rm = TRUE)
-    genomicSigScoreRange <- quantile(log2(genomicSigs$score+1),
+    genomicSigScoreRange <- quantile(signalTransformFun(genomicSigs$score),
                                   probs = c(.1, .99))
     if(genomicSigScoreRange[1]==genomicSigScoreRange[2]){
-      genomicSigScoreRange <- range(log2(genomicSigs$score+1))
+      genomicSigScoreRange <- range(signalTransformFun(genomicSigs$score))
     }
     if(genomicSigScoreRange[1]!=genomicSigScoreRange[2]){
       genomicSigBreaks <- c(-1,
                          seq(genomicSigScoreRange[1],
                              genomicSigScoreRange[2],
                              length.out = lwd.maxGenomicSigs-1),
-                         max(log2(genomicSigs$score+1))+1)
+                         max(signalTransformFun(genomicSigs$score))+1)
       genomicSiglabels <- seq_along(genomicSigBreaks)[-length(genomicSigBreaks)]
       if(reverseGenomicSigs){
         genomicSiglabels <- rev(genomicSiglabels)
       }
       genomicSigs$lwd <- as.numeric(as.character(
-        cut(log2(genomicSigs$score+1),
+        cut(signalTransformFun(genomicSigs$score),
             breaks=genomicSigBreaks,
             labels = genomicSiglabels)))
       ## add genomic signals

@@ -5,3 +5,11 @@ orderedGR <- function(gr=GRanges()){
     gr
   }
 }
+
+checkSignalTransformFun <- function(signalTransformFun){
+  if(length(signalTransformFun)>1){
+    stopifnot(all(vapply(signalTransformFun, is.function, FUN.VALUE = logical(1L))))
+  }else{
+    stopifnot(is.function(signalTransformFun))
+  }
+}

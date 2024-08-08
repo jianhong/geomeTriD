@@ -6,6 +6,7 @@
 #' @param feature.gr The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.
 #' @param k The dimension of plot. 2: 2d, 3: 3d.
 #' @param genomicSigs The genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.
+#' @param signalTransformFun The transformation function for genomic signals.
 #' @param show_coor Plot ticks in the line to show the DNA compact tension.
 #' @param reverseGenomicSigs Plot the genomic signals in reverse values.
 #' @param coor_tick_unit The bps for every ticks. Default is 1K.
@@ -54,6 +55,7 @@
 #' mdsPlot(gi, range, feature.gr)
 mdsPlot <- function(gi, range, feature.gr, k=2,
                     genomicSigs,
+                    signalTransformFun = function(x){log2(x+1)},
                     lwd.backbone = 2, col.backbone = 'gray',
                     lwd.maxGenomicSigs = 8, reverseGenomicSigs = TRUE,
                     col.backbone_background = 
@@ -118,6 +120,7 @@ mdsPlot <- function(gi, range, feature.gr, k=2,
   view3dStructure(obj=p, k=k,
                   feature.gr=feature.gr,
                   genomicSigs=genomicSigs,
+                  signalTransformFun=signalTransformFun,
                   renderer=renderer,
                   lwd.backbone = lwd.backbone,
                   col.backbone = col.backbone,

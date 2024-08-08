@@ -10,6 +10,9 @@ mdsPlot(
   feature.gr,
   k = 2,
   genomicSigs,
+  signalTransformFun = function(x) {
+     log2(x + 1)
+ },
   lwd.backbone = 2,
   col.backbone = "gray",
   lwd.maxGenomicSigs = 8,
@@ -41,6 +44,8 @@ mdsPlot(
 \item{k}{The dimension of plot. 2: 2d, 3: 3d.}
 
 \item{genomicSigs}{The genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.}
+
+\item{signalTransformFun}{The transformation function for genomic signals.}
 
 \item{lwd.backbone, lwd.gene, lwd.tension_line, lwd.maxGenomicSigs}{Line width for the 
 linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed genomic signal.}

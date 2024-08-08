@@ -9,6 +9,9 @@ view3dStructure(
   k = 3,
   feature.gr,
   genomicSigs,
+  signalTransformFun = function(x) {
+     log2(x + 1)
+ },
   renderer = c("rgl", "threejs", "none"),
   lwd.backbone = 2,
   col.backbone = "gray",
@@ -38,6 +41,8 @@ view3dStructure(
 \item{feature.gr}{The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.}
 
 \item{genomicSigs}{The Genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.}
+
+\item{signalTransformFun}{The transformation function for genomic signals.}
 
 \item{renderer}{The renderer of the 3D plots. Could be rgl or threejs.
 The threejs will create a htmlwidgets. If 'none' is set, a list of object

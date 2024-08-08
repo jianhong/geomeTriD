@@ -9,6 +9,9 @@ loopBouquetPlot(
   range,
   feature.gr,
   genomicSigs,
+  signalTransformFun = function(x) {
+     log2(x + 1)
+ },
   label_region = FALSE,
   show_edges = TRUE,
   show_cluster = TRUE,
@@ -45,6 +48,8 @@ loopBouquetPlot(
 \item{feature.gr}{The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.}
 
 \item{genomicSigs}{The genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.}
+
+\item{signalTransformFun}{The transformation function for genomic signals.}
 
 \item{label_region}{Label the region node or not.}
 

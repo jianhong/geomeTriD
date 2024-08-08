@@ -1,3 +1,10 @@
+Changes in version 0.0.19
+
+    o Add group adjust controler for threeJsViewer.
+    o Add background color controler for threeJsViewer.
+    o Make the controler dragable for threeJsViewer.
+    o Add signalTransformFun for view3dStructure.
+    
 Changes in version 0.0.18
 
     o Add search by coordinates for threeJsViewer.

@@ -5,7 +5,7 @@
 \title{rgl Viewer
 View the 3d structure by rgl.}
 \usage{
-rglViewer(..., background = "#00000088")
+rglViewer(..., background = "gray")
 }
 \arguments{
 \item{...}{objects of threeJsGeometry.}

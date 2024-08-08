@@ -5,6 +5,7 @@
 #' @param k The dimension of plot. 2: 2d, 3: 3d.
 #' @param feature.gr The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.
 #' @param genomicSigs The Genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.
+#' @param signalTransformFun The transformation function for genomic signals.
 #' @param renderer The renderer of the 3D plots. Could be rgl or threejs.
 #' The threejs will create a htmlwidgets. If 'none' is set, a list of object
 #' will be returned.
@@ -44,6 +45,7 @@
 #'    length.arrow=grid::unit(0.000006, 'native'))
 view3dStructure <- function(obj, k=3, feature.gr,
                             genomicSigs,
+                            signalTransformFun = function(x){log2(x+1)},
                             renderer = c('rgl', 'threejs', 'none'),
                             lwd.backbone = 2, col.backbone = 'gray',
                             lwd.maxGenomicSigs = 8, reverseGenomicSigs = TRUE,
@@ -62,6 +64,7 @@ view3dStructure <- function(obj, k=3, feature.gr,
                             square = TRUE,
                             ...){
   stopifnot(is(obj, 'GRanges'))
+  checkSignalTransformFun(signalTransformFun)
   stopifnot(
     'Only work for data in a single chromsome.'=
       all(as.character(seqnames(obj))==as.character(seqnames(obj)[1])))
@@ -157,6 +160,7 @@ view3dStructure <- function(obj, k=3, feature.gr,
     objCoor <- plotBouquet(pP=pP,
                            fgf=feature.gr,
                            genomicSigs=genomicSigs,
+                           signalTransformFun=signalTransformFun,
                            lwd.backbone=lwd.backbone,
                            col.backbone=col.backbone,
                            lwd.maxGenomicSigs = lwd.maxGenomicSigs,
@@ -237,7 +241,11 @@ view3dStructure <- function(obj, k=3, feature.gr,
       if(length(names(genomicSigs))!=length(genomicSigs)){
         names(genomicSigs) <- paste0('Signal_', seq_along(genomicSigs))
       }
-      genomic_signal_geometry <- mapply(function(GenoSig, .name, revGenoSig){
+      if(length(signalTransformFun)!=length(genomicSigs)){
+        signalTransformFun <- rep(list(signalTransformFun),
+                                  length(genomicSigs))
+      }
+      genomic_signal_geometry <- mapply(function(GenoSig, .name, .signalTransformFun, revGenoSig, .lwd.maxGenomicSigs){
         this.col.backbone_background <- col.backbone_background
         if(is(GenoSig, 'track')){
           if(GenoSig$format=='WIG'){
@@ -257,24 +265,25 @@ view3dStructure <- function(obj, k=3, feature.gr,
         stopifnot('score' %in% colnames(mcols(GenoSig)))
         GenoSig <- resampleDataByFun(GenoSig, obj, dropZERO = FALSE,
                                      na.rm = TRUE)
-        genomicSigScoreRange <- quantile(log2(GenoSig$score+1),
+        transformedSignals <- .signalTransformFun(GenoSig$score)
+        genomicSigScoreRange <- quantile(transformedSignals,
                                       probs = c(.1, .99))
         if(genomicSigScoreRange[1]==genomicSigScoreRange[2]){
-          genomicSigScoreRange <- range(log2(GenoSig$score+1))
+          genomicSigScoreRange <- range(transformedSignals)
         }
         if(genomicSigScoreRange[1]!=genomicSigScoreRange[2]){
           genomicSigBreaks <- c(-1,
                              seq(genomicSigScoreRange[1],
                                  genomicSigScoreRange[2],
-                                 length.out = lwd.maxGenomicSigs-1),
-                             max(log2(GenoSig$score+1))+1)
+                                 length.out = .lwd.maxGenomicSigs-1),
+                             max(transformedSignals)+1)
           genomicSiglabels <- seq_along(genomicSigBreaks)[-length(genomicSigBreaks)]
           if(revGenoSig){
             genomicSiglabels <- rev(genomicSiglabels)
             this.col.backbone_background <- rev(this.col.backbone_background)
           }
           GenoSig$lwd <- as.numeric(as.character(
-            cut(log2(GenoSig$score+1),
+            cut(transformedSignals,
                 breaks=genomicSigBreaks,
                 labels = genomicSiglabels)))
           genomicSigLwd <- sort(unique(GenoSig$lwd))
@@ -309,7 +318,10 @@ view3dStructure <- function(obj, k=3, feature.gr,
         }else{
           NULL
         }
-      }, genomicSigs, names(genomicSigs), reverseGenomicSigs, SIMPLIFY = FALSE)
+      }, genomicSigs, names(genomicSigs),
+      signalTransformFun,
+      reverseGenomicSigs, lwd.maxGenomicSigs,
+      SIMPLIFY = FALSE)
       geometries <- c(geometries,
                       unlist(genomic_signal_geometry[
                         lengths(genomic_signal_geometry)>0]))
