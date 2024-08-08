@@ -24,8 +24,42 @@ import { DRACOExporter } from 'three/addons/exporters/DRACOExporter.js';
 // module Widget
 class tjViewer{
   constructor(el, width, height){
+    // clear el
+    el.textContent = '';
     //add gui first
     this.gui = new GUI({container:el});
+    function dragGUI(elmnt){
+      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      elmnt.children[0].onmousedown = dragMouseDown;
+      function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+      }
+      function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+      }
+      function closeDragElement() {
+        // stop moving when mouse button is released:
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+    dragGUI(this.gui.domElement);
     
     //viewer
     this.width = width;
@@ -145,6 +179,7 @@ class tjViewer{
       cameraparam.YX_aspect = val;
       cameraparam.changed = true;
     }).onFinishChange(cameraparam.setAspect);
+    
     this.maxRadius = 1;
     this.maxLineWidth = 50;
     // search GUI
@@ -693,6 +728,91 @@ class tjViewer{
     const exporterBotton = exporterGUI.add(expparam, 'export');
     this.layer = {};
     
+    // background color gui
+    this.bckcolparam = {
+      color: this.background,
+      alpha: this.bckalpha,
+      bottomColor: this.backgroundBottom,
+      bottomAlpha: this.bckalphaBottom,
+      rightColor: this.background2,
+      rightAlpha: this.bckalpha2,
+      bottomRight: this.backgroundBottom2,
+      bottomRightAlhpa: this.bckalphaBottom2
+    }
+    this.bckcolGUI = this.gui.addFolder('background colors');
+    this.bckcolGUI.addColor(this.bckcolparam, 'color').onChange( val =>{
+      this.bckcolparam.color = new THREE.Color(val);
+      this.background = new THREE.Color(val);
+      this.scene.background = new THREE.Color(
+            this.background.r * this.bckalpha,
+            this.background.g * this.bckalpha,
+            this.background.b * this.bckalpha
+          );
+    });
+    this.bckcolGUI.add(this.bckcolparam, 'alpha', 0, 1).onChange( val =>{
+      this.bckcolparam.alpha = val;
+      this.bckalpha = val;
+      this.scene.background = new THREE.Color(
+            this.background.r * this.bckalpha,
+            this.background.g * this.bckalpha,
+            this.background.b * this.bckalpha
+          );
+    });
+    this.bckcolGUI.addColor(this.bckcolparam, 'bottomColor').onChange( val =>{
+      this.bckcolparam.bottomColor = new THREE.Color(val);
+      this.backgroundBottom = new THREE.Color(val);
+      this.sceneBottom.background = new THREE.Color(
+            this.backgroundBottom.r * this.bckalphaBottom,
+            this.backgroundBottom.g * this.bckalphaBottom,
+            this.backgroundBottom.b * this.bckalphaBottom
+          );
+    }).hide();
+    this.bckcolGUI.add(this.bckcolparam, 'bottomAlpha', 0, 1).onChange( val =>{
+      this.bckcolparam.bottomAlpha = val;
+      this.bckalphaBottom = val;
+      this.sceneBottom.background = new THREE.Color(
+            this.backgroundBottom.r * this.bckalphaBottom,
+            this.backgroundBottom.g * this.bckalphaBottom,
+            this.backgroundBottom.b * this.bckalphaBottom
+          );
+    }).hide();
+    this.bckcolGUI.addColor(this.bckcolparam, 'rightColor').onChange( val =>{
+      this.bckcolparam.rightColor = new THREE.Color(val);
+      this.background2 = new THREE.Color(val);
+      this.scene2.background = new THREE.Color(
+            this.background2.r * this.bckalpha2,
+            this.background2.g * this.bckalpha2,
+            this.background2.b * this.bckalpha2
+          );
+    }).hide();
+    this.bckcolGUI.add(this.bckcolparam, 'rightAlpha', 0, 1).onChange( val =>{
+      this.bckcolparam.rightAlpha = val;
+      this.bckalpha2 = val;
+      this.scene2.background = new THREE.Color(
+            this.background2.r * this.bckalpha2,
+            this.background2.g * this.bckalpha2,
+            this.background2.b * this.bckalpha2
+          );
+    }).hide();
+    this.bckcolGUI.addColor(this.bckcolparam, 'bottomRight').onChange( val =>{
+      this.bckcolparam.bottomRight = new THREE.Color(val);
+      this.backgroundBottom2 = new THREE.Color(val);
+      this.sceneBottom2.background = new THREE.Color(
+            this.backgroundBottom2.r * this.bckalphaBottom2,
+            this.backgroundBottom2.g * this.bckalphaBottom2,
+            this.backgroundBottom2.b * this.bckalphaBottom2
+          );
+    }).hide();
+    this.bckcolGUI.add(this.bckcolparam, 'bottomRightAlhpa', 0, 1).onChange( val =>{
+      this.bckcolparam.bottomRightAlhpa = val;
+      this.bckalphaBottom2 = val;
+      this.sceneBottom2.background = new THREE.Color(
+            this.backgroundBottom2.r * this.bckalphaBottom2,
+            this.backgroundBottom2.g * this.bckalphaBottom2,
+            this.backgroundBottom2.b * this.bckalphaBottom2
+          );
+    }).hide();
+    
     // spotlight GUI
     let directionalLight; 
     directionalLight = new THREE.DirectionalLight( 0xffffff, 200 );
@@ -748,7 +868,7 @@ class tjViewer{
   }
   
   create_plot(x){
-    console.log(x);
+    //console.log(x);
     //const twoPi = Math.PI * 2;
     //x is a named array
     if('background' in x){
@@ -759,12 +879,20 @@ class tjViewer{
         x.background.b[0]
       );
       this.bckalpha = x.background.alpha[0];
+      this.bckcolparam.color = this.background;
+      this.bckcolparam.alpha = this.bckalpha;
+      this.bckcolGUI.controllers[0].setValue(this.background);
+      this.bckcolGUI.controllers[1].setValue(this.bckalpha);
       this.background2 = new THREE.Color(
         x.background.r[2],
         x.background.g[2],
         x.background.b[2]
       );
       this.bckalpha2 = x.background.alpha[2];
+      this.bckcolparam.rightColor = this.background2;
+      this.bckcolparam.rightAlpha = this.bckalpha2;
+      this.bckcolGUI.controllers[4].setValue(this.background2);
+      this.bckcolGUI.controllers[5].setValue(this.bckalpha2);
     }
     if('maxRadius' in x){
       this.maxRadius = x.maxRadius;
@@ -783,6 +911,8 @@ class tjViewer{
         this.labelRenderer2.setSize( this.width/2, this.height );
         this.labelRenderer2.domElement.style.left = this.width/2+'px';
         this.container.insertBefore(this.labelRenderer2.domElement, this.slider);
+        this.bckcolGUI.controllers[4].show();
+        this.bckcolGUI.controllers[5].show();
       }
     }
     if('overlay' in x){
@@ -807,6 +937,10 @@ class tjViewer{
             x.background.g[1] * this.bckalphaBottom,
             x.background.b[1] * this.bckalphaBottom
           );
+          this.bckcolparam.bottomColor = this.backgroundBottom;
+          this.bckcolparam.bottomAlpha = this.bckalphaBottom;
+          this.bckcolGUI.controllers[2].setValue(this.backgroundBottom).show();
+          this.bckcolGUI.controllers[3].setValue(this.bckalphaBottom).show();
           this.scene2.background = new THREE.Color(
             x.background.r[2] * this.bckalpha2,
             x.background.g[2] * this.bckalpha2,
@@ -823,13 +957,24 @@ class tjViewer{
             x.background.g[3] * this.bckalphaBottom2,
             x.background.b[3] * this.bckalphaBottom2
           );
+          this.bckcolparam.bottomRight = this.backgroundBottom2;
+          this.bckcolparam.bottomRightAlpha = this.bckalphaBottom2;
+          this.bckcolGUI.controllers[6].setValue(this.backgroundBottom2);
+          this.bckcolGUI.controllers[7].setValue(this.bckalphaBottom2);
+          if(this.sideBySide){
+            this.bckcolGUI.controllers[6].show();
+            this.bckcolGUI.controllers[7].show();
+          }
         }
     }
     
     const arrowLayer = [];
+    const groupFolder = this.gui.addFolder('Group setting');
+    const groupFolderObj = {};
+    const groupParamObj = {};
     if('taglayers' in x){
       const labelLayer = {};
-      const layerFolder = this.gui.addFolder('show/hide');
+      const layerFolder = groupFolder.addFolder('show/hide');
       var lay=0;
       if(!Array.isArray(x.taglayers)){
         x.taglayers=[x.taglayers];
@@ -879,6 +1024,12 @@ class tjViewer{
         }
       }
     }
+    function getGUIbyName(name, fld){
+          const id = fld.children.forEach((it, id)=>{
+            if(it._name==name) return(id);
+          });
+          return(typeof id == 'undefined');
+    }
     // each element 
     for(var k in x){
       if(k!='background' && k!='maxRadius' &&
@@ -898,7 +1049,320 @@ class tjViewer{
           'transparent':true
         };
         const len = ele.positions.length/3;
-        const folder = this.gui.addFolder(ele.type+' '+k);
+        if(typeof groupFolderObj[ele.tag] == 'undefined'){
+          groupFolderObj[ele.tag] = this.gui.addFolder(ele.tag);
+          groupParamObj[ele.tag] = param;
+          for(var key in param){
+            if(getGUIbyName(key, groupFolderObj[ele.tag])){
+              if(ele.hasOwnProperty(key)){
+                switch(key){
+                  case 'size':
+                    groupFolderObj[ele.tag].add(
+                      groupParamObj[ele.tag], key, 0, this.maxLineWidth)
+                      .onChange((val) => {
+                        groupParamObj[ele.tag].size = val;
+                        var traverseFun = function(obj){
+                          if(obj.isMesh){
+                            if(obj.layers.mask == Math.pow(2, this.getLayer(ele.tag))){
+                              if(obj.isLine2 || obj.isLineSegments2){
+                                obj.material.linewidth = val;
+                              }
+                            }
+                          }
+                        }.bind(this);
+                        this.objects.traverse(traverseFun);
+                        this.objectsBottom.traverse(traverseFun);
+                        if(this.sideBySide){
+                          this.objects2.traverse(traverseFun);
+                          this.objectsBottom2.traverse(traverseFun);
+                        }
+                      });
+                    break;
+                  case 'radius':
+                    groupFolderObj[ele.tag].add(
+                      groupParamObj[ele.tag], key, 0, this.maxRadius)
+                      .onChange(val => {
+                        groupParamObj[ele.tag].radius = val;
+                        var traverseFun = function(obj){
+                          if(obj.isMesh){
+                            if(obj.layers.mask == Math.pow(2, this.getLayer(ele.tag))){
+                              switch(obj.geometry.type){
+                                case 'SphereGeometry':
+                                  updateGroupGeometry(obj, new THREE.SphereGeometry(val, 32, 16));
+                                  break;
+                                case 'CapsuleGeometry':
+                                  updateGroupGeometry(obj, new THREE.CapsuleGeometry(val, obj.geometry.parameters.height));
+                                  break;
+                                case 'ConeGeometry':
+                                  updateGroupGeometry(obj, new THREE.ConeGeometry(val, obj.geometry.parameters.height));
+                                  break;
+                                case 'DodecahedronGeometry':
+                                  updateGroupGeometry(obj, new THREE.DodecahedronGeometry(val));
+                                  break;
+                                case 'IcosahedronGeometry':
+                                  updateGroupGeometry(obj, new THREE.IcosahedronGeometry(val));
+                                  break;
+                                case 'OctahedronGeometry':
+                                  updateGroupGeometry(obj, new THREE.OctahedronGeometry(val));
+                                  break;
+                                case 'TetrahedronGeometry':
+                                  updateGroupGeometry(obj, new THREE.TetrahedronGeometry(val));
+                                  break;
+                                case 'TorusGeometry':
+                                  updateGroupGeometry(obj, new THREE.TorusGeometry(val, obj.geometry.parameters.tube));
+                                  break;
+                                default:
+                                  console.log(obj);
+                              }
+                            }
+                          }
+                        }.bind(this);
+                        this.objects.traverse(traverseFun);
+                        this.objectsBottom.traverse(traverseFun);
+                        if(this.sideBySide){
+                          this.objects2.traverse(traverseFun);
+                          this.objectsBottom2.traverse(traverseFun);
+                        }
+                      });
+                      break;
+                    case 'radiusTop':
+                      groupFolderObj[ele.tag].add(
+                      groupParamObj[ele.tag], key, 0, this.maxRadius)
+                      .onChange(val => {
+                        groupParamObj[ele.tag].radiusTop = val;
+                        var traverseFun = function(obj){
+                          if(obj.isMesh){
+                            if(obj.layers.mask == Math.pow(2, this.getLayer(ele.tag))){
+                              switch(obj.geometry.type){
+                                case 'CylinderGeometry':
+                                  updateGroupGeometry(obj, new THREE.CylinderGeometry(
+                                    val,
+                                    obj.geometry.parameters.radiusBottom,
+                                    obj.geometry.parameters.height
+                                  ));
+                                  break;
+                                default:
+                                  console.log(obj);
+                              }
+                            }
+                          }
+                        }.bind(this);
+                        this.objects.traverse(traverseFun);
+                        this.objectsBottom.traverse(traverseFun);
+                        if(this.sideBySide){
+                          this.objects2.traverse(traverseFun);
+                          this.objectsBottom2.traverse(traverseFun);
+                        }
+                      });
+                      break;
+                    case 'radiusBottom':
+                      groupFolderObj[ele.tag].add(
+                      groupParamObj[ele.tag], key, 0, this.maxRadius)
+                      .onChange(val => {
+                        groupParamObj[ele.tag].radiusBottom = val;
+                        var traverseFun = function(obj){
+                          if(obj.isMesh){
+                            if(obj.layers.mask == Math.pow(2, this.getLayer(ele.tag))){
+                              switch(obj.geometry.type){
+                                case 'CylinderGeometry':
+                                  updateGroupGeometry(obj, new THREE.CylinderGeometry(
+                                    obj.geometry.parameters.radiusTop,
+                                    val,
+                                    obj.geometry.parameters.height
+                                  ));
+                                  break;
+                                default:
+                                  console.log(obj);
+                              }
+                            }
+                          }
+                        }.bind(this);
+                        this.objects.traverse(traverseFun);
+                        this.objectsBottom.traverse(traverseFun);
+                        if(this.sideBySide){
+                          this.objects2.traverse(traverseFun);
+                          this.objectsBottom2.traverse(traverseFun);
+                        }
+                      });
+                      break;
+                    case 'width':
+                      groupFolderObj[ele.tag].add(
+                      groupParamObj[ele.tag], key, 0, this.maxRadius)
+                      .onChange(val => {
+                        groupParamObj[ele.tag].width = val;
+                        var traverseFun = function(obj){
+                          if(obj.isMesh){
+                            if(obj.layers.mask == Math.pow(2, this.getLayer(ele.tag))){
+                              switch(obj.geometry.type){
+                                case 'BoxGeometry':
+                                  updateGroupGeometry(obj, new THREE.BoxGeometry(
+                                      val, 
+                                      obj.geometry.parameters.height,
+                                      obj.geometry.parameters.depth));
+                                  break;
+                                default:
+                                  console.log(obj);
+                              }
+                            }
+                          }
+                        }.bind(this);
+                        this.objects.traverse(traverseFun);
+                        this.objectsBottom.traverse(traverseFun);
+                        if(this.sideBySide){
+                          this.objects2.traverse(traverseFun);
+                          this.objectsBottom2.traverse(traverseFun);
+                        }
+                      });
+                      break;
+                    case 'height':
+                      groupFolderObj[ele.tag].add(
+                      groupParamObj[ele.tag], key, 0, this.maxRadius)
+                      .onChange(val => {
+                        groupParamObj[ele.tag].height = val;
+                        var traverseFun = function(obj){
+                          if(obj.isMesh){
+                            if(obj.layers.mask == Math.pow(2, this.getLayer(ele.tag))){
+                              switch(obj.geometry.type){
+                                case 'BoxGeometry':
+                                  updateGroupGeometry(obj, new THREE.BoxGeometry(
+                                      obj.geometry.parameters.width, 
+                                      val,
+                                      obj.geometry.parameters.depth));
+                                  break;
+                                case 'CapsuleGeometry':
+                                  updateGroupGeometry(obj, new THREE.CapsuleGeometry(obj.geometry.parameters.radius, val));
+                                  break;
+                                case 'ConeGeometry':
+                                  updateGroupGeometry(obj, new THREE.ConeGeometry(obj.geometry.parameters.radius, val));
+                                  break;
+                                case 'CylinderGeometry':
+                                  updateGroupGeometry(obj, new THREE.CylinderGeometry(
+                                    obj.geometry.parameters.radiusTop,
+                                    obj.geometry.parameters.radiusBottom,
+                                    val
+                                  ));
+                                  break;
+                                default:
+                                  console.log(obj);
+                              }
+                            }
+                          }
+                        }.bind(this);
+                        this.objects.traverse(traverseFun);
+                        this.objectsBottom.traverse(traverseFun);
+                        if(this.sideBySide){
+                          this.objects2.traverse(traverseFun);
+                          this.objectsBottom2.traverse(traverseFun);
+                        }
+                      });
+                      break;
+                    case 'depth':
+                      groupFolderObj[ele.tag].add(
+                      groupParamObj[ele.tag], key, 0, this.maxRadius)
+                      .onChange(val => {
+                        groupParamObj[ele.tag].depth = val;
+                        var traverseFun = function(obj){
+                          if(obj.isMesh){
+                            if(obj.layers.mask == Math.pow(2, this.getLayer(ele.tag))){
+                              switch(obj.geometry.type){
+                                case 'BoxGeometry':
+                                  updateGroupGeometry(obj, new THREE.BoxGeometry(
+                                      obj.geometry.parameters.width, 
+                                      obj.geometry.parameters.height,
+                                      val));
+                                  break;
+                                default:
+                                  console.log(obj);
+                              }
+                            }
+                          }
+                        }.bind(this);
+                        this.objects.traverse(traverseFun);
+                        this.objectsBottom.traverse(traverseFun);
+                        if(this.sideBySide){
+                          this.objects2.traverse(traverseFun);
+                          this.objectsBottom2.traverse(traverseFun);
+                        }
+                      });
+                      break;
+                  case 'tube':
+                    groupFolderObj[ele.tag].add(
+                      groupParamObj[ele.tag], key, 0, this.maxRadius)
+                      .onChange(val => {
+                        groupParamObj[ele.tag].tube = val;
+                        var traverseFun = function(obj){
+                          if(obj.isMesh){
+                            if(obj.layers.mask == Math.pow(2, this.getLayer(ele.tag))){
+                              switch(obj.geometry.type){
+                                case 'TorusGeometry':
+                                 updateGroupGeometry(obj, new THREE.TorusGeometry(obj.geometry.parameters.radius, val));
+                                  break;
+                                default:
+                                  console.log(obj);
+                              }
+                            }
+                          }
+                        }.bind(this);
+                        this.objects.traverse(traverseFun);
+                        this.objectsBottom.traverse(traverseFun);
+                        if(this.sideBySide){
+                          this.objects2.traverse(traverseFun);
+                          this.objectsBottom2.traverse(traverseFun);
+                        }
+                      });
+                      break;
+                  default:
+                    groupFolderObj[ele.tag].add(
+                      groupParamObj[ele.tag], key, 0, this.maxRadius);
+                }
+              }else{
+                switch(key){
+                    case 'opacity':
+                      groupFolderObj[ele.tag].add(
+                        groupParamObj[ele.tag], key, 0, 1)
+                        .onChange(val=>{
+                          groupParamObj[ele.tag] = val;
+                          var traverseFun = function(obj){
+                            if(obj.isMesh){
+                              if(obj.layers.mask==Math.pow(2, this.getLayer(ele.tag))){
+                                obj.material.opacity = val;
+                              }
+                            }
+                          }.bind(this);
+                          this.objects.traverse(traverseFun);
+                          this.objectsBottom.traverse(traverseFun);
+                          if(this.sideBySide){
+                            this.objects2.traverse(traverseFun);
+                            this.objectsBottom2.traverse(traverseFun);
+                          }
+                        });
+                      break;
+                    case 'transparent':
+                      groupFolderObj[ele.tag].add(
+                        groupParamObj[ele.tag], key)
+                        .onChange(val=>{
+                          groupParamObj[ele.tag] = val;
+                          var traverseFun = function(obj){
+                            if(obj.isMesh){
+                              if(obj.layers.mask==Math.pow(2, this.getLayer(ele.tag))){
+                                obj.material.transparent = val;
+                              }
+                            }
+                          }.bind(this);
+                          this.objects.traverse(traverseFun);
+                          this.objectsBottom.traverse(traverseFun);
+                          if(this.sideBySide){
+                            this.objects2.traverse(traverseFun);
+                            this.objectsBottom2.traverse(traverseFun);
+                          }
+                        });
+                      break;
+                }
+              }
+            }
+          }
+        }
+        var folder = groupFolderObj[ele.tag].addFolder(ele.type+' '+k);
         let geometry = new THREE.BufferGeometry();
         let obj = new THREE.InstancedMesh();
         let material = new THREE.MeshStandardMaterial( {
@@ -1334,7 +1798,7 @@ class tjViewer{
             break;
           default:
         }
-        folder.add(param, 'opacity', 0, this.maxRadius).onChange( function( val ){
+        folder.add(param, 'opacity', 0, 1).onChange( function( val ){
           material.opacity = val;
         })
         folder.add(param, 'transparent').onChange( function( val ){
@@ -1362,6 +1826,9 @@ class tjViewer{
     this.sceneBottom.add(this.objectsBottom);
     this.scene2.add(this.objects2);
     this.sceneBottom2.add(this.objectsBottom2);
+    for(var key in groupFolderObj){
+      groupFolderObj[key].close();
+    }
     this.gui.close();
   }
   
