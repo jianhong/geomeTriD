@@ -2034,14 +2034,26 @@ class tjViewer{
         this.labelRenderer.render(this.scene, this.camera );
         // inset scene
         if(inset){
-          this.renderer.setClearColor( 0x222222, 1 );
+          this.renderer.setClearColor( 0xffffff, 1 );
           this.renderer.clearDepth(); // important!
           this.renderer.setScissorTest( true );
           this.renderer.setScissor( 20, 20, this.insetWidth, this.insetHeight );
           this.renderer.setViewport( 20, 20, this.insetWidth, this.insetHeight );
           this.cameraInsert.position.copy( this.camera.position );
           this.cameraInsert.quaternion.copy( this.camera.quaternion );
-          this.renderer.render( this.scene, this.cameraInsert );
+          
+          this.scene.background = new THREE.Color(
+            1-this.background.r * this.bckalpha,
+            1-this.background.g * this.bckalpha,
+            1-this.background.b * this.bckalpha
+          );
+          this.renderer.render(this.scene, this.cameraInsert );
+          // set color back
+          this.scene.background = new THREE.Color(
+            this.background.r * this.bckalpha,
+            this.background.g * this.bckalpha,
+            this.background.b * this.bckalpha
+          );
           this.renderer.setScissorTest( false );
         }
       }
