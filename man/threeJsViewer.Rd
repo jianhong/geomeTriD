@@ -25,6 +25,9 @@ threeJsViewer(
 
 \item{width, height}{width and height of the widgets.}
 }
+\value{
+A htmlwidgets widget.
+}
 \description{
 threeJs Viewer
 The htmlwidgets viewer for threeJs.

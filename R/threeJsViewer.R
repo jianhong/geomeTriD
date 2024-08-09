@@ -7,6 +7,7 @@
 #' @param maxRadius max value of the controls for radius.
 #' @param maxLineWidth max value of the controls for line width.
 #' @param width,height width and height of the widgets.
+#' @return A htmlwidgets widget.
 #' @examples
 #' # example code
 #' library(GenomicRanges)
@@ -134,7 +135,8 @@ threeJsViewer <- function(...,
 #' @param env The environment in which to evaluate \code{expr}.
 #' @param quoted Is \code{expr} a quoted expression (with \code{quote()})? This
 #'   is useful if you want to save an expression in a variable.
-#'
+#' @return An output or render function that enables the use of the 
+#' threeJsViewer widget.
 #' @name threeJsViewer-shiny
 #' @importFrom htmlwidgets shinyWidgetOutput
 #' @export

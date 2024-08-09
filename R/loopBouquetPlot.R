@@ -24,6 +24,7 @@
 #' @param method Plot method. Could be 1 or 2.
 #' @param doReduce Reduce the GInteractions or not.
 #' @param ... Parameter will be passed to \link[igraph:layout_with_fr]{layout_with_fr}.
+#' @return  A invisible list with the key points of the plot.
 #' @importClassesFrom InteractionSet GInteractions
 #' @importMethodsFrom InteractionSet regions anchorIds
 #' @importFrom GenomicRanges GRanges GRangesList
@@ -688,7 +689,7 @@ archPlot <- function(x, y, r, angle=300, init.angle=0, length.out=100, bck = FAL
   if(any(is.na(init.angle))){
     init.angle[is.na(init.angle)] <- 0
   }
-  gamma <- 2*pi * angle * (1:2) / 360 + init.angle * pi/180
+  gamma <- 2*pi * angle * c(1, 2) / 360 + init.angle * pi/180
   t2xy <- function(rx, t, x0, y0) list(x=rx*cos(t)+x0, y=rx*sin(t)+y0)
   P <- t2xy(r, seq.int(gamma[1], gamma[2], length.out = length.out), x, y)
   # The first 10 points and last 10 points use the mirror points

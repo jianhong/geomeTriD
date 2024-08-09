@@ -86,6 +86,9 @@ to turn it off. The default value 1e5 means show coordinates every 0.1M bp.}
 
 \item{...}{Parameter will be passed to \link[igraph:layout_with_fr]{layout_with_fr}.}
 }
+\value{
+A invisible list with the key points of the plot.
+}
 \description{
 plot graph for GInteractions
 }

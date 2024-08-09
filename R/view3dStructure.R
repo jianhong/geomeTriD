@@ -254,9 +254,9 @@ view3dStructure <- function(obj, k=3, feature.gr,
                                 from=start(range(obj)),
                                 to=end(range(obj)))
           }
-          if(length(GenoSig@style@color)){
-            if(!all(GenoSig@style@color=="black")){
-              this.col.backbone_background <- GenoSig@style@color
+          if(length(GenoSig$style$color)){
+            if(!all(GenoSig$style$color=="black")){
+              this.col.backbone_background <- GenoSig$style$color
             }
           }
           GenoSig <- GenoSig$dat
@@ -295,7 +295,7 @@ view3dStructure <- function(obj, k=3, feature.gr,
           }else{
             this.col.backbone_background <- rep(this.col.backbone_background,
                                            length(genomicSigLwd))
-            names(this.col.backbone_background) = genomicSigLwd
+            names(this.col.backbone_background) <- genomicSigLwd
           }
           genomic_signal <- lapply(genomicSigLwd, function(lwd){
             idx <- which(GenoSig$lwd==lwd)

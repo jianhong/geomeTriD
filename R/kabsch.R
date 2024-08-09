@@ -40,7 +40,7 @@ kabsch <- function(query, subject) {
   ## compute its singular value decomposition H = U D t(V)
   svd_res <- svd(ccm)
   # use the sign of the determinant to ensure a right-hand coordinate system
-  d = sign(det(svd_res$u) * det(svd_res$v))
+  d <- sign(det(svd_res$u) * det(svd_res$v))
   
   ## The rotation matrix will have (ncol - 1) leading ones in the diagonal
   diag_ones <- rep(1, dims[2] - 1)
