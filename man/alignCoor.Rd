@@ -16,13 +16,14 @@ A GRanges object of \code{query} aligned  to \code{subject}.
 Aligns two sets of points via rotations and translations by Kabsch Algorithm.
 }
 \examples{
-x <- readRDS(system.file('extdata', '4DNFI1UEG1HD.chr21.FLAMINGO.res.rds',
-    package='geomeTriD'))
+x <- readRDS(system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds",
+  package = "geomeTriD"
+))
 res <- alignCoor(x, x)
-A <- view3dStructure(x, k=3, renderer='none')
-B <- view3dStructure(res, k=3, renderer='none')
-B <- lapply(B, function(.ele){
-  .ele$side <- 'right'
+A <- view3dStructure(x, k = 3, renderer = "none")
+B <- view3dStructure(res, k = 3, renderer = "none")
+B <- lapply(B, function(.ele) {
+  .ele$side <- "right"
   .ele
 })
 threeJsViewer(c(A, B))

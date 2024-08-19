@@ -20,11 +20,15 @@ rgl Viewer
 View the 3d structure by rgl.
 }
 \examples{
-obj <- readRDS(system.file('extdata', '4DNFI1UEG1HD.chr21.FLAMINGO.res.rds',
-    package='geomeTriD'))
-feature.gr <- readRDS(system.file('extdata', '4DNFI1UEG1HD.feature.gr.rds',
-    package='geomeTriD'))
-tjg <- view3dStructure(obj, k=3, feature.gr=feature.gr, renderer='none',
-   length.arrow=grid::unit(0.000006, 'native'))
+obj <- readRDS(system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds",
+  package = "geomeTriD"
+))
+feature.gr <- readRDS(system.file("extdata", "4DNFI1UEG1HD.feature.gr.rds",
+  package = "geomeTriD"
+))
+tjg <- view3dStructure(obj,
+  k = 3, feature.gr = feature.gr, renderer = "none",
+  length.arrow = grid::unit(0.000006, "native")
+)
 rglViewer(tjg)
 }

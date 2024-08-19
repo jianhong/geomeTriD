@@ -29,7 +29,7 @@ threeJsGeometry(...)
 \item{object}{an object of threeJsGeometry}
 }
 \description{
-An object of class \code{"threeJsGeometry"} 
+An object of class \code{"threeJsGeometry"}
              represents `three.js` geometry.
 }
 \section{Slots}{
@@ -40,15 +40,17 @@ An object of class \code{"threeJsGeometry"}
 \item{\code{colors}}{\code{"character"}, the colors for each geometry.}
 
 \item{\code{type}}{\code{"charater"}, the type of the geometry. Available types are
-'arrow', 'box', 'capsule', 'cone', 'cylinder', 'dodecahedron', 'line', 
+'arrow', 'box', 'capsule', 'cone', 'cylinder',
+'circle',
+'dodecahedron', 'line',
 'label',
 'icosahedron', 'octahedron', 'segment', 'sphere', 'tetrahedron', 'text',
  and 'torus'.}
 
-\item{\code{side}}{\code{'character'}, the side for side by side plot in 
+\item{\code{side}}{\code{'character'}, the side for side by side plot in
 \link{threeJsViewer}.}
 
-\item{\code{layer}}{\code{'character'}, the two layer plot in 
+\item{\code{layer}}{\code{'character'}, the two layer plot in
 \link{threeJsViewer}.}
 
 \item{\code{tag}}{\code{'character'}, the tag used to group geometries.}

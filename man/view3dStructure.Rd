@@ -6,12 +6,12 @@
 \usage{
 view3dStructure(
   obj,
-  k = 3,
   feature.gr,
   genomicSigs,
   signalTransformFun = function(x) {
      log2(x + 1)
  },
+  k = 3,
   renderer = c("rgl", "threejs", "none"),
   lwd.backbone = 2,
   col.backbone = "gray",
@@ -36,19 +36,19 @@ view3dStructure(
 \arguments{
 \item{obj}{GRanges object with mcols x, y, and/or z}
 
-\item{k}{The dimension of plot. 2: 2d, 3: 3d.}
-
 \item{feature.gr}{The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.}
 
 \item{genomicSigs}{The Genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.}
 
 \item{signalTransformFun}{The transformation function for genomic signals.}
 
+\item{k}{The dimension of plot. 2: 2d, 3: 3d.}
+
 \item{renderer}{The renderer of the 3D plots. Could be rgl or threejs.
 The threejs will create a htmlwidgets. If 'none' is set, a list of object
 will be returned.}
 
-\item{lwd.backbone, lwd.gene, lwd.tension_line, lwd.maxGenomicSigs}{Line width for the 
+\item{lwd.backbone, lwd.gene, lwd.tension_line, lwd.maxGenomicSigs}{Line width for the
 linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed genomic signal.}
 
 \item{col.backbone, col.backbone_background, col.tension_line, col.coor}{Color
@@ -76,17 +76,21 @@ to turn it off. The default value 1e5 means show coordinates every 0.1M bp.}
 \item{...}{Not used.}
 }
 \value{
-Coordinates for 2d or a list of threeJsGeometry objects or a 
+Coordinates for 2d or a list of threeJsGeometry objects or a
 htmlwidget.
 }
 \description{
 Plot GRanges xyz data with grid or rgl package.
 }
 \examples{
-obj <- readRDS(system.file('extdata', '4DNFI1UEG1HD.chr21.FLAMINGO.res.rds',
-    package='geomeTriD'))
-feature.gr <- readRDS(system.file('extdata', '4DNFI1UEG1HD.feature.gr.rds',
-    package='geomeTriD'))
-tjg <- view3dStructure(obj, k=3, feature.gr=feature.gr, renderer='none',
-   length.arrow=grid::unit(0.000006, 'native'))
+obj <- readRDS(system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds",
+  package = "geomeTriD"
+))
+feature.gr <- readRDS(system.file("extdata", "4DNFI1UEG1HD.feature.gr.rds",
+  package = "geomeTriD"
+))
+tjg <- view3dStructure(obj,
+  k = 3, feature.gr = feature.gr, renderer = "none",
+  length.arrow = grid::unit(0.000006, "native")
+)
 }

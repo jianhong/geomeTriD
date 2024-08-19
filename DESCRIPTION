@@ -2,10 +2,9 @@ Package: geomeTriD
 Type: Package
 Title: A R/Bioconductor package for interactive 3D plot of epigenetic data or
   single cell data
-Version: 0.0.21
+Version: 0.0.22
 Authors@R: c(person(given="Jianhong", family="Ou", email="jianhong.ou@duke.edu", 
         role=c("aut", "cre"), comment=c(ORCID="0000-0002-8652-2488")))
-Maintainer: Jianhong Ou <jianhong.ou@duke.edu>
 Description: geomeTriD (Three Dimensional Geometry Package) 
   create interactive 3D plots using the GL library with the 'three.js' 
   visualization library (https://threejs.org) or the rgl library.
@@ -40,10 +39,12 @@ Imports:
   trackViewer
 Suggests: 
   RUnit, org.Hs.eg.db, TxDb.Hsapiens.UCSC.hg19.knownGene,
-  manipulateWidget,
+  manipulateWidget, shiny,
   BiocStyle, knitr, rmarkdown,
   testthat
 biocViews: Visualization
 VignetteBuilder: knitr
 RoxygenNote: 7.3.2
 Encoding: UTF-8
+URL: https://github.com/jianhong/geomeTriD
+BugReports: https://github.com/jianhong/geomeTriD/issues

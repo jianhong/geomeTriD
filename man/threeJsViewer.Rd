@@ -33,45 +33,61 @@ threeJs Viewer
 The htmlwidgets viewer for threeJs.
 }
 \examples{
-# example code
 library(GenomicRanges)
-flamingo <- system.file('extdata', "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds", package='geomeTriD')
+flamingo <- system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds", package = "geomeTriD")
 x <- readRDS(flamingo[[1]])
+## resize to bigger value to get better init view
+mcols(x) <- as.data.frame(mcols(x))*1e5 
 set.seed(1)
-line <- threeJsGeometry(x=x$x, y=x$y, z=x$z,
-                       colors = sample(palette(), length(x), replace = TRUE),
-                       type = 'line',
-                       properties = list(size=4))
+line <- threeJsGeometry(
+  x = x$x, y = x$y, z = x$z, 
+  colors = sample(palette(), length(x), replace = TRUE),
+  type = "line",
+  properties = list(size = 4)
+)
 sphere <- x[sample.int(length(x), 100)]
-sphere <- threeJsGeometry(x=sphere$x, y=sphere$y, z=sphere$z,
-                          colors = 'red',
-                          type = 'sphere',
-                          properties = list(radius=0.08))
+sphere <- threeJsGeometry(
+  x = sphere$x, y = sphere$y, z = sphere$z,
+  colors = "red",
+  type = "sphere",
+  properties = list(radius = 0.08)
+)
 torus <- x[sample.int(length(x), 100)]
-torus <- threeJsGeometry(x=torus$x, y=torus$y, z=torus$z,
-                          colors = 'blue',
-                          type = 'torus',
-                          properties = list(radius=0.08,
-                                            tube = 0.03))
+torus <- threeJsGeometry(
+  x = torus$x, y = torus$y, z = torus$z,
+  colors = "blue",
+  type = "torus",
+  properties = list(
+    radius = 0.08,
+    tube = 0.03
+  )
+)
 cylinder <- x[sample.int(length(x), 100)]
-cylinder <- threeJsGeometry(x=cylinder$x, y=cylinder$y, z=cylinder$z,
-                          colors = 'green',
-                          type = 'cylinder',
-                          properties = list(
-                            'height'=0.07,
-                            'radiusTop'=0.05,
-                            'radiusBottom'=0.09))
+cylinder <- threeJsGeometry(
+  x = cylinder$x, y = cylinder$y, z = cylinder$z,
+  colors = "green",
+  type = "cylinder",
+  properties = list(
+    "height" = 0.07,
+    "radiusTop" = 0.05,
+    "radiusBottom" = 0.09
+  )
+)
 labels <- x[sample.int(length(x), 5)]
-labels <- threeJsGeometry(x=labels$x, y=labels$y, z=labels$z,
-                          colors = 'black',
-                          type = 'text',
-                          properties = list(
-                            'label'='text',
-                            'font'=readLines(system.file(
-                              'extdata', "fonts", 
-                              'helvetiker_regular.typeface.json',
-                               package='geomeTriD')),
-                            'size'=.5,
-                            'depth'=.1))
+labels <- threeJsGeometry(
+  x = labels$x, y = labels$y, z = labels$z,
+  colors = "black",
+  type = "text",
+  properties = list(
+    "label" = "text",
+    "font" = readLines(system.file(
+      "extdata", "fonts",
+      "helvetiker_regular.typeface.json",
+      package = "geomeTriD"
+    )),
+    "size" = .5,
+    "depth" = .1
+  )
+)
 threeJsViewer(line, sphere, torus, cylinder, labels)
 }

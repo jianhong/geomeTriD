@@ -47,7 +47,7 @@ mdsPlot(
 
 \item{signalTransformFun}{The transformation function for genomic signals.}
 
-\item{lwd.backbone, lwd.gene, lwd.tension_line, lwd.maxGenomicSigs}{Line width for the 
+\item{lwd.backbone, lwd.gene, lwd.tension_line, lwd.maxGenomicSigs}{Line width for the
 linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed genomic signal.}
 
 \item{col.backbone, col.backbone_background, col.tension_line, col.coor}{Color
@@ -86,19 +86,22 @@ This function will convert the interactions scores into a
 distance matrix and then plot the matrix by multi-dimensional scaling plot.
 }
 \examples{
-library(InteractionSet) 
+library(InteractionSet)
 gi <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds",
- package="geomeTriD"))
+  package = "geomeTriD"
+))
 range <- GRanges("chr6", IRanges(51120000, 53200000))
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 library(org.Hs.eg.db)
 feature.gr <- genes(TxDb.Hsapiens.UCSC.hg19.knownGene)
 feature.gr <- subsetByOverlaps(feature.gr, range(regions(gi)))
-symbols <- mget(feature.gr$gene_id, org.Hs.egSYMBOL, ifnotfound=NA)
-feature.gr$label[lengths(symbols)==1] <- unlist(symbols[lengths(symbols)==1])
-feature.gr$col <- sample(1:7, length(feature.gr), replace=TRUE)
-feature.gr$type <- sample(c("cRE", "gene"), 
-                         length(feature.gr), replace=TRUE, 
-                         prob=c(0.1, 0.9))
+symbols <- mget(feature.gr$gene_id, org.Hs.egSYMBOL, ifnotfound = NA)
+feature.gr$label[lengths(symbols) == 1] <- unlist(symbols[lengths(symbols) == 1])
+feature.gr$col <- sample(1:7, length(feature.gr), replace = TRUE)
+feature.gr$type <- sample(c("cRE", "gene"),
+  length(feature.gr),
+  replace = TRUE,
+  prob = c(0.1, 0.9)
+)
 mdsPlot(gi, range, feature.gr)
 }

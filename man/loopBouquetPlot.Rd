@@ -57,7 +57,7 @@ loopBouquetPlot(
 
 \item{show_cluster}{Plot the cluster background or not.}
 
-\item{lwd.backbone, lwd.gene, lwd.nodeCircle, lwd.edge, lwd.tension_line, lwd.maxGenomicSigs}{Line width for the 
+\item{lwd.backbone, lwd.gene, lwd.nodeCircle, lwd.edge, lwd.tension_line, lwd.maxGenomicSigs}{Line width for the
 linker, gene, interaction node circle, the dashed line of interaction edges, the tension line and the maximal reversed genomic signal.}
 
 \item{col.backbone, col.backbone_background, col.nodeCircle, col.edge, col.tension_line, col.coor}{Color
@@ -93,20 +93,22 @@ A invisible list with the key points of the plot.
 plot graph for GInteractions
 }
 \examples{
-library(InteractionSet) 
-gi <- readRDS(system.file("extdata", "gi.rds", package="trackViewer"))
+library(InteractionSet)
+gi <- readRDS(system.file("extdata", "gi.rds", package = "trackViewer"))
 range <- GRanges("chr2", IRanges(234500000, 235000000))
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 library(org.Hs.eg.db)
 feature.gr <- genes(TxDb.Hsapiens.UCSC.hg19.knownGene)
 feature.gr <- subsetByOverlaps(feature.gr, range(regions(gi)))
-symbols <- mget(feature.gr$gene_id, org.Hs.egSYMBOL, ifnotfound=NA)
-feature.gr$label[lengths(symbols)==1] <- unlist(symbols[lengths(symbols)==1])
-feature.gr$col <- sample(1:7, length(feature.gr), replace=TRUE)
-feature.gr$type <- sample(c("cRE", "gene"), 
-                         length(feature.gr), replace=TRUE, 
-                         prob=c(0.1, 0.9))
+symbols <- mget(feature.gr$gene_id, org.Hs.egSYMBOL, ifnotfound = NA)
+feature.gr$label[lengths(symbols) == 1] <- unlist(symbols[lengths(symbols) == 1])
+feature.gr$col <- sample(1:7, length(feature.gr), replace = TRUE)
+feature.gr$type <- sample(c("cRE", "gene"),
+  length(feature.gr),
+  replace = TRUE,
+  prob = c(0.1, 0.9)
+)
 feature.gr$pch <- rep(NA, length(feature.gr))
-feature.gr$pch[feature.gr$type=='cRE'] <- 11
+feature.gr$pch[feature.gr$type == "cRE"] <- 11
 loopBouquetPlot(gi, range, feature.gr)
 }
