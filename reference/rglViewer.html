@@ -18,7 +18,7 @@ View the 3d structure by rgl."><!-- mathjax --><script src="https://cdnjs.cloudf
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geomeTriD</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.21</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.22</span>
       </span>
     </div>
 
@@ -55,7 +55,7 @@ View the 3d structure by rgl."><!-- mathjax --><script src="https://cdnjs.cloudf
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>rgl Viewer View the 3d structure by rgl.</h1>
-
+    <small class="dont-index">Source: <a href="https://github.com/jianhong/geomeTriD/blob/main/R/rglViewer.R" class="external-link"><code>R/rglViewer.R</code></a></small>
     <div class="hidden name"><code>rglViewer.Rd</code></div>
     </div>
 
@@ -87,12 +87,16 @@ View the 3d structure by rgl.</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata'</span>, <span class="st">'4DNFI1UEG1HD.chr21.FLAMINGO.res.rds'</span>,</span></span>
-<span class="r-in"><span>    package<span class="op">=</span><span class="st">'geomeTriD'</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">feature.gr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata'</span>, <span class="st">'4DNFI1UEG1HD.feature.gr.rds'</span>,</span></span>
-<span class="r-in"><span>    package<span class="op">=</span><span class="st">'geomeTriD'</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">tjg</span> <span class="op">&lt;-</span> <span class="fu"><a href="view3dStructure.html">view3dStructure</a></span><span class="op">(</span><span class="va">obj</span>, k<span class="op">=</span><span class="fl">3</span>, feature.gr<span class="op">=</span><span class="va">feature.gr</span>, renderer<span class="op">=</span><span class="st">'none'</span>,</span></span>
-<span class="r-in"><span>   length.arrow<span class="op">=</span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fl">0.000006</span>, <span class="st">'native'</span><span class="op">)</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"4DNFI1UEG1HD.chr21.FLAMINGO.res.rds"</span>,</span></span>
+<span class="r-in"><span>  package <span class="op">=</span> <span class="st">"geomeTriD"</span></span></span>
+<span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">feature.gr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"4DNFI1UEG1HD.feature.gr.rds"</span>,</span></span>
+<span class="r-in"><span>  package <span class="op">=</span> <span class="st">"geomeTriD"</span></span></span>
+<span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tjg</span> <span class="op">&lt;-</span> <span class="fu"><a href="view3dStructure.html">view3dStructure</a></span><span class="op">(</span><span class="va">obj</span>,</span></span>
+<span class="r-in"><span>  k <span class="op">=</span> <span class="fl">3</span>, feature.gr <span class="op">=</span> <span class="va">feature.gr</span>, renderer <span class="op">=</span> <span class="st">"none"</span>,</span></span>
+<span class="r-in"><span>  length.arrow <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fl">0.000006</span>, <span class="st">"native"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">rglViewer</span><span class="op">(</span><span class="va">tjg</span><span class="op">)</span></span></span>
 </code></pre></div>
     </div>

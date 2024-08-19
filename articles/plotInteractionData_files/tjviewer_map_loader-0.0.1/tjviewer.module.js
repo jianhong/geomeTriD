@@ -1008,6 +1008,13 @@ class tjViewer{
       }
       layerFolder.add(labelLayer, 'Toggle all arrows');
     }
+    if('tagWithChild' in x){
+      if(!Array.isArray(x.tagWithChild)){
+        x.tagWithChild = [x.tagWithChild];
+      }
+    }else{
+      x.tagWithChild = [];
+    }
     function updateGroupGeometry(mesh, geometry){
             mesh.geometry.dispose();
             mesh.geometry = geometry;
@@ -1035,6 +1042,10 @@ class tjViewer{
         }
       }
     }
+    function updateColor(obj, val){
+      obj.material.color.setHex(val);
+      console.log(obj.material.color);
+    }
     function getGUIbyName(name, fld){
           const id = fld.children.forEach((it, id)=>{
             if(it._name==name) return(id);
@@ -1045,6 +1056,7 @@ class tjViewer{
     for(var k in x){
       if(k!='background' && k!='maxRadius' &&
          k!='maxLineWidth' && k!='taglayers' &&
+         k!='tagWithChild' &&
          k!='overlay' && k!='sideBySide'){
         let ele = x[k];
         const param = {
@@ -1057,26 +1069,45 @@ class tjViewer{
           'height':0.08,
           'depth':0.08,
           'opacity':1,
-          'transparent':true
+          'transparent':true,
+          'color': new THREE.Color(
+                ele.colors[0],
+                ele.colors[1],
+                ele.colors[2]),
+          'thetaStart': 0,
+          'thetaLength': 2*Math.PI
         };
         const len = ele.positions.length/3;
         if(typeof groupFolderObj[ele.tag] == 'undefined'){
           groupFolderObj[ele.tag] = this.gui.addFolder(ele.tag);
           groupParamObj[ele.tag] = param;
           for(var key in param){
-            if(getGUIbyName(key, groupFolderObj[ele.tag])){
+            if(getGUIbyName(key, groupFolderObj[ele.tag]) &&
+            x.tagWithChild.indexOf(ele.tag) != -1){
               if(ele.hasOwnProperty(key)){
+                groupParamObj[ele.tag][key] = 0;
                 switch(key){
                   case 'size':
                     groupFolderObj[ele.tag].add(
-                      groupParamObj[ele.tag], key, 0, this.maxLineWidth)
-                      .onChange((val) => {
+                      groupParamObj[ele.tag], key, -10, 10, .5)
+                      .onFinishChange((val) => {
                         groupParamObj[ele.tag].size = val;
                         var traverseFun = function(obj){
                           if(obj.isMesh){
                             if(obj.layers.mask == Math.pow(2, this.getLayer(ele.tag))){
                               if(obj.isLine2 || obj.isLineSegments2){
-                                obj.material.linewidth = val;
+                                obj.material.linewidth += val;
+                              }
+                            }
+                          }else{
+                            if(obj.isCSS2DObject){
+                              if(obj.layers.mask == Math.pow(2, this.getLayer(ele.tag))){
+                                if(typeof obj.element.style.fontSize == 'undefined'){
+                                  obj.element.style.fontSize = 6+val+'px';
+                                  console.log(obj.element.style.fontSize);
+                                }else{
+                                  obj.element.style.fontSize = parseFloat(obj.element.style.fontSize) + val+'px';
+                                }
                               }
                             }
                           }
@@ -1087,40 +1118,48 @@ class tjViewer{
                           this.objects2.traverse(traverseFun);
                           this.objectsBottom2.traverse(traverseFun);
                         }
-                      });
+                      }).name('increase size by:');
                     break;
                   case 'radius':
                     groupFolderObj[ele.tag].add(
-                      groupParamObj[ele.tag], key, 0, this.maxRadius)
-                      .onChange(val => {
+                      groupParamObj[ele.tag], key, -10, 10, .5)
+                      .onFinishChange(val => {
                         groupParamObj[ele.tag].radius = val;
                         var traverseFun = function(obj){
                           if(obj.isMesh){
                             if(obj.layers.mask == Math.pow(2, this.getLayer(ele.tag))){
                               switch(obj.geometry.type){
                                 case 'SphereGeometry':
-                                  updateGroupGeometry(obj, new THREE.SphereGeometry(val, 32, 16));
+                                  updateGroupGeometry(obj, new THREE.SphereGeometry(
+                                    obj.geometry.parameters.radius + val, 32, 16));
                                   break;
                                 case 'CapsuleGeometry':
-                                  updateGroupGeometry(obj, new THREE.CapsuleGeometry(val, obj.geometry.parameters.height));
+                                  updateGroupGeometry(obj, new THREE.CapsuleGeometry(
+                                    obj.geometry.parameters.radius + val, obj.geometry.parameters.height));
                                   break;
                                 case 'ConeGeometry':
-                                  updateGroupGeometry(obj, new THREE.ConeGeometry(val, obj.geometry.parameters.height));
+                                  updateGroupGeometry(obj, new THREE.ConeGeometry(
+                                    obj.geometry.parameters.radius + val, obj.geometry.parameters.height));
                                   break;
                                 case 'DodecahedronGeometry':
-                                  updateGroupGeometry(obj, new THREE.DodecahedronGeometry(val));
+                                  updateGroupGeometry(obj, new THREE.DodecahedronGeometry(
+                                    obj.geometry.parameters.radius + val));
                                   break;
                                 case 'IcosahedronGeometry':
-                                  updateGroupGeometry(obj, new THREE.IcosahedronGeometry(val));
+                                  updateGroupGeometry(obj, new THREE.IcosahedronGeometry(
+                                    obj.geometry.parameters.radius + val));
                                   break;
                                 case 'OctahedronGeometry':
-                                  updateGroupGeometry(obj, new THREE.OctahedronGeometry(val));
+                                  updateGroupGeometry(obj, new THREE.OctahedronGeometry(
+                                    obj.geometry.parameters.radius + val));
                                   break;
                                 case 'TetrahedronGeometry':
-                                  updateGroupGeometry(obj, new THREE.TetrahedronGeometry(val));
+                                  updateGroupGeometry(obj, new THREE.TetrahedronGeometry(
+                                    obj.geometry.parameters.radius + val));
                                   break;
                                 case 'TorusGeometry':
-                                  updateGroupGeometry(obj, new THREE.TorusGeometry(val, obj.geometry.parameters.tube));
+                                  updateGroupGeometry(obj, new THREE.TorusGeometry(
+                                    obj.geometry.parameters.radius + val, obj.geometry.parameters.tube));
                                   break;
                                 default:
                                   console.log(obj);
@@ -1134,20 +1173,21 @@ class tjViewer{
                           this.objects2.traverse(traverseFun);
                           this.objectsBottom2.traverse(traverseFun);
                         }
-                      });
+                      }).name('increase radius by:');
                       break;
                     case 'radiusTop':
                       groupFolderObj[ele.tag].add(
-                      groupParamObj[ele.tag], key, 0, this.maxRadius)
-                      .onChange(val => {
+                      groupParamObj[ele.tag], key, -10, 10, .5)
+                      .onFinishChange(val => {
                         groupParamObj[ele.tag].radiusTop = val;
                         var traverseFun = function(obj){
                           if(obj.isMesh){
                             if(obj.layers.mask == Math.pow(2, this.getLayer(ele.tag))){
+                              console.log(obj);
                               switch(obj.geometry.type){
                                 case 'CylinderGeometry':
                                   updateGroupGeometry(obj, new THREE.CylinderGeometry(
-                                    val,
+                                    obj.geometry.parameters.radiusTop + val,
                                     obj.geometry.parameters.radiusBottom,
                                     obj.geometry.parameters.height
                                   ));
@@ -1164,12 +1204,12 @@ class tjViewer{
                           this.objects2.traverse(traverseFun);
                           this.objectsBottom2.traverse(traverseFun);
                         }
-                      });
+                      }).name('increase radiusTop by:');
                       break;
                     case 'radiusBottom':
                       groupFolderObj[ele.tag].add(
-                      groupParamObj[ele.tag], key, 0, this.maxRadius)
-                      .onChange(val => {
+                      groupParamObj[ele.tag], key, -10, 10, .5)
+                      .onFinishChange(val => {
                         groupParamObj[ele.tag].radiusBottom = val;
                         var traverseFun = function(obj){
                           if(obj.isMesh){
@@ -1178,7 +1218,7 @@ class tjViewer{
                                 case 'CylinderGeometry':
                                   updateGroupGeometry(obj, new THREE.CylinderGeometry(
                                     obj.geometry.parameters.radiusTop,
-                                    val,
+                                    obj.geometry.parameters.radiusBottom + val,
                                     obj.geometry.parameters.height
                                   ));
                                   break;
@@ -1194,12 +1234,12 @@ class tjViewer{
                           this.objects2.traverse(traverseFun);
                           this.objectsBottom2.traverse(traverseFun);
                         }
-                      });
+                      }).name('increase radiusBottom by:');
                       break;
                     case 'width':
                       groupFolderObj[ele.tag].add(
-                      groupParamObj[ele.tag], key, 0, this.maxRadius)
-                      .onChange(val => {
+                      groupParamObj[ele.tag], key, -10, 10, .5)
+                      .onFinishChange(val => {
                         groupParamObj[ele.tag].width = val;
                         var traverseFun = function(obj){
                           if(obj.isMesh){
@@ -1207,7 +1247,7 @@ class tjViewer{
                               switch(obj.geometry.type){
                                 case 'BoxGeometry':
                                   updateGroupGeometry(obj, new THREE.BoxGeometry(
-                                      val, 
+                                      obj.geometry.parameters.width + val, 
                                       obj.geometry.parameters.height,
                                       obj.geometry.parameters.depth));
                                   break;
@@ -1223,12 +1263,12 @@ class tjViewer{
                           this.objects2.traverse(traverseFun);
                           this.objectsBottom2.traverse(traverseFun);
                         }
-                      });
+                      }).name('increase width by:');
                       break;
                     case 'height':
                       groupFolderObj[ele.tag].add(
-                      groupParamObj[ele.tag], key, 0, this.maxRadius)
-                      .onChange(val => {
+                      groupParamObj[ele.tag], key, -10, 10, .5)
+                      .onFinishChange(val => {
                         groupParamObj[ele.tag].height = val;
                         var traverseFun = function(obj){
                           if(obj.isMesh){
@@ -1237,20 +1277,20 @@ class tjViewer{
                                 case 'BoxGeometry':
                                   updateGroupGeometry(obj, new THREE.BoxGeometry(
                                       obj.geometry.parameters.width, 
-                                      val,
+                                      obj.geometry.parameters.height + val,
                                       obj.geometry.parameters.depth));
                                   break;
                                 case 'CapsuleGeometry':
-                                  updateGroupGeometry(obj, new THREE.CapsuleGeometry(obj.geometry.parameters.radius, val));
+                                  updateGroupGeometry(obj, new THREE.CapsuleGeometry(obj.geometry.parameters.radius, obj.geometry.parameters.height + val));
                                   break;
                                 case 'ConeGeometry':
-                                  updateGroupGeometry(obj, new THREE.ConeGeometry(obj.geometry.parameters.radius, val));
+                                  updateGroupGeometry(obj, new THREE.ConeGeometry(obj.geometry.parameters.radius, obj.geometry.parameters.height + val));
                                   break;
                                 case 'CylinderGeometry':
                                   updateGroupGeometry(obj, new THREE.CylinderGeometry(
                                     obj.geometry.parameters.radiusTop,
                                     obj.geometry.parameters.radiusBottom,
-                                    val
+                                    obj.geometry.parameters.height + val
                                   ));
                                   break;
                                 default:
@@ -1265,12 +1305,12 @@ class tjViewer{
                           this.objects2.traverse(traverseFun);
                           this.objectsBottom2.traverse(traverseFun);
                         }
-                      });
+                      }).name('increase height by:');
                       break;
                     case 'depth':
                       groupFolderObj[ele.tag].add(
-                      groupParamObj[ele.tag], key, 0, this.maxRadius)
-                      .onChange(val => {
+                      groupParamObj[ele.tag], key, -10, 10, .5)
+                      .onFinishChange(val => {
                         groupParamObj[ele.tag].depth = val;
                         var traverseFun = function(obj){
                           if(obj.isMesh){
@@ -1280,7 +1320,7 @@ class tjViewer{
                                   updateGroupGeometry(obj, new THREE.BoxGeometry(
                                       obj.geometry.parameters.width, 
                                       obj.geometry.parameters.height,
-                                      val));
+                                      obj.geometry.parameters.depth + val));
                                   break;
                                 default:
                                   console.log(obj);
@@ -1294,19 +1334,19 @@ class tjViewer{
                           this.objects2.traverse(traverseFun);
                           this.objectsBottom2.traverse(traverseFun);
                         }
-                      });
+                      }).name('increase depth by:');
                       break;
                   case 'tube':
                     groupFolderObj[ele.tag].add(
-                      groupParamObj[ele.tag], key, 0, this.maxRadius)
-                      .onChange(val => {
+                      groupParamObj[ele.tag], key, -10, 10, .5)
+                      .onFinishChange(val => {
                         groupParamObj[ele.tag].tube = val;
                         var traverseFun = function(obj){
                           if(obj.isMesh){
                             if(obj.layers.mask == Math.pow(2, this.getLayer(ele.tag))){
                               switch(obj.geometry.type){
                                 case 'TorusGeometry':
-                                 updateGroupGeometry(obj, new THREE.TorusGeometry(obj.geometry.parameters.radius, val));
+                                 updateGroupGeometry(obj, new THREE.TorusGeometry(obj.geometry.parameters.radius, obj.geometry.parameters.tube + val));
                                   break;
                                 default:
                                   console.log(obj);
@@ -1320,11 +1360,8 @@ class tjViewer{
                           this.objects2.traverse(traverseFun);
                           this.objectsBottom2.traverse(traverseFun);
                         }
-                      });
+                      }).name('increase tube by:');
                       break;
-                  default:
-                    groupFolderObj[ele.tag].add(
-                      groupParamObj[ele.tag], key, 0, this.maxRadius);
                 }
               }else{
                 switch(key){
@@ -1572,6 +1609,44 @@ class tjViewer{
               updateCapsuleGeometry()
             });
             break;
+          case 'circle':
+            param.radius = ele.radius;
+            param.thetaStart = ele.thetaStart;
+            param.thetaLength = ele.thetaLength;
+            const circledata = {
+              radius : ele.radius,
+              height : ele.height
+            }
+            geometry = new THREE.CircleGeometry(
+              circledata.radius,
+              32,
+              circledata.thetaStart,
+              circledata.thetaLength
+            );
+            obj = new THREE.InstancedMesh( geometry, material, len);
+            obj.layers.set(this.getLayer(ele.tag));
+            initNewMesh(obj, ele);
+            function updateCircleGeometry(){
+              updateGroupGeometry(obj, new THREE.CircleGeometry(
+                circledata.radius,
+                32,
+                circledata.thetaStart,
+                circledata.thetaLength
+              ));
+            }
+            folder.add(param, 'radius', 0, this.maxRadius).onChange( function(val) {
+              circledata.radius = val;
+              updateCircleGeometry()
+            });
+            folder.add(param, 'thetaStart', 0, 2*Math.PI).onChange( function(val) {
+              circledata.thetaStart = val;
+              updateCircleGeometry()
+            });
+            folder.add(param, 'thetaLength', 0, 2*Math.PI).onChange( function(val) {
+              circledata.thetaLength = val;
+              updateCircleGeometry()
+            });
+            break;
           case 'cone':
             param.radius = ele.radius;
             param.height = ele.height;
@@ -1809,12 +1884,17 @@ class tjViewer{
             break;
           default:
         }
+        /*folder.addColor(param, 'color').onChange( function(val){
+          param.color = new THREE.Color(val);
+          updateColor(obj, val);
+          console.log(obj);
+        });*/
         folder.add(param, 'opacity', 0, 1).onChange( function( val ){
           material.opacity = val;
-        })
+        });
         folder.add(param, 'transparent').onChange( function( val ){
           material.transparent = val;
-        })
+        });
         folder.close();
         this.materials.push(material);
         if(ele.layer=='top'){

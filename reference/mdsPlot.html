@@ -18,7 +18,7 @@ distance matrix and then plot the matrix by multi-dimensional scaling plot."><!-
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geomeTriD</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.21</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.22</span>
       </span>
     </div>
 
@@ -55,7 +55,7 @@ distance matrix and then plot the matrix by multi-dimensional scaling plot."><!-
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Plot genomic interactions by multi-dimensional scaling plot</h1>
-
+    <small class="dont-index">Source: <a href="https://github.com/jianhong/geomeTriD/blob/main/R/mdsPlot.R" class="external-link"><code>R/mdsPlot.R</code></a></small>
     <div class="hidden name"><code>mdsPlot.Rd</code></div>
     </div>
 
@@ -188,9 +188,10 @@ will be returned.</p></dd>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">InteractionSet</span><span class="op">)</span> </span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">InteractionSet</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">gi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"nij.chr6.51120000.53200000.gi.rds"</span>,</span></span>
-<span class="r-in"><span> package<span class="op">=</span><span class="st">"geomeTriD"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  package <span class="op">=</span> <span class="st">"geomeTriD"</span></span></span>
+<span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">range</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/GenomicRanges/man/GRanges-class.html" class="external-link">GRanges</a></span><span class="op">(</span><span class="st">"chr6"</span>, <span class="fu">IRanges</span><span class="op">(</span><span class="fl">51120000</span>, <span class="fl">53200000</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">TxDb.Hsapiens.UCSC.hg19.knownGene</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">org.Hs.eg.db</span><span class="op">)</span></span></span>
@@ -201,12 +202,14 @@ will be returned.</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Use 'single.strand.genes.only=FALSE' to get all the genes in a</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   GRangesList object, or use suppressMessages() to suppress this message.</span>
 <span class="r-in"><span><span class="va">feature.gr</span> <span class="op">&lt;-</span> <span class="fu">subsetByOverlaps</span><span class="op">(</span><span class="va">feature.gr</span>, <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/InteractionSet/man/interaction-accessors.html" class="external-link">regions</a></span><span class="op">(</span><span class="va">gi</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">symbols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/get.html" class="external-link">mget</a></span><span class="op">(</span><span class="va">feature.gr</span><span class="op">$</span><span class="va">gene_id</span>, <span class="va">org.Hs.egSYMBOL</span>, ifnotfound<span class="op">=</span><span class="cn">NA</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">feature.gr</span><span class="op">$</span><span class="va">label</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="va">symbols</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">symbols</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="va">symbols</span><span class="op">)</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">feature.gr</span><span class="op">$</span><span class="va">col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationDbi/man/Bimap-envirAPI.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">7</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">feature.gr</span><span class="op">)</span>, replace<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">feature.gr</span><span class="op">$</span><span class="va">type</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationDbi/man/Bimap-envirAPI.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cRE"</span>, <span class="st">"gene"</span><span class="op">)</span>, </span></span>
-<span class="r-in"><span>                         <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">feature.gr</span><span class="op">)</span>, replace<span class="op">=</span><span class="cn">TRUE</span>, </span></span>
-<span class="r-in"><span>                         prob<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.9</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">symbols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocGenerics/man/get.html" class="external-link">mget</a></span><span class="op">(</span><span class="va">feature.gr</span><span class="op">$</span><span class="va">gene_id</span>, <span class="va">org.Hs.egSYMBOL</span>, ifnotfound <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">feature.gr</span><span class="op">$</span><span class="va">label</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="va">symbols</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">symbols</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="va">symbols</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">feature.gr</span><span class="op">$</span><span class="va">col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationDbi/man/Bimap-envirAPI.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">7</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">feature.gr</span><span class="op">)</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">feature.gr</span><span class="op">$</span><span class="va">type</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationDbi/man/Bimap-envirAPI.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cRE"</span>, <span class="st">"gene"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">feature.gr</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  replace <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.9</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">mdsPlot</span><span class="op">(</span><span class="va">gi</span>, <span class="va">range</span>, <span class="va">feature.gr</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Some region are missing from the input gi.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> initial  value 47.142211 </span>
@@ -220,8 +223,6 @@ will be returned.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> iter  40 value 10.492219</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> final  value 10.400890 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> converged</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to min; returning Inf</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>no non-missing arguments to max; returning -Inf</span>
 <span class="r-plt img"><img src="mdsPlot-1.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>
