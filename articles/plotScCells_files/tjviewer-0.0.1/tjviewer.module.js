@@ -1745,6 +1745,13 @@ class tjViewer{
                 icosahedrondata.radius));
             });
             break;
+          case 'json':
+            const loader = new THREE.BufferGeometryLoader();
+            geometry = loader.parse(ele.json);
+            obj = new THREE.InstancedMesh( geometry, material, len );
+            obj.layers.set(this.getLayer(ele.tag));
+            initNewMesh(obj, ele);
+            break;
           case 'label'://ask to modify the CSS2DRenderer.js at the line
                       //const visible = ( _vector.z >= - 1 && _vector.z <= 1 ) && ( object.layers.test( camera.layers ) === true );
                       // to const visible = object.layers.test( camera.layers ) === true;
