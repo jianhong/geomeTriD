@@ -20,7 +20,7 @@ test_that("resampleDataByFun works not correct", function(){
   rd <- resampleDataByFun(fromGR, targetGR, FUN = viewSums)
   expect_equal(rd$score, 10)
 })
-test_that('', function(){
+test_that('smooth3dPoints works not correct', function(){
   obj <- GRanges('1', IRanges(seq.int(5)*10, width=10),
                  x=seq.int(5), y=seq.int(5), z=seq.int(5))
   sp <- smooth3dPoints(obj, 5)

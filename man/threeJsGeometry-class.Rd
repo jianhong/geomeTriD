@@ -39,13 +39,8 @@ An object of class \code{"threeJsGeometry"}
 
 \item{\code{colors}}{\code{"character"}, the colors for each geometry.}
 
-\item{\code{type}}{\code{"charater"}, the type of the geometry. Available types are
-'arrow', 'box', 'capsule', 'cone', 'cylinder',
-'circle',
-'dodecahedron', 'line',
-'label',
-'icosahedron', 'octahedron', 'segment', 'sphere', 'tetrahedron', 'text',
- and 'torus'.}
+\item{\code{type}}{\code{"charater"}, the type of the geometry.
+See \link{availableGeometries}.}
 
 \item{\code{side}}{\code{'character'}, the side for side by side plot in
 \link{threeJsViewer}.}

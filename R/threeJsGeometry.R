@@ -8,13 +8,8 @@ setClassUnion("maybeColor", c("numeric", "character"))
 #' @rdname threeJsGeometry-class
 #' @slot x,y,z \code{"numeric"}, specify the x, y, and z coordinates.
 #' @slot colors \code{"character"}, the colors for each geometry.
-#' @slot type \code{"charater"}, the type of the geometry. Available types are
-#' 'arrow', 'box', 'capsule', 'cone', 'cylinder',
-#' 'circle',
-#' 'dodecahedron', 'line',
-#' 'label',
-#' 'icosahedron', 'octahedron', 'segment', 'sphere', 'tetrahedron', 'text',
-#'  and 'torus'.
+#' @slot type \code{"charater"}, the type of the geometry.
+#'  See \link{availableGeometries}.
 #' @slot side \code{'character'}, the side for side by side plot in
 #' \link{threeJsViewer}.
 #' @slot layer \code{'character'}, the two layer plot in
@@ -132,6 +127,11 @@ setClass("threeJsGeometry",
                              required for icosahedron")
         }
       },
+      json = {
+        if(!"json" %in% names(object@properties)){
+          return("Property json is required for json")
+        }
+      },
       label = {
         if (!all(c("label", "size") %in%
           names(object@properties))) {
@@ -180,10 +180,20 @@ setClass("threeJsGeometry",
     return(TRUE)
   }
 )
-
-availableGeometries <- c("arrow", "box", "capsule", "cone", "cylinder",
-                         "circle",
-                         "dodecahedron", "icosahedron", "line", "label",
+#' Available Geometries
+#' @description
+#' The Geometries suported by \link{threeJsGeometry} class
+#' @export
+#' @examples
+#' availableGeometries
+#' 
+availableGeometries <- c("arrow",
+                         "box",
+                         "capsule", "cone", "cylinder", "circle",
+                         "dodecahedron",
+                         "json",
+                         "icosahedron",
+                         "line", "label",
                          "octahedron",
                          "segment", "sphere",
                          "tetrahedron", "text", "torus")

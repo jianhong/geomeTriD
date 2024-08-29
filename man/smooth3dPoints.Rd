@@ -4,20 +4,23 @@
 \alias{smooth3dPoints}
 \title{Calculate the smoothed curve for input GRanges}
 \usage{
-smooth3dPoints(obj, resolusion = 30, ...)
+smooth3dPoints(obj, resolution = 30, ...)
 }
 \arguments{
 \item{obj}{GRanges object with mcols x, y, and z}
 
-\item{resolusion}{number of points at which to evaluate the smooth curve.}
+\item{resolution}{number of points at which to evaluate the smooth curve.}
 
 \item{...}{parameters passed to \link[stats]{splinefun}}
 }
 \value{
-GRanges object with smoothed points of x, y, and z.
+GRanges object with smoothed points of x0, y0, z0,
+x1, y1, and z1.
 }
 \description{
-Calculate the smoothed curve for input GRanges
+This function will do smooth for given resolution (tile) for inputs and
+it is important step to prepare the inputs for \link{create3dGenomicSignals}
+and \link{view3dStructure}.
 }
 \examples{
 library(GenomicRanges)

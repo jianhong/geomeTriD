@@ -8,6 +8,7 @@ create3dGenomicSignals(
   GenoSig,
   targetObj,
   signalTransformFun,
+  positionTransformFun,
   reverseGenomicSigs,
   type = "segment",
   tag,
@@ -25,6 +26,11 @@ create3dGenomicSignals(
 
 \item{signalTransformFun}{The transformation function for genomic signals.}
 
+\item{positionTransformFun}{The transformation function for the coordinates.
+The function must have input as a data.frame with colnames
+ x0, y0, z0, x1, y1, and z1. And it must have
+output as same dimension data.frame.}
+
 \item{reverseGenomicSigs}{Plot the genomic signals in reverse values.}
 
 \item{type}{The Geometry type.See \link{threeJsGeometry}}
@@ -40,7 +46,13 @@ If type is 'segments', lwd.maxGenomicSigs (the maximal lwd of the line) is
  required.
 If type is 'circle', radius (the radius of the circle) and 
  the maxVal (the value for 2*pi) is
- required.}
+ required.
+If type is 'sphere', 'dodecahedron', 'icosahedron', 'octahedron', 
+or 'tetrahedron', radius is
+ required.
+If type is 'box', 'capsule', 'cylinder', 'cone', or 'torus', if 
+the properties of correspond geometry is not set, they will be set to 
+the transformed score value.}
 }
 \value{
 \link{threeJsGeometry} objects or NULL

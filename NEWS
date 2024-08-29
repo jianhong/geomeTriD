@@ -1,6 +1,8 @@
 Changes in version 0.0.22
 
     o Fix the code style.
+    o Add multiple unit test.
+    o export the create3dGenomicSignals function.
     
 Changes in version 0.0.21
 

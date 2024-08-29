@@ -52,6 +52,68 @@ checkSignalGeometryType <- function(type, ...){
                        is.numeric(args$radius))
            stopifnot('maxVal should be a number'=
                        is.numeric(args$maxVal))
+         },
+         'sphere'={
+           stopifnot('radius is required for sphere'=
+                       'radius' %in% names(args))
+           stopifnot('radius should be a number'=
+                       is.numeric(args$radius))
+         },
+         'box'={
+           if(!any(c("width", "height", "depth") %n% names(args))){
+             message('The box size will be set by score.')
+           }
+         },
+         'capsule'={
+           if(!any(c("height", "radius") %n% names(args))){
+             message('The capsule size will be set by score.')
+           }
+         },
+         'cylinder' = {
+           if (!all(c("height", "radiusTop", "radiusBottom")
+                    %in% names(args))) {
+             message("The cylinder size will be set by score.")
+           }
+         },
+         'cone'={
+           if(!any(c("height", "radius") %n% names(args))){
+             message('The cone size will be set by score.')
+           }
+         },
+         'dodecahedron' = {
+           stopifnot('radius is required for dodecahedron'=
+                       'radius' %in% names(args))
+           stopifnot('radius should be a number'=
+                       is.numeric(args$radius))
+         },
+         'icosahedron' = {
+           stopifnot('radius is required for icosahedron'=
+                       'radius' %in% names(args))
+           stopifnot('radius should be a number'=
+                       is.numeric(args$radius))
+         },
+         'json' = {
+           stopifnot('path is required for json'=
+                       'path' %in% names(args))
+           stopifnot('The json file does not exist'=
+                       file.exists(args$path))
+         },
+         'octahedron' = {
+           stopifnot('radius is required for octahedron'=
+                       'radius' %in% names(args))
+           stopifnot('radius should be a number'=
+                       is.numeric(args$radius))
+         },
+         'tetrahedron' = {
+           stopifnot('radius is required for tetrahedron'=
+                       'radius' %in% names(args))
+           stopifnot('radius should be a number'=
+                       is.numeric(args$radius))
+         },
+         'torus'={
+           if(!any(c("tube", "radius") %n% names(args))){
+             message('The torus size will be set by score.')
+           }
          })
 }
 
