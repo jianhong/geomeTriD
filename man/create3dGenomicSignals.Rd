@@ -52,11 +52,37 @@ or 'tetrahedron', radius is
  required.
 If type is 'box', 'capsule', 'cylinder', 'cone', or 'torus', if 
 the properties of correspond geometry is not set, they will be set to 
-the transformed score value.}
+the transformed score value.
+If type is 'json', please refer the documentation about
+BufferGeometryLoader at threejs.org}
 }
 \value{
 \link{threeJsGeometry} objects or NULL
 }
 \description{
 Create a 3d Geometry by given genomic signals for target 3d positions.
+}
+\examples{
+library(GenomicRanges)
+GenoSig <- GRanges('chr1', IRanges(seq(1, 100, by=10), width=10),
+ score=seq.int(10))
+pos <- matrix(rnorm(303), ncol=3)
+pos <- cbind(x0=pos[seq.int(100), 1],
+             x1=pos[seq.int(101)[-1], 1],
+             y0=pos[seq.int(100), 2],
+             y1=pos[seq.int(101)[-1], 2],
+             z0=pos[seq.int(100), 3],
+             z1=pos[seq.int(101)[-1], 3])
+targetObj <- GRanges('chr1', IRanges(seq.int(100), width=1))
+mcols(targetObj) <- pos
+ds <- create3dGenomicSignals(GenoSig, targetObj, 
+          signalTransformFun = function(x) {
+              log2(x + 1)
+          },
+          reverseGenomicSigs=FALSE,
+          type='segment',
+          lwd.maxGenomicSigs=8,
+          name='test',
+          tag='test')
+threeJsViewer(ds)
 }

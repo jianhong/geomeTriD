@@ -60,12 +60,12 @@ checkSignalGeometryType <- function(type, ...){
                        is.numeric(args$radius))
          },
          'box'={
-           if(!any(c("width", "height", "depth") %n% names(args))){
+           if(!any(c("width", "height", "depth") %in% names(args))){
              message('The box size will be set by score.')
            }
          },
          'capsule'={
-           if(!any(c("height", "radius") %n% names(args))){
+           if(!any(c("height", "radius") %in% names(args))){
              message('The capsule size will be set by score.')
            }
          },
@@ -76,7 +76,7 @@ checkSignalGeometryType <- function(type, ...){
            }
          },
          'cone'={
-           if(!any(c("height", "radius") %n% names(args))){
+           if(!any(c("height", "radius") %in% names(args))){
              message('The cone size will be set by score.')
            }
          },
@@ -111,7 +111,7 @@ checkSignalGeometryType <- function(type, ...){
                        is.numeric(args$radius))
          },
          'torus'={
-           if(!any(c("tube", "radius") %n% names(args))){
+           if(!any(c("tube", "radius") %in% names(args))){
              message('The torus size will be set by score.')
            }
          })
@@ -147,11 +147,14 @@ checkSmoothedGR <- function(obj){
   stopifnot(all(c('x0', 'y0', 'z0', 'x1', 'y1', 'z1') %in% 
                   colnames(mcols(obj))))
 }
-parseFeature <- function(feature.gr) {
+parseFeature <- function(feature.gr, seqn) {
   if (!missing(feature.gr)) {
     stopifnot(is(feature.gr, "GRanges"))
+    if(length(feature.gr)==0){
+      return(as.character(seqn)[1])
+    }
   } else {
-    feature.gr <- GRanges()
+    return(as.character(seqn)[1])
   }
   if (length(feature.gr$col) == 0) feature.gr$col <- rep("black", length(feature.gr))
   if (length(feature.gr$type) == 0) {

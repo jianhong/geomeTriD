@@ -131,6 +131,9 @@ setClass("threeJsGeometry",
         if(!"json" %in% names(object@properties)){
           return("Property json is required for json")
         }
+        if(!all(c('metadata', 'data') %in% names(json))){
+          return('json must contain metadata and data')
+        }
       },
       label = {
         if (!all(c("label", "size") %in%

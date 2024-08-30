@@ -33,6 +33,7 @@ Imports:
   methods,
   plotrix,
   rgl,
+  rjson,
   S4Vectors,
   scales,
   stats,

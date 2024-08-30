@@ -27,8 +27,35 @@
 #' If type is 'box', 'capsule', 'cylinder', 'cone', or 'torus', if 
 #' the properties of correspond geometry is not set, they will be set to 
 #' the transformed score value.
+#' If type is 'json', please refer the documentation about
+#' BufferGeometryLoader at threejs.org
 #' @return \link{threeJsGeometry} objects or NULL
-#' 
+#' @importFrom utils getFromNamespace
+#' @importFrom methods getPackageName
+#' @export
+#' @examples
+#' library(GenomicRanges)
+#' GenoSig <- GRanges('chr1', IRanges(seq(1, 100, by=10), width=10),
+#'  score=seq.int(10))
+#' pos <- matrix(rnorm(303), ncol=3)
+#' pos <- cbind(x0=pos[seq.int(100), 1],
+#'              x1=pos[seq.int(101)[-1], 1],
+#'              y0=pos[seq.int(100), 2],
+#'              y1=pos[seq.int(101)[-1], 2],
+#'              z0=pos[seq.int(100), 3],
+#'              z1=pos[seq.int(101)[-1], 3])
+#' targetObj <- GRanges('chr1', IRanges(seq.int(100), width=1))
+#' mcols(targetObj) <- pos
+#' ds <- create3dGenomicSignals(GenoSig, targetObj, 
+#'           signalTransformFun = function(x) {
+#'               log2(x + 1)
+#'           },
+#'           reverseGenomicSigs=FALSE,
+#'           type='segment',
+#'           lwd.maxGenomicSigs=8,
+#'           name='test',
+#'           tag='test')
+#' threeJsViewer(ds)
 create3dGenomicSignals <- function(GenoSig, targetObj,
                                 signalTransformFun,
                                 positionTransformFun,
@@ -92,9 +119,8 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
                 toupper(substr(type, start = 1, stop = 1)),
                 tolower(substr(type, start = 2, stop = nchar(type))),
                 'Geometry')
-  FUN = get(FUN)
+  FUN = getFromNamespace(FUN, ns = getPackageName())
   geo <- FUN(GenoSig = GenoSig,
-             targetObj = targetObj,
              revGenoSig = reverseGenomicSigs,
              name = name,
              color = color,
@@ -105,7 +131,7 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
 
 # map score to segments lwd
 createSegmentGeometry <- function(
-    GenoSig, targetObj, revGenoSig,
+    GenoSig, revGenoSig,
     name, color, tag,
     lwd.maxGenomicSigs=8, alpha = 1,
     ...){
@@ -138,7 +164,7 @@ createSegmentGeometry <- function(
     if (length(color) > 1) {
       color <-
         colorRampPalette(colors = color)(
-          max(genomicSigLwd))
+          length(genomicSiglabels))
       names(color) <- genomicSiglabels
     } else {
       color <- rep(
@@ -150,13 +176,13 @@ createSegmentGeometry <- function(
     genomic_signal <- lapply(genomicSigLwd, function(lwd) {
       idx <- which(GenoSig$lwd == lwd)
       threeJsGeometry(
-        x = as.numeric(t(as.matrix(mcols(targetObj)[idx, c("x0", "x1"),
+        x = as.numeric(t(as.matrix(mcols(GenoSig)[idx, c("x0", "x1"),
                                               drop = FALSE
         ]))),
-        y = as.numeric(t(as.matrix(mcols(targetObj)[idx, c("y0", "y1"),
+        y = as.numeric(t(as.matrix(mcols(GenoSig)[idx, c("y0", "y1"),
                                               drop = FALSE
         ]))),
-        z = as.numeric(t(as.matrix(mcols(targetObj)[idx, c("z0", "z1"),
+        z = as.numeric(t(as.matrix(mcols(GenoSig)[idx, c("z0", "z1"),
                                               drop = FALSE
         ]))),
         type = "segment",
@@ -176,11 +202,11 @@ createSegmentGeometry <- function(
 }
 
 getXYZmean <- function(GenoSig){
-  GenoSig$x <- rowMeans(as.matrix(mcols(targetObj)[, c("x0", "x1"),
+  GenoSig$x <- rowMeans(as.matrix(mcols(GenoSig)[, c("x0", "x1"),
                                                    drop = FALSE]))
-  GenoSig$y <- rowMeans(as.matrix(mcols(targetObj)[, c("y0", "y1"),
+  GenoSig$y <- rowMeans(as.matrix(mcols(GenoSig)[, c("y0", "y1"),
                                                    drop = FALSE]))
-  GenoSig$z <- rowMeans(as.matrix(mcols(targetObj)[, c("z0", "z1"),
+  GenoSig$z <- rowMeans(as.matrix(mcols(GenoSig)[, c("z0", "z1"),
                                                    drop = FALSE]))
   return(GenoSig)
 }
@@ -194,7 +220,7 @@ extendParam <- function(param, l){
 
 # map score to thetaLength
 createCircleGeometry <- function(
-    GenoSig, targetObj, revGenoSig,
+    GenoSig, revGenoSig,
     name, color, tag,
     radius=8, maxVal=1, thetaStart=0,
     ...){
@@ -219,7 +245,7 @@ createCircleGeometry <- function(
           tag = tag,
           properties = list(
             radius = r,
-            thetaStart = t,
+            thetaStart = ts,
             thetaLength = pct
           )
         )
@@ -239,7 +265,7 @@ createCircleGeometry <- function(
           tag = tag,
           properties = list(
             radius = r,
-            thetaStart = t,
+            thetaStart = ts,
             thetaLength = GenoSig$score[idx]
           )
         )
@@ -274,7 +300,7 @@ mapScore2Color <- function(GenoSig, color){
 }
 
 createSphereGeometry <- function(
-    GenoSig, targetObj, revGenoSig,
+    GenoSig, revGenoSig,
     name, color, tag,
     radius=8, type='sphere',
     ...){
@@ -317,7 +343,7 @@ createSphereGeometry <- function(
 
 
 createBoxGeometry <- function(
-    GenoSig, targetObj, revGenoSig,
+    GenoSig, revGenoSig,
     name, color, tag,
     width, height, depth,
     ...){
@@ -335,7 +361,7 @@ createBoxGeometry <- function(
   GenoSig <- getXYZmean(GenoSig)
   wid <- unique(width)
   hgt <- unique(height)
-  dpt <- unique(dpt)
+  dpt <- unique(depth)
   if(length(wid)==1 && length(hgt)==1 && length(dpt)==1){
     ## if the size are identical
     ## map color
@@ -376,7 +402,7 @@ createBoxGeometry <- function(
 }
 
 createCapsuleGeometry <- function(
-    GenoSig, targetObj, revGenoSig,
+    GenoSig, revGenoSig,
     name, color, tag,
     height, radius,
     ...){
@@ -429,11 +455,11 @@ createCapsuleGeometry <- function(
 }
 
 createCylinderGeometry <- function(
-    GenoSig, targetObj, revGenoSig,
+    GenoSig, revGenoSig,
     name, color, tag,
     height, radiusTop, radiusBottom,
     ...){
-  if(missing(height) || missing(radius)){
+  if(missing(height) || missing(radiusTop) || missing(radiusBottom)){
     if(missing(height)){
       height <- GenoSig$score
     }
@@ -448,7 +474,7 @@ createCylinderGeometry <- function(
   hgt <- unique(height)
   rt <- unique(radiusTop)
   rb <- unique(radiusBottom)
-  if(length(hgt)==1 && length(r)==1){
+  if(length(hgt)==1 && length(rt)==1 && length(rb)==1){
     ## if the size are identical
     ## map color
     genomic_signal <- list(
@@ -488,7 +514,7 @@ createCylinderGeometry <- function(
 }
 
 createConeGeometry <- function(
-    GenoSig, targetObj, revGenoSig,
+    GenoSig, revGenoSig,
     name, color, tag,
     height, radius,
     ...){
@@ -554,7 +580,7 @@ createTetrahedronGeometry <- function(...){
 }
 
 createTorusGeometry <- function(
-    GenoSig, targetObj, revGenoSig,
+    GenoSig, revGenoSig,
     name, color, tag,
     tube, radius,
     ...){
@@ -606,13 +632,15 @@ createTorusGeometry <- function(
   return(genomic_signal)
 }
 
+#' @importFrom rjson fromJSON
 createJsonGeometry <- function(
-    GenoSig, targetObj, revGenoSig,
+    GenoSig, revGenoSig,
     name, color, tag,
     path,
     ...){
-  json <- readLines(path)
-  json <- paste(json, collapse = '')
+  json <- fromJSON(file=path)
+  stopifnot('json file must contain metadata and data'=
+              all(c('metadata', 'data') %in% names(json)))
   GenoSig <- getXYZmean(GenoSig)
   genomic_signal <- list(
     threeJsGeometry(

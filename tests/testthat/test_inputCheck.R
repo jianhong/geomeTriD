@@ -14,11 +14,11 @@ test_that('checkSignalTransformFun works not correct', {
 })
 
 test_that('parseFeature works not correct', {
-  expect_error(parseFeature(gi))
-  expect_error(parseFeature(x)) ## not label
+  expect_error(parseFeature(gi, seqn='chr1'))
+  expect_error(parseFeature(x, seqn='chr1')) ## not label
   g <- head(x)
   g$label <- letters[seq_along(g)]
-  expect_message({g <- parseFeature(g)})
+  expect_message({g <- parseFeature(g, seqn='chr1')})
   expect_true(all(c('col', 'type', 'cex', 'pch', 'size') %in%
                     colnames(mcols(g))))
   expect_true(is(g$size, 'unit'))

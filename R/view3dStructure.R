@@ -33,7 +33,7 @@
 #' @importFrom utils tail
 #' @importFrom grDevices colorRampPalette
 #' @importFrom grid convertUnit grid.newpage viewport pushViewport popViewport
-#' convertWidth convertHeight xsplineGrob grobCoords convertX convertY
+#' convertWidth convertHeight xsplineGrob grobCoords convertX convertY is.unit
 #' @export
 #' @examples
 #' obj <- readRDS(system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds",
@@ -82,7 +82,8 @@ view3dStructure <- function(obj, feature.gr,
     stopifnot("z" %in% colnames(mcols(obj)))
   }
   renderer <- match.arg(renderer)
-  feature.gr <- parseFeature(feature.gr = feature.gr)
+  feature.gr <- parseFeature(feature.gr = feature.gr,
+                             seqn=as.character(seqnames(obj)[1]))
   xlim <- range(obj$x)
   ylim <- range(obj$y)
   if(length(obj$z)>0){
@@ -263,6 +264,9 @@ view3dStructure <- function(obj, feature.gr,
           length(genomicSigs)
         )[seq_along(genomicSigs)]
       }
+      if(!is.list(signalTransformFun)){
+        signalTransformFun <- list(signalTransformFun)
+      }
       genomic_signal_geometry <- mapply(
         create3dGenomicSignals,
         GenoSig = genomicSigs,
@@ -404,22 +408,53 @@ view3dStructure <- function(obj, feature.gr,
 
       notGene <- (!genePos$fgf$type %in% "gene") & (!genePos$missing_start)
       if (any(notGene)) {
-        geometries$cRE <- threeJsGeometry(
-          x = genePos$x2[notGene],
-          y = genePos$y2[notGene],
-          z = genePos$z2[notGene],
-          type = "tetrahedron",
-          colors = genePos$fgf$col[notGene],
-          tag = "cRE",
-          properties = list(
-            radius = convertUnit(genePos$fgf$size[notGene],
-              unitTo = "inch",
-              valueOnly = TRUE
-            ) / 5,
-            pch = genePos$fgf$pch[notGene],
-            target = genePos$fgf$label[notGene]
+        notGeneRadius <- genePos$fgf$pch[notGene]
+        if(length(notGeneRadius)!=sum(notGene)){
+          notGeneRadius <- genePos$fgf$size[notGene]
+          if(length(genePos$fgf$pch[notGene])==sum(notGene)){
+            if(!all(vapply(notGeneRadius, is.unit, logical(1L)))){
+              stop('The size is not in unit format.')
+            }
+            notGeneRadius <- convertUnit(notGeneRadius,
+                                         unitTo = "inch",
+                                         valueOnly = TRUE) / 5
+          }else{
+            notGeneRadius <- 1
+          }
+        }
+        if(length(unique(notGeneRadius))==1){
+          geometries$cRE <- threeJsGeometry(
+            x = genePos$x2[notGene],
+            y = genePos$y2[notGene],
+            z = genePos$z2[notGene],
+            type = "tetrahedron",
+            colors = genePos$fgf$col[notGene],
+            tag = "cRE",
+            properties = list(
+              radius = notGeneRadius[1]
+            )
           )
-        )
+        }else{
+          if(any(duplicated(notGeneRadius))){
+            cis_fgf <- unique(notGeneRadius)
+            geometries_cRE <- lapply(cis_fgf, function(.r){
+              idx <- which(notGeneRadius==.r)
+              threeJsGeometry(
+                x = genePos$x2[notGene][idx],
+                y = genePos$y2[notGene][idx],
+                z = genePos$z2[notGene][idx],
+                type = "tetrahedron",
+                colors = genePos$fgf$col[notGene][idx],
+                tag = "cRE",
+                properties = list(
+                  radius = .r
+                )
+              )
+            })
+            names(geometries_cRE) <- paste0('cRE_', cis_fgf)
+            geometries <- c(geometries, geometries_cRE)
+          }
+        }
       }
       if (label_gene && any(!is.na(genePos$fgf$label))) {
         gene_labels_geometries <- lapply(

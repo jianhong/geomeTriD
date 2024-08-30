@@ -127,7 +127,7 @@ loopBouquetPlot <- function(gi, range, feature.gr, genomicSigs,
     stopifnot("No interactions detected" = length(reg) > 2)
     names(reg) <- seq_along(reg)
   }
-  feature.gr <- parseFeature(feature.gr = feature.gr)
+  feature.gr <- parseFeature(feature.gr = feature.gr, seqn=seqn)
 
   nodes <- unique(as.character(sort(c(
     anchorIds(gi, type = "first"),

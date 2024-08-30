@@ -493,6 +493,9 @@ calTickPos <- function(feature.tick, curve_gr, arrowLen, kd = 2, rate = 72) {
 #' start end
 #' @importFrom utils head
 calGenePos <- function(fgf, curve_gr, arrowLen, kd = 2, rate = 72) {
+  if(!is(fgf, 'GRanges')){
+    return(NULL)
+  }
   ## subsetByOverlaps will not work for unit metadata
   olcnt <- countOverlaps(fgf, curve_gr, ignore.strand = TRUE)
   if (sum(olcnt > 0) == 0) {
@@ -848,7 +851,18 @@ plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
   res_row <- ceiling(abs(diff(xlim)) / objWidth(xlim, textGrob("w"))) * safe_text_force
   res_col <- ceiling(abs(diff(ylim)) / objHeight(xlim, textGrob("f"))) * safe_text_force
   objCoor <- matrix(0, nrow = res_row, ncol = res_col)
-  seqn <- as.character(seqnames(fgf[1]))
+  if(length(fgf)>0){
+    if(is.character(fgf)){
+      seqn <- fgf
+    }else if(is(fgf, 'GRanges')){
+      seqn <- as.character(seqnames(fgf[1]))
+    }else{
+      stop('can not get seqname.')
+    }
+  }else{
+    stop('can not get seqname.')
+  }
+  
   curve_gr <- lapply(pP, function(.ele) {
     .ele$seqn <- seqn
     do.call(breakPointByBin, .ele)

@@ -1,3 +1,9 @@
+Changes in version 0.0.23
+
+    o Fix multiple bugs.
+    o Add multiple unit test.
+    o Rewrite the plotInteractionData vignette.
+
 Changes in version 0.0.22
 
     o Fix the code style.
