@@ -1615,7 +1615,8 @@ class tjViewer{
             param.thetaLength = ele.thetaLength;
             const circledata = {
               radius : ele.radius,
-              height : ele.height
+              thetaStart : ele.thetaStart,
+              thetaLength : ele.thetaLength
             }
             geometry = new THREE.CircleGeometry(
               circledata.radius,
