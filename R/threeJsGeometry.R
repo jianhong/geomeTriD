@@ -52,9 +52,12 @@ setClass("threeJsGeometry",
     if (!object@type %in% c(
       availableGeometries
     )) {
-      return(paste0("type only support '",
-                    paste(availableGeometries,
-                          collapse="', '"), "'."))
+      return(paste0(
+        "type only support '",
+        paste(availableGeometries,
+          collapse = "', '"
+        ), "'."
+      ))
     }
     if (!object@side %in% c("left", "right")) {
       return('side should be "left" or "right"')
@@ -110,7 +113,7 @@ setClass("threeJsGeometry",
       },
       circle = {
         if (!all(c("radius", "thetaStart", "thetaLength")
-                 %in% names(object@properties))) {
+        %in% names(object@properties))) {
           return("Properties radius, thetaStart, and thetaLength are
                              required for circle")
         }
@@ -128,11 +131,11 @@ setClass("threeJsGeometry",
         }
       },
       json = {
-        if(!"json" %in% names(object@properties)){
+        if (!"json" %in% names(object@properties)) {
           return("Property json is required for json")
         }
-        if(!all(c('metadata', 'data') %in% names(json))){
-          return('json must contain metadata and data')
+        if (!all(c("metadata", "data") %in% names(json))) {
+          return("json must contain metadata and data")
         }
       },
       label = {
@@ -189,17 +192,19 @@ setClass("threeJsGeometry",
 #' @export
 #' @examples
 #' availableGeometries
-#' 
-availableGeometries <- c("arrow",
-                         "box",
-                         "capsule", "cone", "cylinder", "circle",
-                         "dodecahedron",
-                         "json",
-                         "icosahedron",
-                         "line", "label",
-                         "octahedron",
-                         "segment", "sphere",
-                         "tetrahedron", "text", "torus")
+#'
+availableGeometries <- c(
+  "arrow",
+  "box",
+  "capsule", "cone", "cylinder", "circle",
+  "dodecahedron",
+  "json",
+  "icosahedron",
+  "line", "label",
+  "octahedron",
+  "segment", "sphere",
+  "tetrahedron", "text", "torus"
+)
 
 #' @rdname threeJsGeometry-class
 #' @param \dots Each argument in \dots becomes an slot in the new threeJsGeometry.

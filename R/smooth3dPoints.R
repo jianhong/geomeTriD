@@ -13,15 +13,16 @@
 #' x1, y1, and z1.
 #' @examples
 #' library(GenomicRanges)
-#' obj <- GRanges('1', IRanges(seq.int(5)*10, width=10),
-#'  x=seq.int(5), y=seq.int(5), z=seq.int(5))
+#' obj <- GRanges("1", IRanges(seq.int(5) * 10, width = 10),
+#'   x = seq.int(5), y = seq.int(5), z = seq.int(5)
+#' )
 #' smooth3dPoints(obj, 5)
-#' 
-smooth3dPoints <- function(obj, resolution=30, ...){
+#'
+smooth3dPoints <- function(obj, resolution = 30, ...) {
   stopifnot(is.numeric(resolution))
   stopifnot(is(obj, "GRanges"))
-  stopifnot(all(c('x', 'y', 'z') %in% colnames(mcols(obj))))
-  if(length(obj)==0){
+  stopifnot(all(c("x", "y", "z") %in% colnames(mcols(obj))))
+  if (length(obj) == 0) {
     return(obj)
   }
   t <- seq_along(obj)

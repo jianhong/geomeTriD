@@ -1,4 +1,3 @@
-
 addPoints <- function(pointscollection, x, y, s, e) {
   pointscollection[[length(pointscollection) + 1]] <- list(
     x = x, y = y, start = s, end = e
@@ -41,8 +40,8 @@ checkConnectionPoints <- function(shapeX, a, close = TRUE) {
 }
 
 safeEndPoint <- function(x, lim, dx) {
-  if (any(x < lim[1])) x[x<lim[1]] <- lim[1] + dx
-  if (any(x > lim[2])) x[x>lim[2]] <- lim[2] - dx
+  if (any(x < lim[1])) x[x < lim[1]] <- lim[1] + dx
+  if (any(x > lim[2])) x[x > lim[2]] <- lim[2] - dx
   x
 }
 
@@ -51,7 +50,7 @@ plotStartEndPoints <- function(xy, idx, xlim, ylim, start, ...) {
   ## plot a horizontal line to the edge
   x <- xy$x[idx]
   y <- xy$y[idx]
-  
+
   if (idx == 1) {
     idx <- c(1, 2)
   } else {
@@ -61,7 +60,7 @@ plotStartEndPoints <- function(xy, idx, xlim, ylim, start, ...) {
   ys <- xy$y[idx]
   slope <- diff(ys) / diff(xs)
   b <- y - slope * x
-  
+
   x0 <- ifelse(x > mean(xlim), xlim[2], xlim[1])
   y0 <- ifelse(y > mean(ylim), ylim[2], ylim[1])
   dx <- pointsDistance(c(x, y), c(x0, y))
@@ -92,7 +91,7 @@ plotStartEndPoints <- function(xy, idx, xlim, ylim, start, ...) {
     x0 <- safeEndPoint(x0, xlim, 0)
     x1 <- safeEndPoint(x1, xlim, ddx)
   }
-  
+
   if (!missing(start)) {
     return(list(x = c(x, x0), y = c(y, y0)))
   } else {
@@ -224,7 +223,7 @@ bezier <- function(coefs, center, r_coefs, r, evaluation = 100, w, method = 1) {
       )
       # distance of the center of nodes center points to sub-cluster center
       Nr <- sqrt((mean(coefs[, 1, drop = TRUE]) - center[1])^2 +
-                   (mean(coefs[, 2, drop = TRUE]) - center[2])^2)
+        (mean(coefs[, 2, drop = TRUE]) - center[2])^2)
       # N/sum(2*pi*r_coefs) should be same as w
       N <- max(min(2 * w, r / Nr, 2 * N / sum(2 * pi * r_coefs), na.rm = TRUE), 1.25)
     }
@@ -234,21 +233,21 @@ bezier <- function(coefs, center, r_coefs, r, evaluation = 100, w, method = 1) {
       N <- 2
     } else {
       Nr <- sqrt((mean(coefs[, 1, drop = TRUE]) - center[1])^2 +
-                   (mean(coefs[, 2, drop = TRUE]) - center[2])^2)
+        (mean(coefs[, 2, drop = TRUE]) - center[2])^2)
       N <- r / Nr
     }
   }
   center_mirror <- mirrorP(center,
-                           coefs[1, , drop = TRUE],
-                           coefs[nrow(coefs), , drop = TRUE],
-                           N = N
+    coefs[1, , drop = TRUE],
+    coefs[nrow(coefs), , drop = TRUE],
+    N = N
   )
   half <- floor(nrow(coefs) / 2)
   ctrNodes <- rbind(
     coefs[seq.int(half), , drop = FALSE],
     center_mirror,
     coefs[seq.int(nrow(coefs))[-seq.int(half)], ,
-          drop = FALSE
+      drop = FALSE
     ]
   )
   xy <- lapply((seq.int(101) - 1) / 100, bezier0, ctrNodes = ctrNodes)
@@ -363,8 +362,8 @@ getCutPos <- function(x, breaks, n) {
   x[x <= min(breaks)] <- min(breaks) + .1
   x[x > max(breaks)] <- max(breaks)
   at <- as.numeric(cut(x,
-                       breaks = breaks,
-                       labels = seq.int(n)
+    breaks = breaks,
+    labels = seq.int(n)
   ))
   return(at)
 }
@@ -403,7 +402,7 @@ resampleDataByFun <- function(fromGR, targetGR, FUN = viewMeans, dropZERO = TRUE
   stopifnot(
     "Only one seqlevel is supported." =
       all(as.character(seqnames(targetGR)) ==
-            seqn)
+        seqn)
   )
   stopifnot("score" %in% colnames(mcols(fromGR)))
   strand(fromGR) <- "*"
@@ -427,8 +426,8 @@ breakPointByBin <- function(x, y, start, end, seqn) {
   }
   rg <- seq(start, end, length.out = n)
   GRanges(seqn, IRanges(start = rg[-n], end = rg[-1]),
-          x0 = x[-n], x1 = x[-1],
-          y0 = y[-n], y1 = y[-1]
+    x0 = x[-n], x1 = x[-1],
+    y0 = y[-n], y1 = y[-1]
   )
 }
 
@@ -459,7 +458,7 @@ calTickPos <- function(feature.tick, curve_gr, arrowLen, kd = 2, rate = 72) {
   srt <- atan((curve_gr$y1 - curve_gr$y0)[ol] / (curve_gr$x1 - curve_gr$x0)[ol]) + pi / 2
   srt[is.na(srt)] <- 0
   tickLen <- grid::convertUnit(arrowLen,
-                               unitTo = "native", valueOnly = TRUE
+    unitTo = "native", valueOnly = TRUE
   ) / rate
   if (kd == 2) {
     x2 <- x1 + tickLen * cos(srt)
@@ -493,7 +492,7 @@ calTickPos <- function(feature.tick, curve_gr, arrowLen, kd = 2, rate = 72) {
 #' start end
 #' @importFrom utils head
 calGenePos <- function(fgf, curve_gr, arrowLen, kd = 2, rate = 72) {
-  if(!is(fgf, 'GRanges')){
+  if (!is(fgf, "GRanges")) {
     return(NULL)
   }
   ## subsetByOverlaps will not work for unit metadata
@@ -554,23 +553,23 @@ calGenePos <- function(fgf, curve_gr, arrowLen, kd = 2, rate = 72) {
   # start points
   neg_strand <- as.character(strand(fgf)) == "-"
   x2 <- ifelse(neg_strand,
-               ol_e$x1, ol_s$x1
+    ol_e$x1, ol_s$x1
   )
   y2 <- ifelse(neg_strand,
-               ol_e$y1, ol_s$y1
+    ol_e$y1, ol_s$y1
   )
   x3 <- ifelse(neg_strand,
-               ol_e$x3, ol_s$x3
+    ol_e$x3, ol_s$x3
   )
   y3 <- ifelse(neg_strand,
-               ol_e$y3, ol_s$y3
+    ol_e$y3, ol_s$y3
   )
   if (kd == 3) {
     z2 <- ifelse(neg_strand,
-                 ol_e$z1, ol_s$z1
+      ol_e$z1, ol_s$z1
     )
     z3 <- ifelse(neg_strand,
-                 ol_e$z3, ol_s$z3
+      ol_e$z3, ol_s$z3
     )
   }
   getFirst2EleDiff <- function(.ele, isNeg) {
@@ -626,22 +625,22 @@ calGenePos <- function(fgf, curve_gr, arrowLen, kd = 2, rate = 72) {
 #' @importFrom grid convertHeight grobHeight convertWidth grobWidth grobX grobY
 objWidth <- function(xlim, ...) {
   convertWidth(grobWidth(...),
-               unitTo = "npc", valueOnly = TRUE
+    unitTo = "npc", valueOnly = TRUE
   ) * diff(xlim)
 }
 objHeight <- function(ylim, ...) {
   convertHeight(grobHeight(...),
-                unitTo = "npc", valueOnly = TRUE
+    unitTo = "npc", valueOnly = TRUE
   ) * diff(ylim)
 }
 objX <- function(theta, ...) {
   convertWidth(grobX(..., theta = theta),
-               unitTo = "npc", valueOnly = TRUE
+    unitTo = "npc", valueOnly = TRUE
   )
 }
 objY <- function(theta, ...) {
   convertHeight(grobY(..., theta = theta),
-                unitTo = "npc", valueOnly = TRUE
+    unitTo = "npc", valueOnly = TRUE
   )
 }
 
@@ -680,7 +679,7 @@ getObjsPos <- function(objs, xlim, ylim, res_row, res_col, resolution = 10) {
       }
       return(data.frame(
         x = rep(seq(rect$left, rect$right),
-                each = rect$top - rect$bottom + 1
+          each = rect$top - rect$bottom + 1
         ),
         y = rep(
           seq(rect$bottom, rect$top),
@@ -815,10 +814,10 @@ safeObjCoor <- function(objCoor, obj, x, y, xlim, ylim, logic = TRUE, force = 6)
         return(c(x0, y0))
       }
       x <- ifelse(newXat == 1, xlim[1],
-                  ifelse(newXat >= length(x_r), xlim[2], x_r[newXat])
+        ifelse(newXat >= length(x_r), xlim[2], x_r[newXat])
       )
       y <- ifelse(newYat == 1, ylim[1],
-                  ifelse(newYat >= length(y_r), ylim[2], y_r[newYat])
+        ifelse(newYat >= length(y_r), ylim[2], y_r[newYat])
       )
       new_obj$x <- unit(x, units = "native")
       new_obj$y <- unit(y, units = "native")
@@ -851,18 +850,18 @@ plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
   res_row <- ceiling(abs(diff(xlim)) / objWidth(xlim, textGrob("w"))) * safe_text_force
   res_col <- ceiling(abs(diff(ylim)) / objHeight(xlim, textGrob("f"))) * safe_text_force
   objCoor <- matrix(0, nrow = res_row, ncol = res_col)
-  if(length(fgf)>0){
-    if(is.character(fgf)){
+  if (length(fgf) > 0) {
+    if (is.character(fgf)) {
       seqn <- fgf
-    }else if(is(fgf, 'GRanges')){
+    } else if (is(fgf, "GRanges")) {
       seqn <- as.character(seqnames(fgf[1]))
-    }else{
-      stop('can not get seqname.')
+    } else {
+      stop("can not get seqname.")
     }
-  }else{
-    stop('can not get seqname.')
+  } else {
+    stop("can not get seqname.")
   }
-  
+
   curve_gr <- lapply(pP, function(.ele) {
     .ele$seqn <- seqn
     do.call(breakPointByBin, .ele)
@@ -891,11 +890,11 @@ plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
     stopifnot(is(genomicSigs, "GRanges"))
     stopifnot("score" %in% colnames(mcols(genomicSigs)))
     genomicSigs <- resampleDataByFun(genomicSigs, curve_gr,
-                                     dropZERO = FALSE,
-                                     na.rm = TRUE
+      dropZERO = FALSE,
+      na.rm = TRUE
     )
     genomicSigScoreRange <- quantile(signalTransformFun(genomicSigs$score),
-                                     probs = c(.1, .99)
+      probs = c(.1, .99)
     )
     if (genomicSigScoreRange[1] == genomicSigScoreRange[2]) {
       genomicSigScoreRange <- range(signalTransformFun(genomicSigs$score))
@@ -904,8 +903,8 @@ plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
       genomicSigBreaks <- c(
         -1,
         seq(genomicSigScoreRange[1],
-            genomicSigScoreRange[2],
-            length.out = lwd.maxGenomicSigs - 1
+          genomicSigScoreRange[2],
+          length.out = lwd.maxGenomicSigs - 1
         ),
         max(signalTransformFun(genomicSigs$score)) + 1
       )
@@ -915,42 +914,42 @@ plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
       }
       genomicSigs$lwd <- as.numeric(as.character(
         cut(signalTransformFun(genomicSigs$score),
-            breaks = genomicSigBreaks,
-            labels = genomicSiglabels
+          breaks = genomicSigBreaks,
+          labels = genomicSiglabels
         )
       ))
       ## add genomic signals
       grid.segments(curve_gr$x0, curve_gr$y0,
-                    curve_gr$x1, curve_gr$y1,
-                    default.units = "native",
-                    gp = gpar(
-                      lwd = lwd.backbone + genomicSigs$lwd,
-                      col = col.backbone_background,
-                      alpha = alpha.backbone_background,
-                      lineend = 1
-                    )
+        curve_gr$x1, curve_gr$y1,
+        default.units = "native",
+        gp = gpar(
+          lwd = lwd.backbone + genomicSigs$lwd,
+          col = col.backbone_background,
+          alpha = alpha.backbone_background,
+          lineend = 1
+        )
       )
     }
   } else {
     grid.lines(c(curve_gr$x0, curve_gr$x1[length(curve_gr)]),
-               c(curve_gr$y0, curve_gr$y1[length(curve_gr)]),
-               default.units = "native",
-               gp = gpar(
-                 lwd = lwd.maxGenomicSigs / 2,
-                 lty = 1,
-                 col = col.backbone_background
-               )
+      c(curve_gr$y0, curve_gr$y1[length(curve_gr)]),
+      default.units = "native",
+      gp = gpar(
+        lwd = lwd.maxGenomicSigs / 2,
+        lty = 1,
+        col = col.backbone_background
+      )
     )
   }
   ## add backbone
   grid.lines(c(curve_gr$x0, curve_gr$x1[length(curve_gr)]),
-             c(curve_gr$y0, curve_gr$y1[length(curve_gr)]),
-             default.units = "native",
-             gp = gpar(
-               lwd = lwd.backbone,
-               lty = 1,
-               col = col.backbone
-             )
+    c(curve_gr$y0, curve_gr$y1[length(curve_gr)]),
+    default.units = "native",
+    gp = gpar(
+      lwd = lwd.backbone,
+      lty = 1,
+      col = col.backbone
+    )
   )
   ## add backbone to avoidance list
   tgs <- mapply(function(x0, x1, y0, y1) {
@@ -965,7 +964,7 @@ plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
     )
   }, curve_gr$x0, curve_gr$x1, curve_gr$y0, curve_gr$y1, SIMPLIFY = FALSE)
   objCoor <- addObjCoor(objCoor, tgs, xlim, ylim)
-  
+
   ## add genomic coordinates
   if (show_coor) {
     r_tick <- range(curve_gr)
@@ -976,12 +975,12 @@ plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
     feature.tick$col <- col.tension_line
     tick.xy <- calTickPos(feature.tick, curve_gr, arrowLen, rate = rate, kd = kd)
     grid.segments(tick.xy$x1, tick.xy$y1,
-                  tick.xy$x2, tick.xy$y2,
-                  default.units = "native",
-                  gp = gpar(
-                    col = col.tension_line,
-                    lwd = lwd.tension_line
-                  )
+      tick.xy$x2, tick.xy$y2,
+      default.units = "native",
+      gp = gpar(
+        col = col.tension_line,
+        lwd = lwd.tension_line
+      )
     )
     if (coor_mark_interval) {
       feature.tick.mark <- feature.tick[tick.xy$id]
@@ -989,12 +988,12 @@ plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
       keep <- which(mark == round(mark) & !is.na(tick.xy$x3) & !is.na(tick.xy$y3))
       if (length(keep) > 0) {
         grid.segments(tick.xy$x1[keep], tick.xy$y1[keep],
-                      tick.xy$x3[keep], tick.xy$y3[keep],
-                      default.units = "native",
-                      gp = gpar(
-                        col = col.coor,
-                        lwd = lwd.tension_line
-                      )
+          tick.xy$x3[keep], tick.xy$y3[keep],
+          default.units = "native",
+          gp = gpar(
+            col = col.coor,
+            lwd = lwd.tension_line
+          )
         )
         for (k in keep) {
           lab <- prettyMark(
@@ -1010,16 +1009,16 @@ plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
             rot = 180 * tick.xy$srt[k] / pi - 90
           )
           lab.xy <- safeObjCoor(objCoor,
-                                x = tick.xy$x3[k],
-                                y = tick.xy$y3[k],
-                                obj = tg,
-                                xlim = xlim,
-                                ylim = ylim,
-                                logic = FALSE,
-                                force = safe_text_force
+            x = tick.xy$x3[k],
+            y = tick.xy$y3[k],
+            obj = tg,
+            xlim = xlim,
+            ylim = ylim,
+            logic = FALSE,
+            force = safe_text_force
           )
           if ((!is.na(lab.xy[1]) && lab.xy[1] != tick.xy$x3[k]) ||
-              (!is.na(lab.xy[2]) && lab.xy[2] != tick.xy$y3[k])) {
+            (!is.na(lab.xy[2]) && lab.xy[2] != tick.xy$y3[k])) {
             tg <- grid.text(
               label = lab,
               x = lab.xy[1], y = lab.xy[2],
@@ -1029,14 +1028,14 @@ plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
               gp = gpar(col = col.coor)
             )
             grid.segments(tick.xy$x3[k], tick.xy$y3[k],
-                          lab.xy[1],
-                          lab.xy[2],
-                          default.units = "native",
-                          gp = gpar(
-                            col = col.coor,
-                            lwd = .5,
-                            lty = 4
-                          )
+              lab.xy[1],
+              lab.xy[2],
+              default.units = "native",
+              gp = gpar(
+                col = col.coor,
+                lwd = .5,
+                lty = 4
+              )
             )
           } else {
             grid.draw(tg)
@@ -1051,8 +1050,8 @@ plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
   if (length(genePos) > 0) {
     null <- mapply(function(x, y, col, lwd) {
       grid.lines(x, y,
-                 default.units = "native",
-                 gp = gpar(col = col, lwd = lwd)
+        default.units = "native",
+        gp = gpar(col = col, lwd = lwd)
       )
     }, x = genePos$xs, y = genePos$ys, col = genePos$fgf$col, lwd = lwd.gene)
     grid.segments(
@@ -1118,13 +1117,13 @@ plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
           )
         )
         lab.xy <- safeObjCoor(objCoor,
-                              x = genePos$x2[k],
-                              y = genePos$y2[k],
-                              obj = tg,
-                              xlim = xlim,
-                              ylim = ylim,
-                              logic = FALSE,
-                              force = safe_text_force
+          x = genePos$x2[k],
+          y = genePos$y2[k],
+          obj = tg,
+          xlim = xlim,
+          ylim = ylim,
+          logic = FALSE,
+          force = safe_text_force
         )
         if (!is.na(lab.xy[1]) && lab.xy[1] != genePos$x2[k]) {
           tg <- grid.text(
@@ -1138,14 +1137,14 @@ plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
             )
           )
           grid.segments(genePos$x2[k], genePos$y2[k],
-                        lab.xy[1],
-                        lab.xy[2],
-                        default.units = "native",
-                        gp = gpar(
-                          col = genePos$fgf$col[k],
-                          lwd = .5,
-                          lty = 4
-                        )
+            lab.xy[1],
+            lab.xy[2],
+            default.units = "native",
+            gp = gpar(
+              col = genePos$fgf$col[k],
+              lwd = .5,
+              lty = 4
+            )
           )
         } else {
           grid.draw(tg)

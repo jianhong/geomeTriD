@@ -82,13 +82,15 @@ view3dStructure <- function(obj, feature.gr,
     stopifnot("z" %in% colnames(mcols(obj)))
   }
   renderer <- match.arg(renderer)
-  feature.gr <- parseFeature(feature.gr = feature.gr,
-                             seqn=as.character(seqnames(obj)[1]))
+  feature.gr <- parseFeature(
+    feature.gr = feature.gr,
+    seqn = as.character(seqnames(obj)[1])
+  )
   xlim <- range(obj$x)
   ylim <- range(obj$y)
-  if(length(obj$z)>0){
+  if (length(obj$z) > 0) {
     zlim <- range(obj$z)
-  }else{
+  } else {
     zlim <- c(-1, 1) ## will not use
   }
   d_xlim <- diff(xlim) / 10
@@ -225,7 +227,7 @@ view3dStructure <- function(obj, feature.gr,
     ## spline smooth for each bin with 30 points
     obj <- smooth3dPoints(obj, 30)
     ## obj is the GRanges with p0 and p1 (x,y,z) coordinates
-    
+
     geometries <- list() ## list to save all geometries to plot
     geometries$backbone <- threeJsGeometry(
       x = c(obj$x0, obj$x1[length(obj)]),
@@ -264,22 +266,23 @@ view3dStructure <- function(obj, feature.gr,
           length(genomicSigs)
         )[seq_along(genomicSigs)]
       }
-      if(!is.list(signalTransformFun)){
+      if (!is.list(signalTransformFun)) {
         signalTransformFun <- list(signalTransformFun)
       }
       genomic_signal_geometry <- mapply(
         create3dGenomicSignals,
         GenoSig = genomicSigs,
         targetObj = rep(list(obj), length(genomicSigs)),
-        signalTransformFun  = signalTransformFun,
+        signalTransformFun = signalTransformFun,
         reverseGenomicSigs = reverseGenomicSigs,
-        type = 'segment',
+        type = "segment",
         tag = names(genomicSigs),
         name = names(genomicSigs),
         color = col.backbone_background,
         lwd.maxGenomicSigs = lwd.maxGenomicSigs,
         alpha = alpha.backbone_background,
-        SIMPLIFY = FALSE)
+        SIMPLIFY = FALSE
+      )
       geometries <- c(
         geometries,
         unlist(genomic_signal_geometry[
@@ -409,20 +412,21 @@ view3dStructure <- function(obj, feature.gr,
       notGene <- (!genePos$fgf$type %in% "gene") & (!genePos$missing_start)
       if (any(notGene)) {
         notGeneRadius <- genePos$fgf$pch[notGene]
-        if(length(notGeneRadius)!=sum(notGene)){
+        if (length(notGeneRadius) != sum(notGene)) {
           notGeneRadius <- genePos$fgf$size[notGene]
-          if(length(genePos$fgf$pch[notGene])==sum(notGene)){
-            if(!all(vapply(notGeneRadius, is.unit, logical(1L)))){
-              stop('The size is not in unit format.')
+          if (length(genePos$fgf$pch[notGene]) == sum(notGene)) {
+            if (!all(vapply(notGeneRadius, is.unit, logical(1L)))) {
+              stop("The size is not in unit format.")
             }
             notGeneRadius <- convertUnit(notGeneRadius,
-                                         unitTo = "inch",
-                                         valueOnly = TRUE) / 5
-          }else{
+              unitTo = "inch",
+              valueOnly = TRUE
+            ) / 5
+          } else {
             notGeneRadius <- 1
           }
         }
-        if(length(unique(notGeneRadius))==1){
+        if (length(unique(notGeneRadius)) == 1) {
           geometries$cRE <- threeJsGeometry(
             x = genePos$x2[notGene],
             y = genePos$y2[notGene],
@@ -434,11 +438,11 @@ view3dStructure <- function(obj, feature.gr,
               radius = notGeneRadius[1]
             )
           )
-        }else{
-          if(any(duplicated(notGeneRadius))){
+        } else {
+          if (any(duplicated(notGeneRadius))) {
             cis_fgf <- unique(notGeneRadius)
-            geometries_cRE <- lapply(cis_fgf, function(.r){
-              idx <- which(notGeneRadius==.r)
+            geometries_cRE <- lapply(cis_fgf, function(.r) {
+              idx <- which(notGeneRadius == .r)
               threeJsGeometry(
                 x = genePos$x2[notGene][idx],
                 y = genePos$y2[notGene][idx],
@@ -451,7 +455,7 @@ view3dStructure <- function(obj, feature.gr,
                 )
               )
             })
-            names(geometries_cRE) <- paste0('cRE_', cis_fgf)
+            names(geometries_cRE) <- paste0("cRE_", cis_fgf)
             geometries <- c(geometries, geometries_cRE)
           }
         }

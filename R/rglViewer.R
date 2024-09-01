@@ -44,17 +44,17 @@ rglViewer <- function(..., background = "gray") {
 
   open3d()
   bg3d(color = background)
-  doMapply <- function(.ele, FUN, scale_factor, subdivision=0) {
+  doMapply <- function(.ele, FUN, scale_factor, subdivision = 0) {
     mapply(
       function(.color, .tag, .x, .y, .z) {
         shade3d(scale3d(
           translate3d(
-            if(subdivision==0){
+            if (subdivision == 0) {
               FUN(
                 col = .color,
                 tag = .tag
               )
-            }else{
+            } else {
               subdivision3d(
                 FUN(
                   col = .color,
@@ -62,8 +62,7 @@ rglViewer <- function(..., background = "gray") {
                 ),
                 depth = subdivision
               )
-            }
-            ,
+            },
             x = .x,
             y = .y,
             z = .z
@@ -100,70 +99,82 @@ rglViewer <- function(..., background = "gray") {
           x = .ele$properties$radius,
           y = .ele$properties$radius,
           z = .ele$properties$height
-        ), subdivision=3)
+        ), subdivision = 3)
       },
       cone = {
-        c3 <- mapply(function(.x, .y, .z, .h, .r, .c){
-          center <- matrix(
-            c(.x , .x,
-              .y, .y,
-              .z+.h/2, .z-.h/2),
-            nrow = 2
-          )
-          colnames(center) <- c('x', 'y', 'z')
-          cylinder3d(
-            center = center,
-            radius = c(0, .r),
-            color = .c,
-            sides = 36
-          )
-        }, .ele$x, .ele$y, .ele$z, 
-        .ele$properties$height,
-        .ele$properties$radius,
-        .ele$colors,
-        SIMPLIFY = FALSE)
-        lapply(c3, function(.c3){
+        c3 <- mapply(
+          function(.x, .y, .z, .h, .r, .c) {
+            center <- matrix(
+              c(
+                .x, .x,
+                .y, .y,
+                .z + .h / 2, .z - .h / 2
+              ),
+              nrow = 2
+            )
+            colnames(center) <- c("x", "y", "z")
+            cylinder3d(
+              center = center,
+              radius = c(0, .r),
+              color = .c,
+              sides = 36
+            )
+          }, .ele$x, .ele$y, .ele$z,
+          .ele$properties$height,
+          .ele$properties$radius,
+          .ele$colors,
+          SIMPLIFY = FALSE
+        )
+        lapply(c3, function(.c3) {
           shade3d(addNormals(.c3))
         })
       },
       circle = {
-        c3 <- mapply(function(.x, .y, .z, .r, .start, .end, .c, .tag){
-          theta <- c(seq(.start, .end, length.out = 36))
-          polygon3d(x=c(.x, .x+.r*sin(theta), .x),
-                    y=c(.y, .y+.r*cos(theta), .y),
-                    z=rep(.z, 38),
-                    fill = TRUE, plot = TRUE,
-                    col = .c,
-                    tag = .tag)
-        },.ele$x, .ele$y, .ele$z,
-        .ele$properties$radius,
-        .ele$properties$thetaStart,
-        .ele$properties$thetaLength,
-        .ele$colors, .ele$tag,
-        SIMPLIFY = FALSE)
+        c3 <- mapply(
+          function(.x, .y, .z, .r, .start, .end, .c, .tag) {
+            theta <- c(seq(.start, .end, length.out = 36))
+            polygon3d(
+              x = c(.x, .x + .r * sin(theta), .x),
+              y = c(.y, .y + .r * cos(theta), .y),
+              z = rep(.z, 38),
+              fill = TRUE, plot = TRUE,
+              col = .c,
+              tag = .tag
+            )
+          }, .ele$x, .ele$y, .ele$z,
+          .ele$properties$radius,
+          .ele$properties$thetaStart,
+          .ele$properties$thetaLength,
+          .ele$colors, .ele$tag,
+          SIMPLIFY = FALSE
+        )
       },
       cylinder = {
-        c3 <- mapply(function(.x, .y, .z, .h, .t, .b, .c){
-          center <- matrix(
-            c(.x , .x,
-              .y, .y,
-              .z+.h/2, .z-.h/2),
-            nrow = 2
-          )
-          colnames(center) <- c('x', 'y', 'z')
-          cylinder3d(
-            center = center,
-            radius = c(.t, .b),
-            color = .c,
-            sides = 36
-          )
-        }, .ele$x, .ele$y, .ele$z, 
-        .ele$properties$height,
-        .ele$properties$radiusTop,
-        .ele$properties$radiusBottom,
-        .ele$colors,
-        SIMPLIFY = FALSE)
-        lapply(c3, function(.c3){
+        c3 <- mapply(
+          function(.x, .y, .z, .h, .t, .b, .c) {
+            center <- matrix(
+              c(
+                .x, .x,
+                .y, .y,
+                .z + .h / 2, .z - .h / 2
+              ),
+              nrow = 2
+            )
+            colnames(center) <- c("x", "y", "z")
+            cylinder3d(
+              center = center,
+              radius = c(.t, .b),
+              color = .c,
+              sides = 36
+            )
+          }, .ele$x, .ele$y, .ele$z,
+          .ele$properties$height,
+          .ele$properties$radiusTop,
+          .ele$properties$radiusBottom,
+          .ele$colors,
+          SIMPLIFY = FALSE
+        )
+        lapply(c3, function(.c3) {
           shade3d(addNormals(.c3))
         })
       },
@@ -175,7 +186,7 @@ rglViewer <- function(..., background = "gray") {
         ))
       },
       json = {
-        message('not supported!')
+        message("not supported!")
       },
       icosahedron = {
         doMapply(.ele, icosahedron3d, list(
@@ -192,7 +203,7 @@ rglViewer <- function(..., background = "gray") {
           lwd = .ele$properties$size,
           col = .ele$colors,
           alpha = ifelse(length(.ele$properties$alpha) == 1,
-                         .ele$properties$alpha, 1
+            .ele$properties$alpha, 1
           ),
           tag = .ele$tag
         )
@@ -212,7 +223,7 @@ rglViewer <- function(..., background = "gray") {
           col = .ele$colors,
           lwd = .ele$properties$size,
           alpha = ifelse(length(.ele$properties$alpha) == 1,
-                         .ele$properties$alpha, 1
+            .ele$properties$alpha, 1
           ),
           tag = .ele$tag
         )
@@ -232,7 +243,8 @@ rglViewer <- function(..., background = "gray") {
         ))
       },
       label = {
-        texts3d(x=.ele$x, y=.ele$y, z=.ele$z,
+        texts3d(
+          x = .ele$x, y = .ele$y, z = .ele$z,
           texts = .ele$properties$label,
           col = .ele$colors,
           tag = .ele$tag,
@@ -240,7 +252,8 @@ rglViewer <- function(..., background = "gray") {
         )
       },
       text = {
-        texts3d(x=.ele$x, y=.ele$y, z=.ele$z,
+        texts3d(
+          x = .ele$x, y = .ele$y, z = .ele$z,
           texts = .ele$properties$label,
           col = .ele$colors,
           tag = .ele$tag,
@@ -248,28 +261,30 @@ rglViewer <- function(..., background = "gray") {
         )
       },
       torus = {
-        theta <- c(seq(0, 2*pi, length.out = 150))
-        c3 <- mapply(function(.x, .y, .z, .h, .r, .c, .tag){
-          center <- cbind(
-            .x+.r*sin(theta),
-            .y+.r*cos(theta),
-            rep(.z, 150)
-          )
-          colnames(center) <- c('x', 'y', 'z')
-          cylinder3d(
-            center = center,
-            radius = .r/2,
-            color = .c,
-            closed = 1,
-            tag = .tag,
-            sides = 36
-          )
-        }, .ele$x, .ele$y, .ele$z, 
-        .ele$properties$tube,
-        .ele$properties$radius,
-        .ele$colors, .ele$tag,
-        SIMPLIFY = FALSE)
-        lapply(c3, function(.c3){
+        theta <- c(seq(0, 2 * pi, length.out = 150))
+        c3 <- mapply(
+          function(.x, .y, .z, .h, .r, .c, .tag) {
+            center <- cbind(
+              .x + .r * sin(theta),
+              .y + .r * cos(theta),
+              rep(.z, 150)
+            )
+            colnames(center) <- c("x", "y", "z")
+            cylinder3d(
+              center = center,
+              radius = .r / 2,
+              color = .c,
+              closed = 1,
+              tag = .tag,
+              sides = 36
+            )
+          }, .ele$x, .ele$y, .ele$z,
+          .ele$properties$tube,
+          .ele$properties$radius,
+          .ele$colors, .ele$tag,
+          SIMPLIFY = FALSE
+        )
+        lapply(c3, function(.c3) {
           shade3d(addNormals(.c3))
         })
       }

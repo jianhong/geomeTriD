@@ -26,7 +26,7 @@ suppressPackageStartupMessages({
   library(InteractionSet)
   library(rgl)
 })
-knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 ```
 
 # Introduction
@@ -43,8 +43,9 @@ The geomeTriD package enables users to visualize epigenomic data in both 2D and
 # Installation
 
 ```{r installation, eval=FALSE}
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
+if (!require("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
 
 BiocManager::install("geomeTriD")
 ```
@@ -63,18 +64,19 @@ There are three major steps to view the epigenomic data by geomeTriD in 3D.
 library(geomeTriD)
 ## load data
 obj <- readRDS(system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds",
-   package = "geomeTriD"
+  package = "geomeTriD"
 ))
-head(obj, n=2)
+head(obj, n = 2)
 feature.gr <- readRDS(system.file("extdata", "4DNFI1UEG1HD.feature.gr.rds",
-   package = "geomeTriD"
+  package = "geomeTriD"
 ))
-head(feature.gr, n=2)
+head(feature.gr, n = 2)
 ## create threeJsGeometry objects
 list3d <- view3dStructure(obj,
-                          feature.gr = feature.gr,
-                          renderer = "none")
-## plot the data 
+  feature.gr = feature.gr,
+  renderer = "none"
+)
+## plot the data
 threeJsViewer(list3d)
 ```
 
@@ -107,14 +109,15 @@ library(InteractionSet)
 # load the interaction data.
 # to import your own data, please refer trackViewer help documents
 gi_nij <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds",
-                          package="geomeTriD"))
+  package = "geomeTriD"
+))
 # the data is a GInteractions object with metadata score
-head(gi_nij, n=2)
+head(gi_nij, n = 2)
 # define a range to plot
 range_chr6 <- GRanges("chr6", IRanges(51120000, 53200000))
 # plot it if interactive
-if(interactive()){## not run to reduce the package size.
-mdsPlot(gi_nij, range = range_chr6, k=3, render='threejs')
+if (interactive()) { ## not run to reduce the package size.
+  mdsPlot(gi_nij, range = range_chr6, k = 3, render = "threejs")
 }
 ```
 
@@ -130,24 +133,28 @@ feature.gr <- genes(TxDb.Hsapiens.UCSC.hg19.knownGene)
 ## subset the data by target viewer region
 feature.gr <- subsetByOverlaps(feature.gr, range(regions(gi_nij)))
 ## assign symbols for each gene
-symbols <- mget(feature.gr$gene_id, org.Hs.egSYMBOL, ifnotfound=NA)
-feature.gr$label[lengths(symbols)==1] <- unlist(symbols[lengths(symbols)==1])
+symbols <- mget(feature.gr$gene_id, org.Hs.egSYMBOL, ifnotfound = NA)
+feature.gr$label[lengths(symbols) == 1] <- unlist(symbols[lengths(symbols) == 1])
 ## assign colors for each gene
-feature.gr$col <- sample(1:7, length(feature.gr), replace=TRUE)
-## Here we replaced the some gene feature as cis-regulatory elements 
+feature.gr$col <- sample(1:7, length(feature.gr), replace = TRUE)
+## Here we replaced the some gene feature as cis-regulatory elements
 ## to validate how it will be viewered by the plot
-feature.gr$type <- sample(c("cRE", "gene"), 
-                          length(feature.gr), replace=TRUE, 
-                          prob=c(0.1, 0.9))
+feature.gr$type <- sample(c("cRE", "gene"),
+  length(feature.gr),
+  replace = TRUE,
+  prob = c(0.1, 0.9)
+)
 ## set the size the cRE in the plot
 feature.gr$pch <- rep(NA, length(feature.gr))
-feature.gr$pch[feature.gr$type=='cRE'] <- 0.5
+feature.gr$pch[feature.gr$type == "cRE"] <- 0.5
 ## features header
-head(feature.gr, n=2)
+head(feature.gr, n = 2)
 # plot it if interactive
-if(interactive()){## not run to reduce the package size.
-mdsPlot(gi_nij, range = range_chr6, feature.gr = feature.gr,
-        k=3, render='threejs')
+if (interactive()) { ## not run to reduce the package size.
+  mdsPlot(gi_nij,
+    range = range_chr6, feature.gr = feature.gr,
+    k = 3, render = "threejs"
+  )
 }
 ```
 
@@ -158,14 +165,17 @@ Here we show how to add CTCF ATAC-seq signals along the strand.
 ```{r addCTCF}
 # one layer of signals. It is a `track` object
 ctcf <- readRDS(system.file("extdata", "ctcf.sample.rds",
-                            package="trackViewer"))
+  package = "trackViewer"
+))
 # plot it if interactive
-if(interactive()){## not run to reduce the package size.
-  mdsPlot(gi_nij, range = range_chr6, feature.gr = feature.gr,
-        genomicSigs = ctcf,
-        ## we reverse the ATAC-seq signale to show where is open
-        reverseGenomicSigs = TRUE,
-        k=3, render='threejs')
+if (interactive()) { ## not run to reduce the package size.
+  mdsPlot(gi_nij,
+    range = range_chr6, feature.gr = feature.gr,
+    genomicSigs = ctcf,
+    ## we reverse the ATAC-seq signale to show where is open
+    reverseGenomicSigs = TRUE,
+    k = 3, render = "threejs"
+  )
 }
 ```
 
@@ -176,12 +186,14 @@ Add more signals such as ChIP-seq.
 set.seed(1)
 randomSig <- ctcf$dat
 randomSig <- randomSig[sort(sample(seq_along(randomSig), 50))]
-randomSig$score <- randomSig$score*2*runif(50)
-head(randomSig, n=2)
-objs <- mdsPlot(gi_nij, range = range_chr6, feature.gr = feature.gr,
-        genomicSigs = list(ctcf=ctcf, test=randomSig),
-        reverseGenomicSigs = c(TRUE,FALSE),
-        k=3, render='none')
+randomSig$score <- randomSig$score * 2 * runif(50)
+head(randomSig, n = 2)
+objs <- mdsPlot(gi_nij,
+  range = range_chr6, feature.gr = feature.gr,
+  genomicSigs = list(ctcf = ctcf, test = randomSig),
+  reverseGenomicSigs = c(TRUE, FALSE),
+  k = 3, render = "none"
+)
 threeJsViewer(objs)
 ```
 
@@ -192,13 +204,13 @@ threeJsViewer(objs)
 library(rgl)
 library(manipulateWidget)
 rgl::clear3d() # Remove the earlier display
-rglViewer(objs, background = 'gray')
+rglViewer(objs, background = "gray")
 rgl::rglwidget() %>%
   rgl::toggleWidget(tags = "tick_minor") %>%
   toggleWidget(tags = "tick_major") %>%
   toggleWidget(tags = "tick_labels") %>%
-  toggleWidget(tags = "ctcf") %>% 
-  toggleWidget(tags = "test") %>% 
+  toggleWidget(tags = "ctcf") %>%
+  toggleWidget(tags = "test") %>%
   toggleWidget(tags = "backbone") %>%
   toggleWidget(tags = "gene_body") %>%
   toggleWidget(tags = "tss_labels") %>%
@@ -227,16 +239,18 @@ The features could be the cRE or gene. The cRE are shown as
 points with symbol 11.
 
 ```{r plotGInteractions}
-gi_chr2 <- readRDS(system.file("extdata", "gi.rds", package="trackViewer"))
+gi_chr2 <- readRDS(system.file("extdata", "gi.rds", package = "trackViewer"))
 range_chr2 <- GRanges("chr2", IRanges(234300000, 235000000))
 gene_hg19 <- suppressMessages(genes(TxDb.Hsapiens.UCSC.hg19.knownGene))
 feature.gr_chr2 <- subsetByOverlaps(gene_hg19, range(regions(gi_chr2)))
-feature.gr_chr2$col <- sample(2:7, length(feature.gr_chr2), replace=TRUE)
-feature.gr_chr2$type <- sample(c("cRE", "gene"), 
-                          length(feature.gr_chr2), replace=TRUE, 
-                          prob=c(0.1, 0.9))
+feature.gr_chr2$col <- sample(2:7, length(feature.gr_chr2), replace = TRUE)
+feature.gr_chr2$type <- sample(c("cRE", "gene"),
+  length(feature.gr_chr2),
+  replace = TRUE,
+  prob = c(0.1, 0.9)
+)
 feature.gr_chr2$pch <- rep(NA, length(feature.gr_chr2))
-feature.gr_chr2$pch[feature.gr_chr2$type=='cRE'] <- 11
+feature.gr_chr2$pch[feature.gr_chr2$type == "cRE"] <- 11
 symbol <- mget(feature.gr_chr2$gene_id, org.Hs.egSYMBOL, ifnotfound = NA)
 symbol <- unlist(lapply(symbol, function(.ele) .ele[1]))
 feature.gr_chr2$label <- symbol
@@ -245,29 +259,34 @@ geomeTriD::loopBouquetPlot(gi_chr2, range_chr2, feature.gr_chr2)
 
 ```{r plotRealData, eval=FALSE}
 ## filter the links to simulate the data with less interactions
-keep <- distance(first(gi_nij), second(gi_nij)) > 5e5 & gi_nij$score>35
+keep <- distance(first(gi_nij), second(gi_nij)) > 5e5 & gi_nij$score > 35
 gi_nij <- gi_nij[keep]
 # narrow the width of anchors to enhance the plots
 reg <- regions(gi_nij)
-wr <- floor(width(reg)/4)
+wr <- floor(width(reg) / 4)
 start(reg) <- start(reg) + wr
 end(reg) <- end(reg) - wr
 regions(gi_nij) <- reg
 feature.gr <- subsetByOverlaps(gene_hg19, range(regions(gi_nij)))
-feature.gr$col <- sample(2:7, length(feature.gr), replace=TRUE)
-feature.gr$type <- sample(c("cRE", "gene"), 
-                          length(feature.gr), replace=TRUE, 
-                          prob=c(0.1, 0.9))
+feature.gr$col <- sample(2:7, length(feature.gr), replace = TRUE)
+feature.gr$type <- sample(c("cRE", "gene"),
+  length(feature.gr),
+  replace = TRUE,
+  prob = c(0.1, 0.9)
+)
 symbol <- mget(feature.gr$gene_id, org.Hs.egSYMBOL, ifnotfound = NA)
 symbol <- unlist(lapply(symbol, function(.ele) .ele[1]))
 feature.gr$label <- symbol
-feature.gr <- c(feature.gr[sample(seq_along(feature.gr), 5)],
-                feature.gr[feature.gr$type=='cRE'][1])
+feature.gr <- c(
+  feature.gr[sample(seq_along(feature.gr), 5)],
+  feature.gr[feature.gr$type == "cRE"][1]
+)
 feature.gr <- unique(sort(feature.gr))
 geomeTriD::loopBouquetPlot(gi_nij, range_chr6, feature.gr,
-                coor_tick_unit = 5e4,
-                coor_mark_interval = 5e5,
-                genomicSigs = ctcf)
+  coor_tick_unit = 5e4,
+  coor_mark_interval = 5e5,
+  genomicSigs = ctcf
+)
 ```
 
 # Plot single cells in 3d
@@ -278,16 +297,19 @@ The input data should be a data.frame with x,y,z coordinates.
 
 ```{r}
 library(geomeTriD)
-cells <- readRDS(system.file('extdata', 'pbmc_small.3d.rds',
-                             package='geomeTriD'))
+cells <- readRDS(system.file("extdata", "pbmc_small.3d.rds",
+  package = "geomeTriD"
+))
 head(cells)
 ## color the cells by 'groups' info
-objs <- view3dCells(cells, x="umap_1", y="umap_2", z="umap_3",
-                    color = 'groups',
-                    colorFun = function(x){
-                      ifelse(x=='g1', 'red', 'blue')
-                    },
-                    renderer='none')
+objs <- view3dCells(cells,
+  x = "umap_1", y = "umap_2", z = "umap_3",
+  color = "groups",
+  colorFun = function(x) {
+    ifelse(x == "g1", "red", "blue")
+  },
+  renderer = "none"
+)
 ```
 
 Plot the cells by `rgl`.
@@ -295,7 +317,7 @@ Plot the cells by `rgl`.
 ## not run to reduce the package size.
 library(manipulateWidget)
 clear3d() # Remove the earlier display
-rglViewer(objs, background = 'white')
+rglViewer(objs, background = "white")
 rglwidget()
 ```
 
@@ -307,16 +329,20 @@ threeJsViewer(objs)
 We can also try to color the cells by a numeric column.
 ```{r}
 # plot it if interactive
-if(interactive()){
-view3dCells(cells, x="umap_1", y="umap_2", z="umap_3",
-            color = 'nCount_RNA',
-            colorFun = function(x, pal=colorRampPalette(c('black', 'red'))(5)){
-                          limits=range(x)
-                          pal[findInterval(x, seq(limits[1], limits[2], 
-                                                  length.out=length(pal)+1),
-                                           all.inside=TRUE)]
-                        },
-            renderer = 'threejs')
+if (interactive()) {
+  view3dCells(cells,
+    x = "umap_1", y = "umap_2", z = "umap_3",
+    color = "nCount_RNA",
+    colorFun = function(x, pal = colorRampPalette(c("black", "red"))(5)) {
+      limits <- range(x)
+      pal[findInterval(x, seq(limits[1], limits[2],
+        length.out = length(pal) + 1
+      ),
+      all.inside = TRUE
+      )]
+    },
+    renderer = "threejs"
+  )
 }
 ```
 

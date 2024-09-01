@@ -14,7 +14,7 @@ view3dCells(
      if (is.character(x)) 
          x <-
     as.numeric(factor(x))
-     limits = range(x)
+     limits <- range(x)
      pal[findInterval(x, seq(limits[1],
     limits[2], length.out = length(pal) + 1), all.inside = TRUE)]
  },
@@ -56,7 +56,7 @@ cells <- readRDS(system.file("extdata", "pbmc_small.3d.rds",
 ))
 view3dCells(cells,
   x = "umap_1", y = "umap_2", z = "umap_3",
-  color = 'nCount_RNA',
+  color = "nCount_RNA",
   renderer = "threejs"
 )
 }

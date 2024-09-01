@@ -33,27 +33,28 @@ Output and render functions for using threeJsViewer within Shiny
 applications and interactive Rmd documents.
 }
 \examples{
-if(interactive()){
-library(GenomicRanges)
-flamingo <- system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds", package = "geomeTriD")
-x <- readRDS(flamingo[[1]])
-## resize to bigger value to get better init view
-mcols(x) <- as.data.frame(mcols(x))*1e5 
-line <- threeJsGeometry(
-  x = x$x, y = x$y, z = x$z,
-  colors = sample(palette(), length(x), replace = TRUE),
-  type = "line",
-  properties = list(size = 4)
-)
-library(shiny)
-runApp(list(
- ui = bootstrapPage(
-   threejsOutput('plot')),
- server = function(input, output) {
-   output$plot <- renderthreeJsViewer({ 
-    threeJsViewer(line)
-   })
-   })
- )
+if (interactive()) {
+  library(GenomicRanges)
+  flamingo <- system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds", package = "geomeTriD")
+  x <- readRDS(flamingo[[1]])
+  ## resize to bigger value to get better init view
+  mcols(x) <- as.data.frame(mcols(x)) * 1e5
+  line <- threeJsGeometry(
+    x = x$x, y = x$y, z = x$z,
+    colors = sample(palette(), length(x), replace = TRUE),
+    type = "line",
+    properties = list(size = 4)
+  )
+  library(shiny)
+  runApp(list(
+    ui = bootstrapPage(
+      threejsOutput("plot")
+    ),
+    server = function(input, output) {
+      output$plot <- renderthreeJsViewer({
+        threeJsViewer(line)
+      })
+    }
+  ))
 }
 }

@@ -13,10 +13,10 @@
 #' flamingo <- system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds", package = "geomeTriD")
 #' x <- readRDS(flamingo[[1]])
 #' ## resize to bigger value to get better init view
-#' mcols(x) <- as.data.frame(mcols(x))*1e5 
+#' mcols(x) <- as.data.frame(mcols(x)) * 1e5
 #' set.seed(1)
 #' line <- threeJsGeometry(
-#'   x = x$x, y = x$y, z = x$z, 
+#'   x = x$x, y = x$y, z = x$z,
 #'   colors = sample(palette(), length(x), replace = TRUE),
 #'   type = "line",
 #'   properties = list(size = 4)
@@ -86,12 +86,12 @@ threeJsViewer <- function(...,
   if (any(vapply(geos, is.list, FUN.VALUE = logical(1L)))) {
     geos <- unlist(geos)
   }
-  if(length(names(geos))!=length(geos)) {
+  if (length(names(geos)) != length(geos)) {
     dots <- substitute(list(...))[-1]
     names <- unlist(vapply(dots, deparse, FUN.VALUE = character(1L)))
     names(geos) <- names
   }
-  if(any(is.na(names(geos))) || any(names(geos)=="")){
+  if (any(is.na(names(geos))) || any(names(geos) == "")) {
     stop("Can not handle the names for input threeJsGeometries.")
   }
   null <- lapply(geos, function(.ele) {
@@ -178,28 +178,29 @@ threeJsViewer <- function(...,
 #' @importFrom htmlwidgets shinyWidgetOutput
 #' @export
 #' @examples
-#' if(interactive()){
-#' library(GenomicRanges)
-#' flamingo <- system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds", package = "geomeTriD")
-#' x <- readRDS(flamingo[[1]])
-#' ## resize to bigger value to get better init view
-#' mcols(x) <- as.data.frame(mcols(x))*1e5 
-#' line <- threeJsGeometry(
-#'   x = x$x, y = x$y, z = x$z,
-#'   colors = sample(palette(), length(x), replace = TRUE),
-#'   type = "line",
-#'   properties = list(size = 4)
-#' )
-#' library(shiny)
-#' runApp(list(
-#'  ui = bootstrapPage(
-#'    threejsOutput('plot')),
-#'  server = function(input, output) {
-#'    output$plot <- renderthreeJsViewer({ 
-#'     threeJsViewer(line)
-#'    })
-#'    })
-#'  )
+#' if (interactive()) {
+#'   library(GenomicRanges)
+#'   flamingo <- system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds", package = "geomeTriD")
+#'   x <- readRDS(flamingo[[1]])
+#'   ## resize to bigger value to get better init view
+#'   mcols(x) <- as.data.frame(mcols(x)) * 1e5
+#'   line <- threeJsGeometry(
+#'     x = x$x, y = x$y, z = x$z,
+#'     colors = sample(palette(), length(x), replace = TRUE),
+#'     type = "line",
+#'     properties = list(size = 4)
+#'   )
+#'   library(shiny)
+#'   runApp(list(
+#'     ui = bootstrapPage(
+#'       threejsOutput("plot")
+#'     ),
+#'     server = function(input, output) {
+#'       output$plot <- renderthreeJsViewer({
+#'         threeJsViewer(line)
+#'       })
+#'     }
+#'   ))
 #' }
 threejsOutput <- function(outputId, width = "100%", height = "600px") {
   htmlwidgets::shinyWidgetOutput(

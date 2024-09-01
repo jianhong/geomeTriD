@@ -24,8 +24,9 @@ and \link{view3dStructure}.
 }
 \examples{
 library(GenomicRanges)
-obj <- GRanges('1', IRanges(seq.int(5)*10, width=10),
- x=seq.int(5), y=seq.int(5), z=seq.int(5))
+obj <- GRanges("1", IRanges(seq.int(5) * 10, width = 10),
+  x = seq.int(5), y = seq.int(5), z = seq.int(5)
+)
 smooth3dPoints(obj, 5)
 
 }

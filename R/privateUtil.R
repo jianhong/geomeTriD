@@ -19,7 +19,7 @@ invertCol <- function(col) {
   int_col
 }
 
-col2hex <- function(col){
+col2hex <- function(col) {
   col <- col2rgb(col, alpha = FALSE)
   col <- apply(col, 2, function(.ele) {
     rgb(.ele[1], .ele[2], .ele[3], maxColorValue = 255)
@@ -35,94 +35,131 @@ checkSignalTransformFun <- function(signalTransformFun) {
   }
 }
 
-checkSignalGeometries <- function(geometries){
-  stopifnot('found not supported geometries'=
-              all(geometries %in% availableGeometries))
+checkSignalGeometries <- function(geometries) {
+  stopifnot(
+    "found not supported geometries" =
+      all(geometries %in% availableGeometries)
+  )
 }
 
-checkSignalGeometryType <- function(type, ...){
-  stopifnot(length(type)==1)
-  if(!type %in% availableGeometries){
-    stop('available geometries are', availableGeometries)
+checkSignalGeometryType <- function(type, ...) {
+  stopifnot(length(type) == 1)
+  if (!type %in% availableGeometries) {
+    stop("available geometries are", availableGeometries)
   }
   args <- list(...)
   switch(type,
-         'segment'={
-           stopifnot('lwd.maxGenomicSigs is required for segment'=
-                       'lwd.maxGenomicSigs' %in% names(args))
-           stopifnot('lwd.maxGenomicSigs should be a number'=
-                       is.numeric(args$lwd.maxGenomicSigs))
-         },
-         'circle'={
-           stopifnot('radius and maxVal are required for circle'=
-                       all(c('radius', 'maxVal') %in% names(args)))
-           stopifnot('radius should be a number'=
-                       is.numeric(args$radius))
-           stopifnot('maxVal should be a number'=
-                       is.numeric(args$maxVal))
-         },
-         'sphere'={
-           stopifnot('radius is required for sphere'=
-                       'radius' %in% names(args))
-           stopifnot('radius should be a number'=
-                       is.numeric(args$radius))
-         },
-         'box'={
-           if(!any(c("width", "height", "depth") %in% names(args))){
-             message('The box size will be set by score.')
-           }
-         },
-         'capsule'={
-           if(!any(c("height", "radius") %in% names(args))){
-             message('The capsule size will be set by score.')
-           }
-         },
-         'cylinder' = {
-           if (!all(c("height", "radiusTop", "radiusBottom")
-                    %in% names(args))) {
-             message("The cylinder size will be set by score.")
-           }
-         },
-         'cone'={
-           if(!any(c("height", "radius") %in% names(args))){
-             message('The cone size will be set by score.')
-           }
-         },
-         'dodecahedron' = {
-           stopifnot('radius is required for dodecahedron'=
-                       'radius' %in% names(args))
-           stopifnot('radius should be a number'=
-                       is.numeric(args$radius))
-         },
-         'icosahedron' = {
-           stopifnot('radius is required for icosahedron'=
-                       'radius' %in% names(args))
-           stopifnot('radius should be a number'=
-                       is.numeric(args$radius))
-         },
-         'json' = {
-           stopifnot('path is required for json'=
-                       'path' %in% names(args))
-           stopifnot('The json file does not exist'=
-                       file.exists(args$path))
-         },
-         'octahedron' = {
-           stopifnot('radius is required for octahedron'=
-                       'radius' %in% names(args))
-           stopifnot('radius should be a number'=
-                       is.numeric(args$radius))
-         },
-         'tetrahedron' = {
-           stopifnot('radius is required for tetrahedron'=
-                       'radius' %in% names(args))
-           stopifnot('radius should be a number'=
-                       is.numeric(args$radius))
-         },
-         'torus'={
-           if(!any(c("tube", "radius") %in% names(args))){
-             message('The torus size will be set by score.')
-           }
-         })
+    "segment" = {
+      stopifnot(
+        "lwd.maxGenomicSigs is required for segment" =
+          "lwd.maxGenomicSigs" %in% names(args)
+      )
+      stopifnot(
+        "lwd.maxGenomicSigs should be a number" =
+          is.numeric(args$lwd.maxGenomicSigs)
+      )
+    },
+    "circle" = {
+      stopifnot(
+        "radius and maxVal are required for circle" =
+          all(c("radius", "maxVal") %in% names(args))
+      )
+      stopifnot(
+        "radius should be a number" =
+          is.numeric(args$radius)
+      )
+      stopifnot(
+        "maxVal should be a number" =
+          is.numeric(args$maxVal)
+      )
+    },
+    "sphere" = {
+      stopifnot(
+        "radius is required for sphere" =
+          "radius" %in% names(args)
+      )
+      stopifnot(
+        "radius should be a number" =
+          is.numeric(args$radius)
+      )
+    },
+    "box" = {
+      if (!any(c("width", "height", "depth") %in% names(args))) {
+        message("The box size will be set by score.")
+      }
+    },
+    "capsule" = {
+      if (!any(c("height", "radius") %in% names(args))) {
+        message("The capsule size will be set by score.")
+      }
+    },
+    "cylinder" = {
+      if (!all(c("height", "radiusTop", "radiusBottom")
+      %in% names(args))) {
+        message("The cylinder size will be set by score.")
+      }
+    },
+    "cone" = {
+      if (!any(c("height", "radius") %in% names(args))) {
+        message("The cone size will be set by score.")
+      }
+    },
+    "dodecahedron" = {
+      stopifnot(
+        "radius is required for dodecahedron" =
+          "radius" %in% names(args)
+      )
+      stopifnot(
+        "radius should be a number" =
+          is.numeric(args$radius)
+      )
+    },
+    "icosahedron" = {
+      stopifnot(
+        "radius is required for icosahedron" =
+          "radius" %in% names(args)
+      )
+      stopifnot(
+        "radius should be a number" =
+          is.numeric(args$radius)
+      )
+    },
+    "json" = {
+      stopifnot(
+        "path is required for json" =
+          "path" %in% names(args)
+      )
+      stopifnot(
+        "The json file does not exist" =
+          file.exists(args$path)
+      )
+    },
+    "octahedron" = {
+      stopifnot(
+        "radius is required for octahedron" =
+          "radius" %in% names(args)
+      )
+      stopifnot(
+        "radius should be a number" =
+          is.numeric(args$radius)
+      )
+    },
+    "tetrahedron" = {
+      stopifnot(
+        "radius is required for tetrahedron" =
+          "radius" %in% names(args)
+      )
+      stopifnot(
+        "radius should be a number" =
+          is.numeric(args$radius)
+      )
+    },
+    "torus" = {
+      if (!any(c("tube", "radius") %in% names(args))) {
+        message("The torus size will be set by score.")
+      }
+    }
+  )
 }
 
 #' @importFrom BiocGenerics width
@@ -150,15 +187,15 @@ checkGI <- function(gi, fixedBin = FALSE) {
   return(gi)
 }
 
-checkSmoothedGR <- function(obj){
-  stopifnot(is(obj, 'GRanges'))
-  stopifnot(all(c('x0', 'y0', 'z0', 'x1', 'y1', 'z1') %in% 
-                  colnames(mcols(obj))))
+checkSmoothedGR <- function(obj) {
+  stopifnot(is(obj, "GRanges"))
+  stopifnot(all(c("x0", "y0", "z0", "x1", "y1", "z1") %in%
+    colnames(mcols(obj))))
 }
 parseFeature <- function(feature.gr, seqn) {
   if (!missing(feature.gr)) {
     stopifnot(is(feature.gr, "GRanges"))
-    if(length(feature.gr)==0){
+    if (length(feature.gr) == 0) {
       return(as.character(seqn)[1])
     }
   } else {
@@ -183,18 +220,18 @@ parseFeature <- function(feature.gr, seqn) {
   feature.gr
 }
 
-safe_resolution <- function(x, n){
-  id <- width(x)<n
+safe_resolution <- function(x, n) {
+  id <- width(x) < n
   n <- rep(n, length(x))
-  if(any(id)){
+  if (any(id)) {
     n[id] <- width(x)[id]
   }
   return(n)
 }
 
-rescalePoints <- function(obj, scale_factor){
-  stopifnot(length(scale_factor)==1)
+rescalePoints <- function(obj, scale_factor) {
+  stopifnot(length(scale_factor) == 1)
   stopifnot(is.numeric(scale_factor))
-  mcols(obj) <- as.data.frame(mcols(obj))*scale_factor
+  mcols(obj) <- as.data.frame(mcols(obj)) * scale_factor
   return(obj)
 }
