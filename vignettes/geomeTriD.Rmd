@@ -1,12 +1,12 @@
 ---
-title: "geomeTriD Vignette: plot interaction data"
+title: "geomeTriD Vignette: Plot data in 3D"
 author: "Jianhong Ou"
 date: "`r BiocStyle::doc_date()`"
 package: "`r BiocStyle::pkg_ver('geomeTriD')`"
 abstract: >
   Visualize epigeomic data in 2D or 3D plots.
 vignette: >
-  %\VignetteIndexEntry{geomeTriD Vignette: plot interaction data}
+  %\VignetteIndexEntry{geomeTriD Vignette: Plot data in 3D}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 output:
@@ -46,7 +46,7 @@ The geomeTriD package enables users to visualize epigenomic data in both 2D and
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
-BiocManager::install("jianhong/geomeTriD")
+BiocManager::install("geomeTriD")
 ```
 
 # Quick start
@@ -112,8 +112,10 @@ gi_nij <- readRDS(system.file("extdata", "nij.chr6.51120000.53200000.gi.rds",
 head(gi_nij, n=2)
 # define a range to plot
 range_chr6 <- GRanges("chr6", IRanges(51120000, 53200000))
-
+# plot it if interactive
+if(interactive()){## not run to reduce the package size.
 mdsPlot(gi_nij, range = range_chr6, k=3, render='threejs')
+}
 ```
 
 ## Add gene informations
@@ -142,9 +144,11 @@ feature.gr$pch <- rep(NA, length(feature.gr))
 feature.gr$pch[feature.gr$type=='cRE'] <- 0.5
 ## features header
 head(feature.gr, n=2)
-
+# plot it if interactive
+if(interactive()){## not run to reduce the package size.
 mdsPlot(gi_nij, range = range_chr6, feature.gr = feature.gr,
         k=3, render='threejs')
+}
 ```
 
 ## Add additional signals along the strand
@@ -155,11 +159,14 @@ Here we show how to add CTCF ATAC-seq signals along the strand.
 # one layer of signals. It is a `track` object
 ctcf <- readRDS(system.file("extdata", "ctcf.sample.rds",
                             package="trackViewer"))
-mdsPlot(gi_nij, range = range_chr6, feature.gr = feature.gr,
+# plot it if interactive
+if(interactive()){## not run to reduce the package size.
+  mdsPlot(gi_nij, range = range_chr6, feature.gr = feature.gr,
         genomicSigs = ctcf,
         ## we reverse the ATAC-seq signale to show where is open
         reverseGenomicSigs = TRUE,
         k=3, render='threejs')
+}
 ```
 
 Add more signals such as ChIP-seq.
@@ -180,7 +187,8 @@ threeJsViewer(objs)
 
 ## view the data by `rgl`
 
-```{r mdsPlot3d, message=FALSE}
+```{r mdsPlot3d, message=FALSE, eval=FALSE}
+## not run to reduce the package size.
 library(rgl)
 library(manipulateWidget)
 rgl::clear3d() # Remove the earlier display
@@ -207,7 +215,8 @@ Plot the data in 3D using the `mdsPlot` function to generate the 3D coordinates.
 Alternatively, users can plot it in 2d. 
 Please note that current 2d plot can only handle one genomic signals.
 
-```{r}
+```{r eval=FALSE}
+## not run to reduce the package size.
 geomeTriD::mdsPlot(gi_nij, range = range_chr6, feature.gr = feature.gr, genomicSigs = ctcf)
 ```
 
@@ -234,11 +243,11 @@ feature.gr_chr2$label <- symbol
 geomeTriD::loopBouquetPlot(gi_chr2, range_chr2, feature.gr_chr2)
 ```
 
-```{r plotRealData}
-## filter the links to simulate the real data
+```{r plotRealData, eval=FALSE}
+## filter the links to simulate the data with less interactions
 keep <- distance(first(gi_nij), second(gi_nij)) > 5e5 & gi_nij$score>35
 gi_nij <- gi_nij[keep]
-# narrow the width of anchors to ehance the plots
+# narrow the width of anchors to enhance the plots
 reg <- regions(gi_nij)
 wr <- floor(width(reg)/4)
 start(reg) <- start(reg) + wr
@@ -259,6 +268,56 @@ geomeTriD::loopBouquetPlot(gi_nij, range_chr6, feature.gr,
                 coor_tick_unit = 5e4,
                 coor_mark_interval = 5e5,
                 genomicSigs = ctcf)
+```
+
+# Plot single cells in 3d
+
+`geomeTriD` can be used to view data in 3D. Here we will show how to use it 
+to plot the single cell data in 3D.
+The input data should be a data.frame with x,y,z coordinates.
+
+```{r}
+library(geomeTriD)
+cells <- readRDS(system.file('extdata', 'pbmc_small.3d.rds',
+                             package='geomeTriD'))
+head(cells)
+## color the cells by 'groups' info
+objs <- view3dCells(cells, x="umap_1", y="umap_2", z="umap_3",
+                    color = 'groups',
+                    colorFun = function(x){
+                      ifelse(x=='g1', 'red', 'blue')
+                    },
+                    renderer='none')
+```
+
+Plot the cells by `rgl`.
+```{r eval=FALSE}
+## not run to reduce the package size.
+library(manipulateWidget)
+clear3d() # Remove the earlier display
+rglViewer(objs, background = 'white')
+rglwidget()
+```
+
+Plot it by `threeJs`.
+```{r threejs}
+threeJsViewer(objs)
+```
+
+We can also try to color the cells by a numeric column.
+```{r}
+# plot it if interactive
+if(interactive()){
+view3dCells(cells, x="umap_1", y="umap_2", z="umap_3",
+            color = 'nCount_RNA',
+            colorFun = function(x, pal=colorRampPalette(c('black', 'red'))(5)){
+                          limits=range(x)
+                          pal[findInterval(x, seq(limits[1], limits[2], 
+                                                  length.out=length(pal)+1),
+                                           all.inside=TRUE)]
+                        },
+            renderer = 'threejs')
+}
 ```
 
 # Session Info
