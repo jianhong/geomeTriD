@@ -79,7 +79,6 @@ view3dCells(cells, x="umap_1", y="umap_2", z="umap_3",
             color = 'nCount_RNA',
             colorFun = function(x, pal=colorRampPalette(c('black', 'red'))(5)){
                           limits=range(x)
-                          print(limits)
                           pal[findInterval(x, seq(limits[1], limits[2], 
                                                   length.out=length(pal)+1),
                                            all.inside=TRUE)]
