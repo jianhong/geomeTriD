@@ -821,7 +821,7 @@ class tjViewer{
     
     // spotlight GUI
     let directionalLight; 
-    directionalLight = new THREE.DirectionalLight( 0xffffff, 200 );
+    directionalLight = new THREE.DirectionalLight( 0xffffff, 5 );
     directionalLight.position.set( 2.5, 5, 2.5 );
     this.scene.add( directionalLight );
     
