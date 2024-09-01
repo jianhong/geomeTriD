@@ -10,6 +10,14 @@ view3dCells(
   y,
   z,
   color = "blue",
+  colorFun = function(x, pal = seq.int(8)) {
+     if (is.character(x)) 
+         x <-
+    as.numeric(factor(x))
+     limits = range(x)
+     pal[findInterval(x, seq(limits[1],
+    limits[2], length.out = length(pal) + 1), all.inside = TRUE)]
+ },
   shape = "sphere",
   radius = 0.1,
   tag = "cell",
@@ -24,6 +32,8 @@ view3dCells(
 
 \item{color, shape, radius}{The column names for color, shape, radius or the
 value(length=1) of them.}
+
+\item{colorFun}{The function to map values into colors.}
 
 \item{tag}{The tag for controler.}
 
@@ -46,6 +56,7 @@ cells <- readRDS(system.file("extdata", "pbmc_small.3d.rds",
 ))
 view3dCells(cells,
   x = "umap_1", y = "umap_2", z = "umap_3",
+  color = 'nCount_RNA',
   renderer = "threejs"
 )
 }

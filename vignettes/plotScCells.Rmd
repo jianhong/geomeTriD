@@ -29,6 +29,8 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 
 # Introduction
 
+`geomeTriD` can be used to view data in 3D. Here we will show how to use it 
+to plot the single cell data in 3D.
 
 # Installation
 
@@ -36,20 +38,29 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
-BiocManager::install("jianhong/geometrid")
+BiocManager::install("jianhong/geomeTriD")
 ```
 
 
 # Plot single cell data
 
+The input data should be a data.frame with x,y,z coordinates.
+
 ```{r}
 library(geomeTriD)
 cells <- readRDS(system.file('extdata', 'pbmc_small.3d.rds',
                              package='geomeTriD'))
+head(cells)
+## color the cells by 'groups' info
 objs <- view3dCells(cells, x="umap_1", y="umap_2", z="umap_3",
+                    color = 'groups',
+                    colorFun = function(x){
+                      ifelse(x=='g1', 'red', 'blue')
+                    },
                     renderer='none')
 ```
 
+Plot the cells by `rgl`.
 ```{r mdsPlot3d}
 library(manipulateWidget)
 clear3d() # Remove the earlier display
@@ -57,10 +68,25 @@ rglViewer(objs, background = 'white')
 rglwidget()
 ```
 
-Plot it by threeJs.
+Plot it by `threeJs`.
 ```{r threejs}
 threeJsViewer(objs)
 ```
+
+We can also try to color the cells by a numeric column.
+```{r}
+view3dCells(cells, x="umap_1", y="umap_2", z="umap_3",
+            color = 'nCount_RNA',
+            colorFun = function(x, pal=colorRampPalette(c('black', 'red'))(5)){
+                          limits=range(x)
+                          print(limits)
+                          pal[findInterval(x, seq(limits[1], limits[2], 
+                                                  length.out=length(pal)+1),
+                                           all.inside=TRUE)]
+                        },
+            renderer = 'threejs')
+```
+
 
 # Session Info
 ```{r sessionInfo, results='asis'}

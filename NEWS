@@ -1,5 +1,9 @@
 Changes in version 0.0.23
 
+    o add more geometries for rglViewer.
+    
+Changes in version 0.0.23
+
     o Fix multiple bugs.
     o Add multiple unit test.
     o Rewrite the plotInteractionData vignette.

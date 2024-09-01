@@ -19,6 +19,14 @@ invertCol <- function(col) {
   int_col
 }
 
+col2hex <- function(col){
+  col <- col2rgb(col, alpha = FALSE)
+  col <- apply(col, 2, function(.ele) {
+    rgb(.ele[1], .ele[2], .ele[3], maxColorValue = 255)
+  })
+  unlist(col)
+}
+
 checkSignalTransformFun <- function(signalTransformFun) {
   if (length(signalTransformFun) > 1 || is.list(signalTransformFun)) {
     stopifnot(all(vapply(signalTransformFun, is.function, FUN.VALUE = logical(1L))))

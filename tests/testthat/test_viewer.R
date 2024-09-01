@@ -4,8 +4,24 @@ test_that('view3dCells works not correct', {
                    z=seq.int(10))
   vc <- view3dCells(cells, 'x', 'y', 'z', renderer = 'none')
   expect_s4_class(vc[[1]], 'threeJsGeometry')
-  threeJsViewer(vc)
-  rglViewer(vc)
+  vc[[1]]$properties$radius <- 1
+  vc[[1]]$properties$radiusTop <- 1
+  vc[[1]]$properties$radiusBottom <- 1
+  vc[[1]]$properties$size <-1
+  vc[[1]]$properties$headLength <- 1
+  vc[[1]]$properties$headWidth <- .5
+  vc[[1]]$properties$width<- 1
+  vc[[1]]$properties$height <- 1
+  vc[[1]]$properties$depth <- 1
+  vc[[1]]$properties$thetaStart <- 0
+  vc[[1]]$properties$thetaLength <- 1.5*pi
+  vc[[1]]$properties$tube <- .5
+  vc[[1]]$properties$label <- 'text'
+  for(type in availableGeometries){
+    vc[[1]]$type <- type
+    threeJsViewer(vc)
+    rglViewer(vc)
+  }
 })
 test_that('view3dStructure works not correct', {
   obj <- GRanges('1', IRanges(seq.int(10), width = 1),
@@ -20,5 +36,5 @@ test_that('view3dStructure works not correct', {
                         coor_mark_interval = 5, coor_tick_unit = 2)
   null <- lapply(vc, expect_s4_class, class = 'threeJsGeometry')
   threeJsViewer(vc)
-  rglViewer(vc)
+  rglViewer(vc, background = 'white')
 })

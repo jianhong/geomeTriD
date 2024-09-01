@@ -1,9 +1,9 @@
 #' rgl Viewer
 #' View the 3d structure by rgl.
-#' @importFrom rgl open3d segments3d lines3d arrow3d points3d text3d
+#' @importFrom rgl open3d segments3d lines3d arrow3d points3d texts3d
 #'  rgl.bringtotop bg3d spheres3d cylinder3d shade3d addNormals subdivision3d
 #'  translate3d tetrahedron3d octahedron3d icosahedron3d dodecahedron3d
-#'  cube3d scale3d
+#'  cube3d scale3d polygon3d
 #' @export
 #' @param ... objects of threeJsGeometry.
 #' @param background background of the main camera.
@@ -44,15 +44,26 @@ rglViewer <- function(..., background = "gray") {
 
   open3d()
   bg3d(color = background)
-  doMapply <- function(.ele, FUN, scale_factor) {
+  doMapply <- function(.ele, FUN, scale_factor, subdivision=0) {
     mapply(
       function(.color, .tag, .x, .y, .z) {
         shade3d(scale3d(
           translate3d(
-            FUN(
-              col = .color,
-              tag = .tag
-            ),
+            if(subdivision==0){
+              FUN(
+                col = .color,
+                tag = .tag
+              )
+            }else{
+              subdivision3d(
+                FUN(
+                  col = .color,
+                  tag = .tag
+                ),
+                depth = subdivision
+              )
+            }
+            ,
             x = .x,
             y = .y,
             z = .z
@@ -77,6 +88,102 @@ rglViewer <- function(..., background = "gray") {
           tag = .ele$tag
         )
       },
+      box = {
+        doMapply(.ele, cube3d, list(
+          x = .ele$properties$width,
+          y = .ele$properties$height,
+          z = .ele$properties$depth
+        ))
+      },
+      capsule = {
+        doMapply(.ele, cube3d, list(
+          x = .ele$properties$radius,
+          y = .ele$properties$radius,
+          z = .ele$properties$height
+        ), subdivision=3)
+      },
+      cone = {
+        c3 <- mapply(function(.x, .y, .z, .h, .r, .c){
+          center <- matrix(
+            c(.x , .x,
+              .y, .y,
+              .z+.h/2, .z-.h/2),
+            nrow = 2
+          )
+          colnames(center) <- c('x', 'y', 'z')
+          cylinder3d(
+            center = center,
+            radius = c(0, .r),
+            color = .c,
+            sides = 36
+          )
+        }, .ele$x, .ele$y, .ele$z, 
+        .ele$properties$height,
+        .ele$properties$radius,
+        .ele$colors,
+        SIMPLIFY = FALSE)
+        lapply(c3, function(.c3){
+          shade3d(addNormals(.c3))
+        })
+      },
+      circle = {
+        c3 <- mapply(function(.x, .y, .z, .r, .start, .end, .c, .tag){
+          theta <- c(seq(.start, .end, length.out = 36))
+          polygon3d(x=c(.x, .x+.r*sin(theta), .x),
+                    y=c(.y, .y+.r*cos(theta), .y),
+                    z=rep(.z, 38),
+                    fill = TRUE, plot = TRUE,
+                    col = .c,
+                    tag = .tag)
+        },.ele$x, .ele$y, .ele$z,
+        .ele$properties$radius,
+        .ele$properties$thetaStart,
+        .ele$properties$thetaLength,
+        .ele$colors, .ele$tag,
+        SIMPLIFY = FALSE)
+      },
+      cylinder = {
+        c3 <- mapply(function(.x, .y, .z, .h, .t, .b, .c){
+          center <- matrix(
+            c(.x , .x,
+              .y, .y,
+              .z+.h/2, .z-.h/2),
+            nrow = 2
+          )
+          colnames(center) <- c('x', 'y', 'z')
+          cylinder3d(
+            center = center,
+            radius = c(.t, .b),
+            color = .c,
+            sides = 36
+          )
+        }, .ele$x, .ele$y, .ele$z, 
+        .ele$properties$height,
+        .ele$properties$radiusTop,
+        .ele$properties$radiusBottom,
+        .ele$colors,
+        SIMPLIFY = FALSE)
+        lapply(c3, function(.c3){
+          shade3d(addNormals(.c3))
+        })
+      },
+      dodecahedron = {
+        doMapply(.ele, dodecahedron3d, list(
+          x = .ele$properties$radius,
+          y = .ele$properties$radius,
+          z = .ele$properties$radius
+        ))
+      },
+      json = {
+        message('not supported!')
+      },
+      icosahedron = {
+        doMapply(.ele, icosahedron3d, list(
+          x = .ele$properties$radius,
+          y = .ele$properties$radius,
+          z = .ele$properties$radius
+        ))
+      },
       line = {
         lines3d(
           x = .ele$x,
@@ -85,10 +192,17 @@ rglViewer <- function(..., background = "gray") {
           lwd = .ele$properties$size,
           col = .ele$colors,
           alpha = ifelse(length(.ele$properties$alpha) == 1,
-            .ele$properties$alpha, 1
+                         .ele$properties$alpha, 1
           ),
           tag = .ele$tag
         )
+      },
+      octahedron = {
+        doMapply(.ele, octahedron3d, list(
+          x = .ele$properties$radius,
+          y = .ele$properties$radius,
+          z = .ele$properties$radius
+        ))
       },
       segment = {
         segments3d(
@@ -98,55 +212,10 @@ rglViewer <- function(..., background = "gray") {
           col = .ele$colors,
           lwd = .ele$properties$size,
           alpha = ifelse(length(.ele$properties$alpha) == 1,
-            .ele$properties$alpha, 1
+                         .ele$properties$alpha, 1
           ),
           tag = .ele$tag
         )
-      },
-      box = {
-        doMapply(.ele, cube3d, list(
-          x = .ele$properties$width,
-          y = .ele$properties$height,
-          z = .ele$properties$depth
-        ))
-      },
-      capsule = {
-
-      },
-      cone = {
-
-      },
-      cylinder = {
-        c3 <- cylinder3d(
-          center = cbind(
-            x = .ele$x,
-            y = .ele$y,
-            z = .ele$z
-          ),
-          radius = .ele$properties$radiusTop
-        )
-        shade3d(addNormals(subdivision3d(c3, depth = 2)))
-      },
-      dodecahedron = {
-        doMapply(.ele, dodecahedron3d, list(
-          x = .ele$properties$radius,
-          y = .ele$properties$radius,
-          z = .ele$properties$radius
-        ))
-      },
-      icosahedron = {
-        doMapply(.ele, icosahedron3d, list(
-          x = .ele$properties$radius,
-          y = .ele$properties$radius,
-          z = .ele$properties$radius
-        ))
-      },
-      octahedron = {
-        doMapply(.ele, octahedron3d, list(
-          x = .ele$properties$radius,
-          y = .ele$properties$radius,
-          z = .ele$properties$radius
-        ))
       },
       sphere = {
         spheres3d(.ele$x, .ele$y, .ele$z,
@@ -163,25 +232,46 @@ rglViewer <- function(..., background = "gray") {
         ))
       },
       label = {
-        text3d(.ele$x, .ele$y, .ele$z,
+        texts3d(x=.ele$x, y=.ele$y, z=.ele$z,
           texts = .ele$properties$label,
-          id = .ele$properties$label,
           col = .ele$colors,
           tag = .ele$tag,
           pos = .ele$properties$pos
         )
       },
       text = {
-        text3d(.ele$x, .ele$y, .ele$z,
+        texts3d(x=.ele$x, y=.ele$y, z=.ele$z,
           texts = .ele$properties$label,
-          id = .ele$properties$label,
           col = .ele$colors,
           tag = .ele$tag,
           pos = .ele$properties$pos
         )
       },
       torus = {
-
+        theta <- c(seq(0, 2*pi, length.out = 150))
+        c3 <- mapply(function(.x, .y, .z, .h, .r, .c, .tag){
+          center <- cbind(
+            .x+.r*sin(theta),
+            .y+.r*cos(theta),
+            rep(.z, 150)
+          )
+          colnames(center) <- c('x', 'y', 'z')
+          cylinder3d(
+            center = center,
+            radius = .r/2,
+            color = .c,
+            closed = 1,
+            tag = .tag,
+            sides = 36
+          )
+        }, .ele$x, .ele$y, .ele$z, 
+        .ele$properties$tube,
+        .ele$properties$radius,
+        .ele$colors, .ele$tag,
+        SIMPLIFY = FALSE)
+        lapply(c3, function(.c3){
+          shade3d(addNormals(.c3))
+        })
       }
     )
   })
