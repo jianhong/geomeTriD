@@ -173,18 +173,101 @@ class tjViewer{
     // camera ratio GUI
     const cameraparam = {
       YX_aspect : this.camera.aspect,
+      world_center : function(){
+        this.objects.position.set(0, 0, 0);
+        if(this.overlay){
+          this.objectsBottom.position.set(0, 0, 0);
+        }
+        if(this.sideBySide){
+          this.objects2.position.set(0, 0, 0);
+          if(this.overlay){
+            this.objectsBottom2.position.set(0, 0, 0);
+          }
+        }
+      }.bind(this),
+      object_center : function(){
+        var bbox = new THREE.Box3().setFromObject(this.objects);
+        var x = -(bbox.min.x+bbox.max.x)/2;
+        var y = -(bbox.min.y+bbox.max.y)/2;
+        var z = -(bbox.min.z+bbox.max.z)/2;
+        this.objects.translateX(x);
+        this.objects.translateY(y);
+        this.objects.translateZ(z);
+        if(this.overlay){
+          this.objectsBottom.translateX(x);
+          this.objectsBottom.translateY(y);
+          this.objectsBottom.translateZ(z);
+        }
+        if(this.sideBySide){
+          bbox = new THREE.Box3().setFromObject(this.objects2);
+          x = -(bbox.min.x+bbox.max.x)/2;
+          y = -(bbox.min.y+bbox.max.y)/2;
+          z = -(bbox.min.z+bbox.max.z)/2;
+          this.objects2.translateX(x);
+          this.objects2.translateY(y);
+          this.objects2.translateZ(z);
+          if(this.overlay){
+            this.objectsBottom2.translateX(x);
+            this.objectsBottom2.translateY(y);
+            this.objectsBottom2.translateZ(z);
+          }
+        }
+      }.bind(this),
+      center_x : 0,
+      center_y : 0,
+      center_z : 0,
       changed : false,
       setAspect : function(){
         this.camera.aspect = cameraparam.YX_aspect;
         this.camera2.aspect = cameraparam.YX_aspect;
         this.camera.updateProjectionMatrix();
         this.camera2.updateProjectionMatrix();
+      }.bind(this),
+      setPosition : function(){
+        this.objects.position.set(
+          cameraparam.center_x,
+          cameraparam.center_y,
+          cameraparam.center_z);
+        if(this.overlay){
+          this.objectsBottom.position.set(
+            cameraparam.center_x,
+            cameraparam.center_y,
+            cameraparam.center_z);
+        }
+        if(this.sideBySide){
+          this.objects2.position.set(
+            cameraparam.center_x,
+            cameraparam.center_y,
+            cameraparam.center_z);
+          if(this.overlay){
+            this.objectsBottom2.position.set(
+              cameraparam.center_x,
+              cameraparam.center_y,
+              cameraparam.center_z);
+          }
+        }
       }.bind(this)
     }
-    this.gui.add(cameraparam, 'YX_aspect', 0, 10).onChange( function(val){
+    const cameraGUI = this.gui.addFolder('camera');
+    cameraGUI.add(cameraparam, 'YX_aspect', 0, 10).onChange( function(val){
       cameraparam.YX_aspect = val;
       cameraparam.changed = true;
     }).onFinishChange(cameraparam.setAspect);
+    cameraGUI.add(cameraparam, 'center_x', -10, 10).onChange( function(val){
+      cameraparam.center_x = val;
+      cameraparam.setPosition();
+    });
+    cameraGUI.add(cameraparam, 'center_y', -10, 10).onChange( function(val){
+      cameraparam.center_y = val;
+      cameraparam.setPosition();
+    });
+    cameraGUI.add(cameraparam, 'center_z', -10, 10).onChange( function(val){
+      cameraparam.center_z = val;
+      cameraparam.setPosition;
+    });
+    cameraGUI.add(cameraparam, 'world_center');
+    cameraGUI.add(cameraparam, 'object_center');
+    
     
     this.maxRadius = 1;
     this.maxLineWidth = 50;
@@ -1042,10 +1125,6 @@ class tjViewer{
         }
       }
     }
-    function updateColor(obj, val){
-      obj.material.color.setHex(val);
-      console.log(obj.material.color);
-    }
     function getGUIbyName(name, fld){
           const id = fld.children.forEach((it, id)=>{
             if(it._name==name) return(id);
@@ -1892,11 +1971,10 @@ class tjViewer{
             break;
           default:
         }
-        /*folder.addColor(param, 'color').onChange( function(val){
+        folder.addColor(param, 'color').onChange( function(val){
           param.color = new THREE.Color(val);
-          updateColor(obj, val);
-          console.log(obj);
-        });*/
+          obj.material.color = param.color;
+        });
         folder.add(param, 'opacity', 0, 1).onChange( function( val ){
           material.opacity = val;
         });
