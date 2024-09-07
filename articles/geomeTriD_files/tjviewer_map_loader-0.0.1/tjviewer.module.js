@@ -267,6 +267,7 @@ class tjViewer{
     });
     cameraGUI.add(cameraparam, 'world_center');
     cameraGUI.add(cameraparam, 'object_center');
+    cameraGUI.close();
     
     
     this.maxRadius = 1;
@@ -674,6 +675,8 @@ class tjViewer{
       }
     });
     
+    animateGUI.close();
+    
     // exporter GUI
     const saveBlob = (function(){
         const a = document.createElement('a');
@@ -815,6 +818,7 @@ class tjViewer{
       }
     );
     const exporterBotton = exporterGUI.add(expparam, 'export');
+    exporterGUI.close();
     this.layer = {};
     
     // background color gui
@@ -901,6 +905,15 @@ class tjViewer{
             this.backgroundBottom2.b * this.bckalphaBottom2
           );
     }).hide();
+    this.bckcolGUI.close();
+    
+    //soft white light
+    const ambientLight = new THREE.AmbientLight( 0x404040, 1);
+    this.scene.add( ambientLight );
+    const ambientparams = {
+      AmbientColor: ambientLight.color.getHex(),
+      AmbientIntensity: ambientLight.intensity
+    };
     
     // spotlight GUI
     let directionalLight; 
@@ -919,6 +932,14 @@ class tjViewer{
       }
     };
     const spotlightGUI = this.gui.addFolder('light settings');
+    
+    spotlightGUI.addColor( ambientparams, 'AmbientColor' ).onChange( function ( val ) {
+      ambientLight.color.setHex( val );
+    } );
+    spotlightGUI.add( ambientparams, 'AmbientIntensity', 0, 10 ).onChange( function ( val ) {
+      ambientLight.intensity = val;
+    } );
+    
     spotlightGUI.addColor( lightparams, 'color' ).onChange( function ( val ) {
       directionalLight.color.setHex( val );
     } );
@@ -937,6 +958,7 @@ class tjViewer{
       lightparams.z = val;
       lightparams.setPosition();
     } );
+    spotlightGUI.close();
   }
   
   getLayer(tag){
