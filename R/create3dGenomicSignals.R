@@ -123,7 +123,7 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
   stopifnot(is(GenoSig, "GRanges"))
   stopifnot("score" %in% colnames(mcols(GenoSig)))
   GenoSig <- resampleDataByFun(GenoSig, targetObj,
-    dropZERO = FALSE,
+    dropZERO = TRUE,
     na.rm = TRUE
   )
   GenoSig$score <- signalTransformFun(GenoSig$score)
@@ -382,6 +382,7 @@ createBoxGeometry <- function(
     }
   }
   GenoSig <- getXYZmean(GenoSig)
+  color <- mapScore2Color(GenoSig, color)
   wid <- unique(width)
   hgt <- unique(height)
   dpt <- unique(depth)
@@ -394,7 +395,7 @@ createBoxGeometry <- function(
         y = GenoSig$y,
         z = GenoSig$z,
         type = "box",
-        colors = mapScore2Color(GenoSig, color),
+        colors = color,
         tag = tag,
         properties = list(
           width = wid,
@@ -405,13 +406,13 @@ createBoxGeometry <- function(
     )
     names(genomic_signal) <- name
   } else {
-    genomic_signal <- mapply(function(idx, w, h, d) {
+    genomic_signal <- mapply(function(idx, w, h, d, col) {
       threeJsGeometry(
         x = GenoSig$x[idx],
         y = GenoSig$y[idx],
         z = GenoSig$z[idx],
         type = "box",
-        colors = color,
+        colors = col,
         tag = tag,
         properties = list(
           width = w,
@@ -419,7 +420,7 @@ createBoxGeometry <- function(
           depth = d
         )
       )
-    }, seq_along(GenoSig), width, height, depth)
+    }, seq_along(GenoSig), width, height, depth, color)
     names(genomic_signal) <-
       paste0(name, "_box_", seq_along(genomic_signal))
   }
@@ -440,6 +441,7 @@ createCapsuleGeometry <- function(
     }
   }
   GenoSig <- getXYZmean(GenoSig)
+  color <- mapScore2Color(GenoSig, color)
   hgt <- unique(height)
   r <- unique(radius)
   if (length(hgt) == 1 && length(r) == 1) {
@@ -451,7 +453,7 @@ createCapsuleGeometry <- function(
         y = GenoSig$y,
         z = GenoSig$z,
         type = "capsule",
-        colors = mapScore2Color(GenoSig, color),
+        colors = color,
         tag = tag,
         properties = list(
           height = hgt,
@@ -461,20 +463,20 @@ createCapsuleGeometry <- function(
     )
     names(genomic_signal) <- name
   } else {
-    genomic_signal <- mapply(function(idx, h, d) {
+    genomic_signal <- mapply(function(idx, h, d, col) {
       threeJsGeometry(
         x = GenoSig$x[idx],
         y = GenoSig$y[idx],
         z = GenoSig$z[idx],
         type = "capsule",
-        colors = color,
+        colors = col,
         tag = tag,
         properties = list(
           height = h,
           radius = d
         )
       )
-    }, seq_along(GenoSig), height, radius)
+    }, seq_along(GenoSig), height, radius, color)
     names(genomic_signal) <-
       paste0(name, "_capsule_", seq_along(genomic_signal))
   }
@@ -498,6 +500,7 @@ createCylinderGeometry <- function(
     }
   }
   GenoSig <- getXYZmean(GenoSig)
+  color <- mapScore2Color(GenoSig, color)
   hgt <- unique(height)
   rt <- unique(radiusTop)
   rb <- unique(radiusBottom)
@@ -510,7 +513,7 @@ createCylinderGeometry <- function(
         y = GenoSig$y,
         z = GenoSig$z,
         type = "cylinder",
-        colors = mapScore2Color(GenoSig, color),
+        colors = color,
         tag = tag,
         properties = list(
           height = hgt,
@@ -521,13 +524,13 @@ createCylinderGeometry <- function(
     )
     names(genomic_signal) <- name
   } else {
-    genomic_signal <- mapply(function(idx, h, rt, rb) {
+    genomic_signal <- mapply(function(idx, h, rt, rb, col) {
       threeJsGeometry(
         x = GenoSig$x[idx],
         y = GenoSig$y[idx],
         z = GenoSig$z[idx],
         type = "cylinder",
-        colors = color,
+        colors = col,
         tag = tag,
         properties = list(
           height = h,
@@ -535,7 +538,7 @@ createCylinderGeometry <- function(
           radiusBottom = rb
         )
       )
-    }, seq_along(GenoSig), height, radiusTop, radiusBottom)
+    }, seq_along(GenoSig), height, radiusTop, radiusBottom, color)
     names(genomic_signal) <-
       paste0(name, "_cylinder_", seq_along(genomic_signal))
   }
@@ -556,6 +559,7 @@ createConeGeometry <- function(
     }
   }
   GenoSig <- getXYZmean(GenoSig)
+  color <- mapScore2Color(GenoSig, color)
   hgt <- unique(height)
   r <- unique(radius)
   if (length(hgt) == 1 && length(r) == 1) {
@@ -567,7 +571,7 @@ createConeGeometry <- function(
         y = GenoSig$y,
         z = GenoSig$z,
         type = "cone",
-        colors = mapScore2Color(GenoSig, color),
+        colors = color,
         tag = tag,
         properties = list(
           height = hgt,
@@ -577,20 +581,20 @@ createConeGeometry <- function(
     )
     names(genomic_signal) <- name
   } else {
-    genomic_signal <- mapply(function(idx, h, d) {
+    genomic_signal <- mapply(function(idx, h, d, col) {
       threeJsGeometry(
         x = GenoSig$x[idx],
         y = GenoSig$y[idx],
         z = GenoSig$z[idx],
         type = "cone",
-        colors = color,
+        colors = col,
         tag = tag,
         properties = list(
           height = h,
           radius = d
         )
       )
-    }, seq_along(GenoSig), height, radius)
+    }, seq_along(GenoSig), height, radius, color)
     names(genomic_signal) <-
       paste0(name, "_cone_", seq_along(genomic_signal))
   }
@@ -624,6 +628,7 @@ createTorusGeometry <- function(
     }
   }
   GenoSig <- getXYZmean(GenoSig)
+  color <- mapScore2Color(GenoSig, color)
   hgt <- unique(tube)
   r <- unique(radius)
   if (length(hgt) == 1 && length(r) == 1) {
@@ -635,7 +640,7 @@ createTorusGeometry <- function(
         y = GenoSig$y,
         z = GenoSig$z,
         type = "torus",
-        colors = mapScore2Color(GenoSig, color),
+        colors = color,
         tag = tag,
         properties = list(
           tube = hgt,
@@ -645,20 +650,20 @@ createTorusGeometry <- function(
     )
     names(genomic_signal) <- name
   } else {
-    genomic_signal <- mapply(function(idx, h, d) {
+    genomic_signal <- mapply(function(idx, h, d, col) {
       threeJsGeometry(
         x = GenoSig$x[idx],
         y = GenoSig$y[idx],
         z = GenoSig$z[idx],
         type = "torus",
-        colors = color,
+        colors = col,
         tag = tag,
         properties = list(
           tube = h,
           radius = d
         )
       )
-    }, seq_along(GenoSig), tube, radius)
+    }, seq_along(GenoSig), tube, radius, color)
     names(genomic_signal) <-
       paste0(name, "_torus_", seq_along(genomic_signal))
   }

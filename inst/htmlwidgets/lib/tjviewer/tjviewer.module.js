@@ -905,19 +905,37 @@ class tjViewer{
     // spotlight GUI
     let directionalLight; 
     directionalLight = new THREE.DirectionalLight( 0xffffff, 5 );
-    directionalLight.position.set( 2.5, 5, 2.5 );
+    directionalLight.position.set( 2.5, 5, -25 );
     this.scene.add( directionalLight );
     
     const lightparams = {
       color: directionalLight.color.getHex(),
-      intensity: directionalLight.intensity
+      intensity: directionalLight.intensity,
+      x: 2.5,
+      y: 5,
+      z: -25,
+      setPosition: function(){
+        directionalLight.position.set(lightparams.x, lightparams.y, lightparams.z);
+      }
     };
     const spotlightGUI = this.gui.addFolder('light settings');
     spotlightGUI.addColor( lightparams, 'color' ).onChange( function ( val ) {
       directionalLight.color.setHex( val );
     } );
-    spotlightGUI.add( lightparams, 'intensity', 0, 500 ).onChange( function ( val ) {
+    spotlightGUI.add( lightparams, 'intensity', 0, 100 ).onChange( function ( val ) {
       directionalLight.intensity = val;
+    } );
+    spotlightGUI.add( lightparams, 'x', -50, 50 ).onChange( function ( val ) {
+      lightparams.x = val;
+      lightparams.setPosition();
+    } );
+    spotlightGUI.add( lightparams, 'y', -50, 50 ).onChange( function ( val ) {
+      lightparams.y = val;
+      lightparams.setPosition();
+    } );
+    spotlightGUI.add( lightparams, 'z', -50, 50 ).onChange( function ( val ) {
+      lightparams.z = val;
+      lightparams.setPosition();
     } );
   }
   
@@ -1102,6 +1120,15 @@ class tjViewer{
             mesh.geometry.dispose();
             mesh.geometry = geometry;
         }
+    function initNewMeshPos(obj, ele, offset={x:0,y:0,z:0}){
+      const matrix = new THREE.Matrix4();
+      for ( let i = 0; i < obj.count; i ++ ) {
+        matrix.setPosition( ele.positions[i*3] + offset.x,
+                            ele.positions[i*3+1] + offset.y,
+                            ele.positions[i*3+2] + offset.z );
+        obj.setMatrixAt( i, matrix );
+      }
+    }
     function initNewMesh(obj, ele, offset={x:0,y:0,z:0}){
       const matrix = new THREE.Matrix4();
       const color = new THREE.Color();
@@ -1828,6 +1855,7 @@ class tjViewer{
           case 'json':
             const loader = new THREE.BufferGeometryLoader();
             geometry = loader.parse(ele.json);
+            geometry.computeVertexNormals();
             obj = new THREE.InstancedMesh( geometry, material, len );
             obj.layers.set(this.getLayer(ele.tag));
             initNewMesh(obj, ele);

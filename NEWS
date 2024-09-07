@@ -1,3 +1,8 @@
+Changes in version 0.99.2
+
+    o Fix a bug that color info is missing when create 3d geometries.
+    o Update the documentation.
+    
 Changes in version 0.99.0
 
     o Prepare to submittion.

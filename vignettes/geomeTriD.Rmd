@@ -302,7 +302,7 @@ cells <- readRDS(system.file("extdata", "pbmc_small.3d.rds",
 ))
 head(cells)
 ## color the cells by 'groups' info
-objs <- view3dCells(cells,
+cellobjs <- view3dCells(cells,
   x = "umap_1", y = "umap_2", z = "umap_3",
   color = "groups",
   colorFun = function(x) {
@@ -317,13 +317,13 @@ Plot the cells by `rgl`.
 ## not run to reduce the package size.
 library(manipulateWidget)
 clear3d() # Remove the earlier display
-rglViewer(objs, background = "white")
+rglViewer(cellobjs, background = "white")
 rglwidget()
 ```
 
 Plot it by `threeJs`.
 ```{r threejs}
-threeJsViewer(objs)
+threeJsViewer(cellobjs)
 ```
 
 We can also try to color the cells by a numeric column.
@@ -345,6 +345,127 @@ if (interactive()) {
   )
 }
 ```
+
+# Advanced usage of `threeJsViewer`
+
+## layout
+
+By default, the viewer built on three.js allows objects in a scene to be separated into layers based on tags. Users can easily toggle the visibility of these layers using the 'toggle' button in the controller. Additionally, layers can be grouped into two main categories (top and bottom), enabling the option to hide internal or auxiliary objects as needed.
+
+In this example, we will move all the ticks and tss markers into bottom group.
+Please note that labels will not be affected by this methods.
+```{r}
+for(i in seq_along(objs)){
+  if(grepl('tick|arrow|cRE|tss', names(objs)[i])){
+    objs[[i]]$layer <- 'bottom'
+  }
+}
+if(interactive()){
+  threeJsViewer(objs)
+}
+```
+
+
+The `threeJsViewer` allows users to view two 3D structures side by side. It is recommended to align the 3D coordinates by `alignCoor` function before generating the `threeJsGeometry` objects for optimal comparison.
+
+```{r}
+objs2 <- lapply(objs, function(.ele){
+  .ele$side <- 'right'
+  .ele
+})
+threeJsViewer(objs, objs2)
+```
+
+## Create objects from raw
+
+Starting from the raw data, you will be prompted to provide the backbone to which materials will be attached. The backbone is a `GRanges` object containing the x, y, and z coordinates. Since the current resolution of Hi-C data is relatively low, we will first smooth the coordinates. The materials, also input as a `GRanges` object, will have their 3D positions derived from the backbone.
+
+```{r}
+## simulate a backbone
+library(GenomicRanges)
+library(geomeTriD)
+backbone <- GRanges(1, IRanges(seq(1, 10000, by=1000), width = 1000))
+set.seed(1)
+pos <- matrix(runif(30, min = -5, max = 5), ncol = 3,
+              dimnames = list(rownames=NULL, colnames=c('x', 'y', 'z')))
+mcols(backbone) <- pos
+
+## simulate the signals to be add
+sig1 <- GRanges(1, IRanges(sample(seq.int(10000), 100), width = 10),
+                score=runif(100, min=1, max=10))
+sig2 <- GRanges(1, IRanges(sample(seq.int(10000), 25), width = 1),
+                score=runif(25, min=1, max=10))
+
+## do smooth for the coordinates
+backbone <- smooth3dPoints(backbone, resolution=10)
+
+## create the line geometry
+geo_backbone <- threeJsGeometry(
+  x=backbone$x0,
+  y=backbone$y0,
+  z=backbone$z0,
+  colors = "black",
+  type = "line",
+  tag = "tagNameHere",
+  properties= list(size = 2)
+)
+
+## create the sphere geometry for sig1
+geo_sig1_sphere <- create3dGenomicSignals(
+  GenoSig = sig1,
+  targetObj = backbone,
+  signalTransformFun = c,
+  positionTransformFun = function(x) {
+      x$y0 <- x$y0 + 0.5 # offset from y
+      x$y1 <- x$y1 + 0.5
+      x
+    }, reverseGenomicSigs = FALSE,
+    type = 'sphere',
+    tag = 'sig1', name = 'sig1',
+  color = c('blue', 'red'),
+  radius = .25)
+## create the segment geometry for sig1
+geo_sig1_segment <- create3dGenomicSignals(
+  GenoSig = sig1,
+  targetObj = backbone,
+  signalTransformFun = c,
+  positionTransformFun = function(x) {
+      x$x1 <- (x$x0+x$x1)/2
+      x$y1 <- (x$y0+x$y1)/2 + 0.5
+      x$z1 <- (x$z0+x$z1)/2
+      x
+    }, reverseGenomicSigs = FALSE,
+    type = 'segment',
+    tag = 'sig1-linker', name = 'sig1l',
+  lwd.maxGenomicSigs = 5)
+
+## create the capsule geometry for sig2
+geo_sig2 <- create3dGenomicSignals(
+  GenoSig = sig2,
+  targetObj = backbone,
+  signalTransformFun = c,
+  reverseGenomicSigs = FALSE,
+  type='capsule',
+  tag = 'sig2', name = 'sig2',
+  color = c('white', 'brown')
+)
+
+## create the a customized geometry by a json file
+geo_json <- create3dGenomicSignals(
+  GenoSig = GRanges(1, IRanges(5000, width=1), score=1),
+  targetObj = backbone,
+  signalTransformFun = c,
+  type = 'json',
+  tag = 'json', name='monkey',
+  color = 'green',
+  path = system.file('extdata', 'suzanne_buffergeometry.json',
+                     package = 'geomeTriD')
+)
+threeJsViewer(c(backbone=geo_backbone,
+                geo_sig1_sphere, geo_sig1_segment,
+                geo_sig2, geo_json))
+```
+
 
 # Session Info
 ```{r sessionInfo, results='asis'}
