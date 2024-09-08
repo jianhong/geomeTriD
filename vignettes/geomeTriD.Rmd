@@ -402,7 +402,7 @@ sig2 <- GRanges(1, IRanges(sample(seq.int(10000), 25), width = 1),
                 shape=sample(c('dodecahedron', 'icosahedron',
                                'octahedron', 'tetrahedron'),
                              25, replace = TRUE),
-                color=sample(seq.int(7), 25, replace = TRUE))
+                color=sample(seq.int(7)[-1], 25, replace = TRUE))
 
 ## do smooth for the coordinates
 backbone <- smooth3dPoints(backbone, resolution=10)
