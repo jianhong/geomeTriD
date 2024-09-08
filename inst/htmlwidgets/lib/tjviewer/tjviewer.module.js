@@ -908,7 +908,7 @@ class tjViewer{
     this.bckcolGUI.close();
     
     //soft white light
-    const ambientLight = new THREE.AmbientLight( 0x404040, 1);
+    const ambientLight = new THREE.AmbientLight( 0x404040, 2);
     this.scene.add( ambientLight );
     const ambientparams = {
       AmbientColor: ambientLight.color.getHex(),
@@ -916,19 +916,31 @@ class tjViewer{
     };
     
     // spotlight GUI
-    let directionalLight; 
-    directionalLight = new THREE.DirectionalLight( 0xffffff, 5 );
-    directionalLight.position.set( 2.5, 5, -25 );
-    this.scene.add( directionalLight );
+    let directionalLight1,directionalLight2; 
+    directionalLight1 = new THREE.DirectionalLight( 0xffffff, 5 );
+    directionalLight1.position.set( 2.5, 5, -25 );
+    directionalLight2 = new THREE.DirectionalLight( 0x606060, 2 );
+    directionalLight2.position.set( -2.5, 25, 5 );
+    this.scene.add( directionalLight1 );
+    this.scene.add( directionalLight2 );
     
     const lightparams = {
-      color: directionalLight.color.getHex(),
-      intensity: directionalLight.intensity,
+      color: directionalLight1.color.getHex(),
+      intensity: directionalLight1.intensity,
       x: 2.5,
       y: 5,
       z: -25,
-      setPosition: function(){
-        directionalLight.position.set(lightparams.x, lightparams.y, lightparams.z);
+      'auxiliary color': directionalLight2.color.getHex(),
+      'auxiliary intensity': directionalLight2.intensity,
+      'auxiliary x': -2.5,
+      'auxiliary y': 25,
+      'auxiliary z': 5,
+      setPosition: function(main){
+        if(main){
+          directionalLight1.position.set(lightparams.x, lightparams.y, lightparams.z);
+        }else{
+          directionalLight2.position.set(lightparams['auxiliary x'], lightparams['auxiliary y'], lightparams['auxiliary z']);
+        }
       }
     };
     const spotlightGUI = this.gui.addFolder('light settings');
@@ -939,24 +951,41 @@ class tjViewer{
     spotlightGUI.add( ambientparams, 'AmbientIntensity', 0, 10 ).onChange( function ( val ) {
       ambientLight.intensity = val;
     } );
-    
     spotlightGUI.addColor( lightparams, 'color' ).onChange( function ( val ) {
-      directionalLight.color.setHex( val );
+      directionalLight1.color.setHex( val );
     } );
     spotlightGUI.add( lightparams, 'intensity', 0, 100 ).onChange( function ( val ) {
-      directionalLight.intensity = val;
+      directionalLight1.intensity = val;
     } );
     spotlightGUI.add( lightparams, 'x', -50, 50 ).onChange( function ( val ) {
       lightparams.x = val;
-      lightparams.setPosition();
+      lightparams.setPosition(true);
     } );
     spotlightGUI.add( lightparams, 'y', -50, 50 ).onChange( function ( val ) {
       lightparams.y = val;
-      lightparams.setPosition();
+      lightparams.setPosition(true);
     } );
     spotlightGUI.add( lightparams, 'z', -50, 50 ).onChange( function ( val ) {
       lightparams.z = val;
-      lightparams.setPosition();
+      lightparams.setPosition(true);
+    } );
+    spotlightGUI.addColor( lightparams, 'auxiliary color' ).onChange( function ( val ) {
+      directionalLight2.color.setHex( val );
+    } );
+    spotlightGUI.add( lightparams, 'auxiliary intensity', 0, 50 ).onChange( function ( val ) {
+      directionalLight2.intensity = val;
+    } );
+    spotlightGUI.add( lightparams, 'auxiliary x', -50, 50 ).onChange( function ( val ) {
+      lightparams['auxiliary x'] = val;
+      lightparams.setPosition(false);
+    } );
+    spotlightGUI.add( lightparams, 'auxiliary y', -50, 50 ).onChange( function ( val ) {
+      lightparams['auxiliary y'] = val;
+      lightparams.setPosition(false);
+    } );
+    spotlightGUI.add( lightparams, 'auxiliary z', -50, 50 ).onChange( function ( val ) {
+      lightparams['auxiliary z'] = val;
+      lightparams.setPosition(false);
     } );
     spotlightGUI.close();
   }
