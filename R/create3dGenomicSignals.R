@@ -330,7 +330,7 @@ createSphereGeometry <- function(
   GenoSig <- getXYZmean(GenoSig)
   if (length(radius) == length(GenoSig)) {
     # pre calculated radius
-    genomic_signal <- mapply(function(idx, .radius, .color) {
+    genomic_signal <- mapply(function(idx, .radius, .col) {
       threeJsGeometry(
         x = GenoSig$x[idx],
         y = GenoSig$y[idx],

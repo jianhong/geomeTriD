@@ -385,25 +385,33 @@ Starting from the raw data, you will be prompted to provide the backbone to whic
 library(GenomicRanges)
 library(geomeTriD)
 backbone <- GRanges(1, IRanges(seq(1, 10000, by=1000), width = 1000))
-set.seed(1)
-pos <- matrix(runif(30, min = -5, max = 5), ncol = 3,
-              dimnames = list(rownames=NULL, colnames=c('x', 'y', 'z')))
-mcols(backbone) <- pos
+## set x, y, z position, we will use the torus knots equation
+t <- seq(0, 2*pi, length.out=length(backbone))
+p <- 3
+q <- 2
+r <- cos(p*t) + 2
+backbone$x <- 2*r*cos(q*t)
+backbone$y <- 2*r*sin(q*t)
+backbone$z <- -2*sin(p*t)
 
 ## simulate the signals to be add
 sig1 <- GRanges(1, IRanges(sample(seq.int(10000), 100), width = 10),
                 score=runif(100, min=1, max=10))
 sig2 <- GRanges(1, IRanges(sample(seq.int(10000), 25), width = 1),
-                score=runif(25, min=1, max=10))
+                score=runif(25, min=0.05, max=1),
+                shape=sample(c('dodecahedron', 'icosahedron',
+                               'octahedron', 'tetrahedron'),
+                             25, replace = TRUE),
+                color=sample(seq.int(7), 25, replace = TRUE))
 
 ## do smooth for the coordinates
 backbone <- smooth3dPoints(backbone, resolution=10)
 
 ## create the line geometry
 geo_backbone <- threeJsGeometry(
-  x=backbone$x0,
-  y=backbone$y0,
-  z=backbone$z0,
+  x=c(backbone$x0, backbone$x1[length(backbone)]),
+  y=c(backbone$y0, backbone$y1[length(backbone)]),
+  z=c(backbone$z0, backbone$y1[length(backbone)]),
   colors = "black",
   type = "line",
   tag = "tagNameHere",
@@ -421,34 +429,81 @@ geo_sig1_sphere <- create3dGenomicSignals(
       x
     }, reverseGenomicSigs = FALSE,
     type = 'sphere',
-    tag = 'sig1', name = 'sig1',
+    tag = 'head', name = 'head',
   color = c('blue', 'red'),
   radius = .25)
-## create the segment geometry for sig1
-geo_sig1_segment <- create3dGenomicSignals(
+## create the cylinder geometry for sig1
+geo_sig1_body <- create3dGenomicSignals(
   GenoSig = sig1,
   targetObj = backbone,
   signalTransformFun = c,
   positionTransformFun = function(x) {
-      x$x1 <- (x$x0+x$x1)/2
-      x$y1 <- (x$y0+x$y1)/2 + 0.5
-      x$z1 <- (x$z0+x$z1)/2
+      x$y0 <- x$y0 + 0.25 # offset from y
+      x$y1 <- x$y1 + 0.25
       x
     }, reverseGenomicSigs = FALSE,
-    type = 'segment',
-    tag = 'sig1-linker', name = 'sig1l',
-  lwd.maxGenomicSigs = 5)
-
-## create the capsule geometry for sig2
-geo_sig2 <- create3dGenomicSignals(
-  GenoSig = sig2,
+    type = 'cylinder',
+    tag = 'body', name = 'body',
+  height = .5, radiusTop = .05, radiusBottom = .15)
+## create two small spheres
+geo_sig1_ear1 <- create3dGenomicSignals(
+  GenoSig = sig1,
   targetObj = backbone,
   signalTransformFun = c,
-  reverseGenomicSigs = FALSE,
-  type='capsule',
-  tag = 'sig2', name = 'sig2',
-  color = c('white', 'brown')
-)
+  positionTransformFun = function(x) {
+      x$x0 <- x$x0 - 0.25 # offset from x
+      x$x1 <- x$x1 - 0.25
+      x$y0 <- x$y0 + 0.75 # offset from y
+      x$y1 <- x$y1 + 0.75
+      x
+    }, reverseGenomicSigs = FALSE,
+    type = 'sphere',
+    tag = 'ear', name = 'ear1',
+  color = c('blue', 'red'),
+  radius = .1)
+geo_sig1_ear2 <- create3dGenomicSignals(
+  GenoSig = sig1,
+  targetObj = backbone,
+  signalTransformFun = c,
+  positionTransformFun = function(x) {
+      x$x0 <- x$x0 + 0.25 # offset from x
+      x$x1 <- x$x1 + 0.25
+      x$y0 <- x$y0 + 0.75 # offset from y
+      x$y1 <- x$y1 + 0.75
+      x
+    }, reverseGenomicSigs = FALSE,
+    type = 'sphere',
+    tag = 'ear', name = 'ear2',
+  color = c('blue', 'red'),
+  radius = .1)
+geo_sig1_nose <- create3dGenomicSignals(
+  GenoSig = sig1,
+  targetObj = backbone,
+  signalTransformFun = c,
+  positionTransformFun = function(x) {
+      x$y0 <- x$y0 + 0.5 # offset from y
+      x$y1 <- x$y1 + 0.5
+      x$z0 <- x$z0 - 0.25 # offset from z
+      x$z1 <- x$z1 - 0.25
+      x
+    }, reverseGenomicSigs = FALSE,
+    type = 'capsule',
+    tag = 'nose', name = 'nose',
+  color = c('red', 'blue'),
+  radius = .05, height=.05)
+
+## create the icosahedron geometry for sig2
+geo_sig2 <- lapply(seq_along(sig2), function(id){
+  create3dGenomicSignals(
+    GenoSig = sig2[id],
+    targetObj = backbone,
+    signalTransformFun = c,
+    reverseGenomicSigs = FALSE,
+    type=sig2[id]$shape,
+    tag = 'sig2', name = as.character(id),
+    color = sig2[id]$color,
+    radius = sig2[id]$score
+  )})
 
 ## create the a customized geometry by a json file
 geo_json <- create3dGenomicSignals(
@@ -462,7 +517,8 @@ geo_json <- create3dGenomicSignals(
                      package = 'geomeTriD')
 )
 threeJsViewer(c(backbone=geo_backbone,
-                geo_sig1_sphere, geo_sig1_segment,
+                geo_sig1_sphere, geo_sig1_body,
+                geo_sig1_ear1, geo_sig1_ear2, geo_sig1_nose,
                 geo_sig2, geo_json))
 ```
 
