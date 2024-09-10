@@ -1171,22 +1171,14 @@ class tjViewer{
             mesh.geometry.dispose();
             mesh.geometry = geometry;
         }
-    function initNewMeshPos(obj, ele, offset={x:0,y:0,z:0}){
-      const matrix = new THREE.Matrix4();
-      for ( let i = 0; i < obj.count; i ++ ) {
-        matrix.setPosition( ele.positions[i*3] + offset.x,
-                            ele.positions[i*3+1] + offset.y,
-                            ele.positions[i*3+2] + offset.z );
-        obj.setMatrixAt( i, matrix );
-      }
-    }
     function initNewMesh(obj, ele, offset={x:0,y:0,z:0}){
       const matrix = new THREE.Matrix4();
       const color = new THREE.Color();
+      ele.recenter = true;
       for ( let i = 0; i < obj.count; i ++ ) {
-        matrix.setPosition( ele.positions[i*3] + offset.x,
-                            ele.positions[i*3+1] + offset.y,
-                            ele.positions[i*3+2] + offset.z );
+        matrix.setPosition( ele.positions[i*3] - offset.x,
+                            ele.positions[i*3+1] - offset.y,
+                            ele.positions[i*3+2] - offset.z);
         obj.setMatrixAt( i, matrix );
         if(ele.colors.length==ele.positions.length){
           obj.setColorAt( i, color.setRGB(
@@ -1194,13 +1186,18 @@ class tjViewer{
                 ele.colors[i*3+1],
                 ele.colors[i*3+2]
               ) );
-        }else{//same color for alll elements
+        }else{//same color for all elements
           obj.setColorAt( i, color.setRGB(
                 ele.colors[0],
                 ele.colors[1],
                 ele.colors[2]
               ) );
         }
+      }
+      if(typeof(ele.rotation) != 'undefined'){
+        obj.rotation.x = ele.rotation.x;
+        obj.rotation.y = ele.rotation.y;
+        obj.rotation.z = ele.rotation.z;
       }
     }
     function getGUIbyName(name, fld){
@@ -1577,6 +1574,15 @@ class tjViewer{
               metalness: 0,
               roughness: 0
             } );
+        // get the center of the object
+        let center = new THREE.Vector3(0, 0, 0);
+        for ( let i =0; i<len; i++){
+          center.x += ele.positions[i*3];
+          center.y += ele.positions[i*3+1];
+          center.z += ele.positions[i*3+2];
+        }
+        center.multiplyScalar(1/len);
+        ele.recenter = false;
         switch(ele.type){
           case 'arrow':
             const hex = new THREE.Color(
@@ -1693,7 +1699,7 @@ class tjViewer{
               spheredata.radius, spheredata.widthSegments, spheredata.heightSegments);
             obj = new THREE.InstancedMesh( geometry, material, len );
             obj.layers.set(this.getLayer(ele.tag));
-            initNewMesh(obj, ele);
+            initNewMesh(obj, ele, center);
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
               spheredata.radius = val;
               updateGroupGeometry(obj, new THREE.SphereGeometry(
@@ -1717,7 +1723,7 @@ class tjViewer{
               boxdata.depth);
             obj = new THREE.InstancedMesh( geometry, material, len );
             obj.layers.set(this.getLayer(ele.tag));
-            initNewMesh(obj, ele);
+            initNewMesh(obj, ele, center);
             function updateBoxGeometry(){
               updateGroupGeometry(obj, new THREE.BoxGeometry(
                 boxdata.width, 
@@ -1750,7 +1756,7 @@ class tjViewer{
             );
             obj = new THREE.InstancedMesh( geometry, material, len);
             obj.layers.set(this.getLayer(ele.tag));
-            initNewMesh(obj, ele);
+            initNewMesh(obj, ele, center);
             function updateCapsuleGeometry(){
               updateGroupGeometry(obj, new THREE.CapsuleGeometry(
                 capsuledata.radius,
@@ -1783,7 +1789,7 @@ class tjViewer{
             );
             obj = new THREE.InstancedMesh( geometry, material, len);
             obj.layers.set(this.getLayer(ele.tag));
-            initNewMesh(obj, ele);
+            initNewMesh(obj, ele, center);
             function updateCircleGeometry(){
               updateGroupGeometry(obj, new THREE.CircleGeometry(
                 circledata.radius,
@@ -1818,7 +1824,7 @@ class tjViewer{
             );
             obj = new THREE.InstancedMesh( geometry, material, len);
             obj.layers.set(this.getLayer(ele.tag));
-            initNewMesh(obj, ele);
+            initNewMesh(obj, ele, center);
             function updateConeGeometry(){
               updateGroupGeometry(obj, new THREE.ConeGeometry(
                 conedata.radius,
@@ -1850,7 +1856,7 @@ class tjViewer{
             )
             obj = new THREE.InstancedMesh( geometry, material, len);
             obj.layers.set(this.getLayer(ele.tag));
-            initNewMesh(obj, ele);
+            initNewMesh(obj, ele, center);
             function updateCylinderGeometry(){
               updateGroupGeometry(obj, new THREE.CylinderGeometry(
               cylinderdata.radiusTop,
@@ -1880,7 +1886,7 @@ class tjViewer{
               dodecahedrondata.radius);
             obj = new THREE.InstancedMesh( geometry, material, len );
             obj.layers.set(this.getLayer(ele.tag));
-            initNewMesh(obj, ele);
+            initNewMesh(obj, ele, center);
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
               dodecahedrondata.radius = val;
               updateGroupGeometry(obj, new THREE.DodecahedronGeometry(
@@ -1896,7 +1902,7 @@ class tjViewer{
               icosahedrondata.radius);
             obj = new THREE.InstancedMesh( geometry, material, len );
             obj.layers.set(this.getLayer(ele.tag));
-            initNewMesh(obj, ele);
+            initNewMesh(obj, ele, center);
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
               icosahedrondata.radius = val;
               updateGroupGeometry(obj, new THREE.IcosahedronGeometry(
@@ -1909,7 +1915,7 @@ class tjViewer{
             geometry.computeVertexNormals();
             obj = new THREE.InstancedMesh( geometry, material, len );
             obj.layers.set(this.getLayer(ele.tag));
-            initNewMesh(obj, ele);
+            initNewMesh(obj, ele, center);
             break;
           case 'label'://ask to modify the CSS2DRenderer.js at the line
                       //const visible = ( _vector.z >= - 1 && _vector.z <= 1 ) && ( object.layers.test( camera.layers ) === true );
@@ -1957,7 +1963,7 @@ class tjViewer{
             geometry = new THREE.OctahedronGeometry(
               octahedrondata.radius);
             obj = new THREE.InstancedMesh( geometry, material, len );
-            initNewMesh(obj, ele);
+            initNewMesh(obj, ele, center);
             obj.layers.set(this.getLayer(ele.tag));
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
               octahedrondata.radius = val;
@@ -1973,7 +1979,7 @@ class tjViewer{
             geometry = new THREE.TetrahedronGeometry(
               tetrahedrondata.radius);
             obj = new THREE.InstancedMesh( geometry, material, len );
-            initNewMesh(obj, ele);
+            initNewMesh(obj, ele, center);
             obj.layers.set(this.getLayer(ele.tag));
             folder.add(param, 'radius', 0, this.maxRadius).onChange( function( val) {
               tetrahedrondata.radius = val;
@@ -1996,9 +2002,9 @@ class tjViewer{
             });
               geometry.computeBoundingBox();
               const centerOffset = {
-                x: - 0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x ),
-                y: - 0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y ),
-                z: - 0.5 * (geometry.boundingBox.max.z - geometry.boundingBox.min.z )
+                x: center.x + 0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x ),
+                y: center.y + 0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y ),
+                z: center.z + 0.5 * (geometry.boundingBox.max.z - geometry.boundingBox.min.z )
                 };
               obj = new THREE.InstancedMesh( geometry, material, len );
               initNewMesh(obj, ele, centerOffset);
@@ -2031,7 +2037,7 @@ class tjViewer{
               torusdata.tube
             )
             obj = new THREE.InstancedMesh( geometry, material, len);
-            initNewMesh(obj, ele);
+            initNewMesh(obj, ele, center);
             obj.layers.set(this.getLayer(ele.tag));
             function updateTorusGeometry(){
               updateGroupGeometry(obj, new THREE.TorusGeometry(
@@ -2051,8 +2057,7 @@ class tjViewer{
           default:
         }
         folder.addColor(param, 'color').onChange( function(val){
-          param.color = new THREE.Color(val);
-          obj.material.color = param.color;
+          material.color = val;
         });
         folder.add(param, 'opacity', 0, 1).onChange( function( val ){
           material.opacity = val;
@@ -2061,18 +2066,36 @@ class tjViewer{
           material.transparent = val;
         });
         folder.close();
+        // add obj to a parent container
+        let objContainer = new THREE.Group();
+        objContainer.add(obj);
+        if(ele.recenter) objContainer.position.add(center);
         this.materials.push(material);
+            const rotationdata = {
+              'rotate x' : 0,
+              'rotate y' : 0,
+              'rotate z' : 0
+            } 
+            folder.add(rotationdata, 'rotate x', 0, 2*Math.PI).onChange( function( val) {
+              obj.rotation.x = val;
+            });
+            folder.add(rotationdata, 'rotate y', 0, 2*Math.PI).onChange( function( val) {
+              obj.rotation.y = val;
+            });
+            folder.add(rotationdata, 'rotate z', 0, 2*Math.PI).onChange( function( val) {
+              obj.rotation.z = val;
+            });
         if(ele.layer=='top'){
           if(ele.side=='left'){
-              this.objects.add(obj);
+              this.objects.add(objContainer);
           }else{
-              this.objects2.add(obj);
+              this.objects2.add(objContainer);
           }
         }else{
           if(ele.side=='left'){
-              this.objectsBottom.add(obj);
+              this.objectsBottom.add(objContainer);
           }else{
-              this.objectsBottom2.add(obj);
+              this.objectsBottom2.add(objContainer);
           }
         }
       }
