@@ -3,7 +3,7 @@
 #' @importFrom rgl open3d segments3d lines3d arrow3d points3d texts3d
 #'  rgl.bringtotop bg3d spheres3d cylinder3d shade3d addNormals subdivision3d
 #'  translate3d tetrahedron3d octahedron3d icosahedron3d dodecahedron3d
-#'  cube3d scale3d polygon3d
+#'  cube3d scale3d polygon3d rotate3d
 #' @export
 #' @param ... objects of threeJsGeometry.
 #' @param background background of the main camera.
@@ -19,7 +19,7 @@
 #'   k = 3, feature.gr = feature.gr, renderer = "none",
 #'   length.arrow = grid::unit(0.000006, "native")
 #' )
-#' rglViewer(tjg)
+#' rglViewer(tjg, background = 'white')
 rglViewer <- function(..., background = "gray") {
   geos <- list(...)
   if (length(geos) == 1) {
@@ -44,10 +44,18 @@ rglViewer <- function(..., background = "gray") {
 
   open3d()
   bg3d(color = background)
+  rotateObj <- function(obj, .rotation){
+    if(any(.rotation!=0)){
+      if(.rotation[1]!=0) obj <- rotate3d(obj, .rotation[1], 1, 0, 0)
+      if(.rotation[2]!=0) obj <- rotate3d(obj, .rotation[2], 0, 1, 0)
+      if(.rotation[3]!=0) obj <- rotate3d(obj, .rotation[3], 0, 0, 1)
+    }
+    return(obj)
+  }
   doMapply <- function(.ele, FUN, scale_factor, subdivision = 0) {
     mapply(
       function(.color, .tag, .x, .y, .z) {
-        shade3d(scale3d(
+        obj <- scale3d(
           translate3d(
             if (subdivision == 0) {
               FUN(
@@ -70,7 +78,9 @@ rglViewer <- function(..., background = "gray") {
           x = scale_factor$x,
           y = scale_factor$y,
           z = scale_factor$z
-        ))
+        )
+        obj <- rotateObj(obj, .ele$rotation)
+        shade3d(obj)
       }, .ele$colors, .ele$tag,
       .ele$x, .ele$y, .ele$z
     )
@@ -113,12 +123,12 @@ rglViewer <- function(..., background = "gray") {
               nrow = 2
             )
             colnames(center) <- c("x", "y", "z")
-            cylinder3d(
+            rotateObj(cylinder3d(
               center = center,
               radius = c(0, .r),
               color = .c,
               sides = 36
-            )
+            ), .ele$rotation)
           }, .ele$x, .ele$y, .ele$z,
           .ele$properties$height,
           .ele$properties$radius,
@@ -161,12 +171,12 @@ rglViewer <- function(..., background = "gray") {
               nrow = 2
             )
             colnames(center) <- c("x", "y", "z")
-            cylinder3d(
+            rotateObj(cylinder3d(
               center = center,
               radius = c(.t, .b),
               color = .c,
               sides = 36
-            )
+            ), .ele$rotation)
           }, .ele$x, .ele$y, .ele$z,
           .ele$properties$height,
           .ele$properties$radiusTop,
@@ -270,14 +280,14 @@ rglViewer <- function(..., background = "gray") {
               rep(.z, 150)
             )
             colnames(center) <- c("x", "y", "z")
-            cylinder3d(
+            rotateObj(cylinder3d(
               center = center,
               radius = .r / 2,
               color = .c,
               closed = 1,
               tag = .tag,
               sides = 36
-            )
+            ),.ele$rotation)
           }, .ele$x, .ele$y, .ele$z,
           .ele$properties$tube,
           .ele$properties$radius,

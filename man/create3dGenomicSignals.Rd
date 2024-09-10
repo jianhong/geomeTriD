@@ -14,6 +14,7 @@ create3dGenomicSignals(
   tag,
   name,
   color = c("gray30", "darkred"),
+  rotation = c(0, 0, 0),
   ...
 )
 }
@@ -40,6 +41,9 @@ output as same dimension data.frame.}
 \item{name}{The prefix for the name of the geometries.}
 
 \item{color}{The color of the signal.}
+
+\item{rotation}{The rotations in the x, y and 
+z axis in radians.}
 
 \item{...}{the parameters for each different type of geometries.
 If type is 'segments', lwd.maxGenomicSigs (the maximal lwd of the line) is

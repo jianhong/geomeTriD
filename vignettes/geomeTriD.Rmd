@@ -513,6 +513,7 @@ geo_json <- create3dGenomicSignals(
   type = 'json',
   tag = 'json', name='monkey',
   color = 'green',
+  rotation = c(pi, 0, pi), ## we need to rotate the model to change the facing side
   path = system.file('extdata', 'suzanne_buffergeometry.json',
                      package = 'geomeTriD')
 )

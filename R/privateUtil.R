@@ -45,7 +45,7 @@ checkSignalGeometries <- function(geometries) {
 checkSignalGeometryType <- function(type, ...) {
   stopifnot(length(type) == 1)
   if (!type %in% availableGeometries) {
-    stop("available geometries are", availableGeometries)
+    stop("available geometries are ", availableGeometriesString())
   }
   args <- list(...)
   switch(type,

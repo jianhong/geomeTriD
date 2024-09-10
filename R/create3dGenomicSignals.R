@@ -15,6 +15,8 @@
 #' @param color The color of the signal.
 #' @param tag The tag used to group geometries.
 #' @param name The prefix for the name of the geometries.
+#' @param rotation The rotations in the x, y and 
+#' z axis in radians.
 #' @param ... the parameters for each different type of geometries.
 #' If type is 'segments', lwd.maxGenomicSigs (the maximal lwd of the line) is
 #'  required.
@@ -68,6 +70,7 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
                                    tag,
                                    name,
                                    color = c("gray30", "darkred"),
+                                   rotation = c(0, 0, 0),
                                    ...) {
   checkSmoothedGR(targetObj)
   checkSignalTransformFun(signalTransformFun)
@@ -140,6 +143,7 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
     name = name,
     color = color,
     tag = tag,
+    rotation = rotation,
     ...
   )
   return(geo)
@@ -148,7 +152,7 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
 # map score to segments lwd
 createSegmentGeometry <- function(
     GenoSig, revGenoSig,
-    name, color, tag,
+    name, color, tag, rotation,
     lwd.maxGenomicSigs = 8, alpha = 1,
     ...) {
   genomicSigScoreRange <- quantile(GenoSig$score,
@@ -205,6 +209,7 @@ createSegmentGeometry <- function(
         type = "segment",
         colors = color[lwd],
         tag = tag,
+        rotation = rotation,
         properties = list(
           size = lwd,
           alpha = alpha
@@ -241,7 +246,7 @@ extendParam <- function(param, l) {
 # map score to thetaLength
 createCircleGeometry <- function(
     GenoSig, revGenoSig,
-    name, color, tag,
+    name, color, tag, rotation,
     radius = 8, maxVal = 1, thetaStart = 0,
     ...) {
   GenoSig$score <- 2 * pi * GenoSig$score / maxVal[1]
@@ -263,6 +268,7 @@ createCircleGeometry <- function(
           type = "circle",
           colors = color,
           tag = tag,
+          rotation = rotation,
           properties = list(
             radius = r,
             thetaStart = ts,
@@ -323,7 +329,7 @@ mapScore2Color <- function(GenoSig, color) {
 
 createSphereGeometry <- function(
     GenoSig, revGenoSig,
-    name, color, tag,
+    name, color, tag, rotation,
     radius = 8, type = "sphere",
     ...) {
   color <- mapScore2Color(GenoSig, color)
@@ -338,6 +344,7 @@ createSphereGeometry <- function(
         type = type,
         colors = .col,
         tag = tag,
+        rotation = rotation,
         properties = list(
           radius = .radius
         )
@@ -353,6 +360,7 @@ createSphereGeometry <- function(
       type = type,
       colors = color,
       tag = tag,
+      rotation = rotation,
       properties = list(
         radius = radius[1]
       )
@@ -367,7 +375,7 @@ createSphereGeometry <- function(
 
 createBoxGeometry <- function(
     GenoSig, revGenoSig,
-    name, color, tag,
+    name, color, tag, rotation,
     width, height, depth,
     ...) {
   if (missing(width) || missing(height) || missing(depth)) {
@@ -397,6 +405,7 @@ createBoxGeometry <- function(
         type = "box",
         colors = color,
         tag = tag,
+        rotation = rotation,
         properties = list(
           width = wid,
           height = hgt,
@@ -414,6 +423,7 @@ createBoxGeometry <- function(
         type = "box",
         colors = col,
         tag = tag,
+        rotation = rotation,
         properties = list(
           width = w,
           height = h,
@@ -429,7 +439,7 @@ createBoxGeometry <- function(
 
 createCapsuleGeometry <- function(
     GenoSig, revGenoSig,
-    name, color, tag,
+    name, color, tag, rotation,
     height, radius,
     ...) {
   if (missing(height) || missing(radius)) {
@@ -455,6 +465,7 @@ createCapsuleGeometry <- function(
         type = "capsule",
         colors = color,
         tag = tag,
+        rotation = rotation,
         properties = list(
           height = hgt,
           radius = r
@@ -471,6 +482,7 @@ createCapsuleGeometry <- function(
         type = "capsule",
         colors = col,
         tag = tag,
+        rotation = rotation,
         properties = list(
           height = h,
           radius = d
@@ -485,7 +497,7 @@ createCapsuleGeometry <- function(
 
 createCylinderGeometry <- function(
     GenoSig, revGenoSig,
-    name, color, tag,
+    name, color, tag, rotation,
     height, radiusTop, radiusBottom,
     ...) {
   if (missing(height) || missing(radiusTop) || missing(radiusBottom)) {
@@ -515,6 +527,7 @@ createCylinderGeometry <- function(
         type = "cylinder",
         colors = color,
         tag = tag,
+        rotation = rotation,
         properties = list(
           height = hgt,
           radiusTop = rt,
@@ -532,6 +545,7 @@ createCylinderGeometry <- function(
         type = "cylinder",
         colors = col,
         tag = tag,
+        rotation = rotation,
         properties = list(
           height = h,
           radiusTop = rt,
@@ -547,7 +561,7 @@ createCylinderGeometry <- function(
 
 createConeGeometry <- function(
     GenoSig, revGenoSig,
-    name, color, tag,
+    name, color, tag, rotation,
     height, radius,
     ...) {
   if (missing(height) || missing(radius)) {
@@ -573,6 +587,7 @@ createConeGeometry <- function(
         type = "cone",
         colors = color,
         tag = tag,
+        rotation = rotation,
         properties = list(
           height = hgt,
           radius = r
@@ -589,6 +604,7 @@ createConeGeometry <- function(
         type = "cone",
         colors = col,
         tag = tag,
+        rotation = rotation,
         properties = list(
           height = h,
           radius = d
@@ -616,7 +632,7 @@ createTetrahedronGeometry <- function(...) {
 
 createTorusGeometry <- function(
     GenoSig, revGenoSig,
-    name, color, tag,
+    name, color, tag, rotation,
     tube, radius,
     ...) {
   if (missing(tube) || missing(radius)) {
@@ -642,6 +658,7 @@ createTorusGeometry <- function(
         type = "torus",
         colors = color,
         tag = tag,
+        rotation = rotation,
         properties = list(
           tube = hgt,
           radius = r
@@ -658,6 +675,7 @@ createTorusGeometry <- function(
         type = "torus",
         colors = col,
         tag = tag,
+        rotation = rotation,
         properties = list(
           tube = h,
           radius = d
@@ -673,7 +691,7 @@ createTorusGeometry <- function(
 #' @importFrom rjson fromJSON
 createJsonGeometry <- function(
     GenoSig, revGenoSig,
-    name, color, tag,
+    name, color, tag, rotation,
     path,
     ...) {
   json <- fromJSON(file = path)
@@ -690,6 +708,7 @@ createJsonGeometry <- function(
       type = "json",
       colors = mapScore2Color(GenoSig, color),
       tag = tag,
+      rotation = rotation,
       properties = list(
         json = json
       )

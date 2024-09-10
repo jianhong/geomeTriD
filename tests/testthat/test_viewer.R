@@ -19,10 +19,21 @@ test_that("view3dCells works not correct", {
   vc[[1]]$properties$thetaLength <- 1.5 * pi
   vc[[1]]$properties$tube <- .5
   vc[[1]]$properties$label <- "text"
+  vc[[1]]$rotation <- c(0, pi/2, 0)
   for (type in availableGeometries) {
+    message(type)
     vc[[1]]$type <- type
     threeJsViewer(vc)
     rglViewer(vc)
+    rgl::close3d()
+  }
+  vc[[1]]$rotation <- c(pi, 0, 0)
+  for (type in availableGeometries) {
+    message(type)
+    vc[[1]]$type <- type
+    threeJsViewer(vc)
+    rglViewer(vc)
+    rgl::close3d()
   }
 })
 test_that("view3dStructure works not correct", {
@@ -43,4 +54,5 @@ test_that("view3dStructure works not correct", {
   null <- lapply(vc, expect_s4_class, class = "threeJsGeometry")
   threeJsViewer(vc)
   rglViewer(vc, background = "white")
+  rgl::close3d()
 })

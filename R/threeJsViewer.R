@@ -134,6 +134,18 @@ threeJsViewer <- function(...,
       # convert x, y, z to numeric point(x, y, z), point2(x, y, z)
       positions <- data.frame(.geo$x, .geo$y, .geo$z)
       positions <- as.numeric(t(positions))
+      # rotation, one object can only have one rotation
+      rotation <- .geo$rotation
+      if(length(rotation)==0){
+        rotation <- rep(0, 3)
+      }else if(length(rotation)<=3){
+        rotation <- c(rotation, 0, 0, 0)[seq.int(3)]
+      }else{
+        rotation <- rotation[seq.int(3)]
+      }
+      if(!all(c('x', 'y', 'z') %in% names(rotation))){
+        names(rotation) <- c('x', 'y', 'z')
+      }
       # convert color to rgb, max=1
       colors <- grDevices::col2rgb(.geo$colors, alpha = FALSE)
       colors <- colors / 255
@@ -142,6 +154,7 @@ threeJsViewer <- function(...,
         list(
           type = .geo$type,
           positions = positions,
+          rotation = as.list(rotation),
           colors = colors,
           tag = .geo$tag,
           side = .geo$side,

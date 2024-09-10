@@ -7,6 +7,8 @@ setClassUnion("maybeColor", c("numeric", "character"))
 #' @aliases threeJsGeometry
 #' @rdname threeJsGeometry-class
 #' @slot x,y,z \code{"numeric"}, specify the x, y, and z coordinates.
+#' @slot rotation \code{"numeric"}, specify the rotations in the x, y and 
+#' z axis in radians.
 #' @slot colors \code{"character"}, the colors for each geometry.
 #' @slot type \code{"charater"}, the type of the geometry.
 #'  See \link{availableGeometries}.
@@ -26,6 +28,7 @@ setClass("threeJsGeometry",
     x = "numeric",
     y = "numeric",
     z = "numeric",
+    rotation = "numeric",
     colors = "maybeColor",
     type = "character",
     side = "character",
@@ -37,6 +40,7 @@ setClass("threeJsGeometry",
     x = 0,
     y = 0,
     z = 0,
+    rotation = c(0, 0, 0),
     colors = "black",
     type = "sphere",
     side = "left",
@@ -53,10 +57,8 @@ setClass("threeJsGeometry",
       availableGeometries
     )) {
       return(paste0(
-        "type only support '",
-        paste(availableGeometries,
-          collapse = "', '"
-        ), "'."
+        "type only support ",
+        availableGeometriesString(), "."
       ))
     }
     if (!object@side %in% c("left", "right")) {
@@ -205,6 +207,11 @@ availableGeometries <- c(
   "segment", "sphere",
   "tetrahedron", "text", "torus"
 )
+availableGeometriesString <- function(){
+  sub(',\\s([^,]+$)', ' and \\1',
+      paste0('"', availableGeometries, '"',
+             collapse = ', '))
+}
 
 #' @rdname threeJsGeometry-class
 #' @param \dots Each argument in \dots becomes an slot in the new threeJsGeometry.

@@ -37,6 +37,9 @@ An object of class \code{"threeJsGeometry"}
 \describe{
 \item{\code{x,y,z}}{\code{"numeric"}, specify the x, y, and z coordinates.}
 
+\item{\code{rotation}}{\code{"numeric"}, specify the rotations in the x, y and 
+z axis in radians.}
+
 \item{\code{colors}}{\code{"character"}, the colors for each geometry.}
 
 \item{\code{type}}{\code{"charater"}, the type of the geometry.
