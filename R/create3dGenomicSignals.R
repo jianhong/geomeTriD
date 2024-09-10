@@ -72,6 +72,8 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
                                    color = c("gray30", "darkred"),
                                    rotation = c(0, 0, 0),
                                    ...) {
+  if(missing(reverseGenomicSigs)) reverseGenomicSigs <- FALSE
+  if(missing(signalTransformFun)) signalTransformFun <- c
   checkSmoothedGR(targetObj)
   checkSignalTransformFun(signalTransformFun)
   checkSignalGeometryType(type, ...)
@@ -126,7 +128,7 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
   stopifnot(is(GenoSig, "GRanges"))
   stopifnot("score" %in% colnames(mcols(GenoSig)))
   GenoSig <- resampleDataByFun(GenoSig, targetObj,
-    dropZERO = TRUE,
+    dropZERO = !(reverseGenomicSigs[1]),
     na.rm = TRUE
   )
   GenoSig$score <- signalTransformFun(GenoSig$score)
