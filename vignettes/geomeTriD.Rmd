@@ -374,7 +374,9 @@ objs2 <- lapply(objs, function(.ele){
   .ele$side <- 'right'
   .ele
 })
-threeJsViewer(objs, objs2)
+if(interactive()){
+  threeJsViewer(objs, objs2)
+}
 ```
 
 ## Create objects from raw
