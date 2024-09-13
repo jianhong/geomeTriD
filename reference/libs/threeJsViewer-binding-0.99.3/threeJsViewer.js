@@ -4,9 +4,10 @@ HTMLWidgets.widget({
   
   factory: function(el, width, height){
     var canvas;
-    // import tjviewer class
-    const importPromise = import('https://cdn.jsdelivr.net/gh/jianhong/geometrid/inst/htmlwidgets/lib/tjviewer/tjviewer.module.js');
-    async function run() {
+    
+    async function run(url= '../tjviewer-0.0.1/tjviewer.module.js') {
+        // import tjviewer class
+        const importPromise = import(url);
         const {tjViewer} = await importPromise;
         var obj = new tjViewer(el, width, height);
         return(obj);
@@ -24,9 +25,15 @@ HTMLWidgets.widget({
             },
             function(error){
                   console.log(error);
-                  canvas = new tjViewer(el, width, height);
-                  canvas.create_plot(x);
-                  canvas.animate();
+                  run(url = 'https://cdn.jsdelivr.net/gh/jianhong/geometrid/inst/htmlwidgets/lib/tjviewer/tjviewer.module.js').then(
+                      function(value){
+                            canvas = value;
+                            canvas.create_plot(x);
+                            canvas.animate();
+                      },function(error){
+                        console.log(error);
+                      }
+                  );
             }
           );
         },
