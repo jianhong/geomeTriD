@@ -171,6 +171,7 @@ class tjViewer{
     })
     
     // camera ratio GUI
+    this.insetCamera = true;
     const cameraparam = {
       YX_aspect : this.camera.aspect,
       world_center : function(){
@@ -217,6 +218,7 @@ class tjViewer{
       center_y : 0,
       center_z : 0,
       changed : false,
+      insetCamera: true,
       setAspect : function(){
         this.camera.aspect = cameraparam.YX_aspect;
         this.camera2.aspect = cameraparam.YX_aspect;
@@ -267,6 +269,10 @@ class tjViewer{
     });
     cameraGUI.add(cameraparam, 'world_center');
     cameraGUI.add(cameraparam, 'object_center');
+    cameraGUI.add(cameraparam, 'insetCamera').onChange( function(val){
+      cameraparam.insetCamera = val;
+      this.insetCamera = val;
+    }.bind(this));
     cameraGUI.close();
     
     
@@ -604,9 +610,9 @@ class tjViewer{
     animateGUI.add(this.animateparam, 'stepY', 0, 5 ).onChange( function ( val ) {
       this.animateparam.stepY = val;
     }.bind(this) );
-    this.gui.add(this.animateparam, 'linked').onChange( function(val){
+    this.animateLinkedGUI = this.gui.add(this.animateparam, 'linked').onChange( function(val){
       this.animateparam.linked = val;
-    }.bind(this));
+    }.bind(this)).hide();
     // keyboard
     window.addEventListener("keydown", (event)=>{
       switch (event.keyCode) {
@@ -693,14 +699,20 @@ class tjViewer{
       filename: 'threejsviewer',
       format: 'png',
       duration: 10,
+      width: this.width,
+      height: this.height,
       export : function() {
         let exporter;
         switch(expparam.format){
           case 'png':
-            this.animate(false);
+            const oldWidth = this.width;
+            const oldHeight = this.height;
+            this.onWindowResize(expparam.width, expparam.height);
+            this.animate();
             this.renderer.domElement.toBlob(blob =>{
               saveBlob(blob, expparam.filename+'.'+expparam.format);
             });
+            this.onWindowResize(oldWidth, oldHeight);
             break;
           case 'drc':
             exporter = new DRACOExporter();
@@ -753,6 +765,9 @@ class tjViewer{
             break;
           case 'video':
             if(this.animateparam.play){
+              const oldWidth = this.width;
+              const oldHeight = this.height;
+              this.onWindowResize(expparam.width, expparam.height);
               const stream = this.renderer.domElement.captureStream(25);
               var recordedChunks = [];
               var options = {};
@@ -782,9 +797,10 @@ class tjViewer{
                 counter = expparam.duration;
                 exporterBotton.name('export');
                 saveBlob(new Blob(recordedChunks, {
-                type: 'video/webm'
-              }), expparam.filename+'.webm');
-              }
+                  type: 'video/webm'
+                }), expparam.filename+'.webm');
+                this.onWindowResize(oldWidth, oldHeight);
+              }.bind(this);
               mediaRecorder.onstop = animationStop;
               setTimeout(()=>{
                 mediaRecorder.stop();
@@ -816,6 +832,12 @@ class tjViewer{
           exporterDuration.hide();
         }
       }
+    );
+    exporterGUI.add(expparam, 'width', 0, 5000).onChange(
+     val => expparam.width = val
+    );
+    exporterGUI.add(expparam, 'height', 0, 5000).onChange(
+     val => expparam.height = val
     );
     const exporterBotton = exporterGUI.add(expparam, 'export');
     exporterGUI.close();
@@ -1076,6 +1098,7 @@ class tjViewer{
         this.container.insertBefore(this.labelRenderer2.domElement, this.slider);
         this.bckcolGUI.controllers[4].show();
         this.bckcolGUI.controllers[5].show();
+        this.animateLinkedGUI.show();
       }
     }
     if('overlay' in x){
@@ -1135,6 +1158,7 @@ class tjViewer{
     const groupFolder = this.gui.addFolder('Group setting');
     const groupFolderObj = {};
     const groupParamObj = {};
+    var toggleAllArrowGUI = null;
     if('taglayers' in x){
       const labelLayer = {};
       const layerFolder = groupFolder.addFolder('show/hide');
@@ -1157,8 +1181,8 @@ class tjViewer{
         for(var i=0; i<arrowLayer.length; i++){
           arrowLayer[i].visible = !arrowLayer[i].visible;
         }
-      }
-      layerFolder.add(labelLayer, 'Toggle all arrows');
+      };
+      toggleAllArrowGUI = layerFolder.add(labelLayer, 'Toggle all arrows').hide();
     }
     if('tagWithChild' in x){
       if(!Array.isArray(x.tagWithChild)){
@@ -2108,6 +2132,9 @@ class tjViewer{
     for(var key in groupFolderObj){
       groupFolderObj[key].close();
     }
+    if(arrowLayer.length>0){
+      toggleAllArrowGUI.show();
+    }
     this.gui.close();
   }
   
@@ -2174,7 +2201,7 @@ class tjViewer{
     this.setResizeBlockPos();
   }
   
-  animate(inset=true){
+  animate(){
     // main scene
     this.renderer.setClearColor( this.background, this.bckalpha );
     
@@ -2348,7 +2375,7 @@ class tjViewer{
         this.renderer.render( this.scene, this.camera );
         this.labelRenderer.render(this.scene, this.camera );
         // inset scene
-        if(inset){
+        if(this.insetCamera){
           this.renderer.setClearColor( 0xffffff, 1 );
           this.renderer.clearDepth(); // important!
           this.renderer.setScissorTest( true );
