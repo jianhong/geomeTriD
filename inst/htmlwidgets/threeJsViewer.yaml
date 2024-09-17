@@ -2,7 +2,7 @@ dependencies:
   - name: tjviewer_map_loader
     version: 0.0.1
     src: "htmlwidgets/lib/tjviewer"
-    head: '<script type="importmap">{"imports": {"three": "https://cdn.jsdelivr.net/npm/three@0.166.1/build/three.module.js","three/addons/": "https://cdn.jsdelivr.net/npm/three@0.166.1/examples/jsm/","tjviewer/":"https://cdn.jsdelivr.net/gh/jianhong/geometrid@main/inst/htmlwidgets/lib/tjviewer/"}}</script>'
+    head: '<script type="importmap">{"imports": {"three": "https://cdn.jsdelivr.net/npm/three@0.166.1/build/three.module.js","three/addons/": "https://cdn.jsdelivr.net/npm/three@0.166.1/examples/jsm/","tjviewer/":"https://cdn.jsdelivr.net/gh/jianhong/geometrid@devel/inst/htmlwidgets/lib/tjviewer/"}}</script>'
     script:
       - src: 'tjviewer.map.js'
   - name: tjviewer
