@@ -224,12 +224,16 @@ rgl::rglwidget() %>%
 
 Here we will show how to add the interaction pairs into the 3d plot.
 ```{r jsviewerHic}
+## get the backbone 3d positions,
+## it will be used as a position reference for the interaction data.
 xyz <- extractBackbonePositions(objs)
 hic <- create3dGenomicSignals(
-  gi_nij,
-  xyz, name='ps', tag='tag',
+  gi_nij, xyz,
+  name='nij', # name prefix for the geometry
+  tag='hic', # name for the layer in the scene
   color = c('green', 'darkred'),
-  topN=3)
+  topN=3 # only plot the top 3 events ordered by the scores.
+  )
 # plot it if interactive
 if (interactive()) { ## not run to reduce the package size.
   threeJsViewer(c(objs, hic))
