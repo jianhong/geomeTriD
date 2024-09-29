@@ -82,9 +82,10 @@ view3dStructure <- function(obj, feature.gr,
     stopifnot("z" %in% colnames(mcols(obj)))
   }
   renderer <- match.arg(renderer)
+  seqn <- as.character(seqnames(obj)[1])
   feature.gr <- parseFeature(
     feature.gr = feature.gr,
-    seqn = as.character(seqnames(obj)[1])
+    seqn = seqn
   )
   xlim <- range(obj$x)
   ylim <- range(obj$y)
@@ -238,7 +239,8 @@ view3dStructure <- function(obj, feature.gr,
       tag = "backbone",
       properties = list(
         size = lwd.backbone,
-        target = as.character(ranges(obj))
+        target = as.character(ranges(obj)),
+        seqn = seqn
       )
     )
 

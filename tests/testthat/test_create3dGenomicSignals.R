@@ -47,7 +47,7 @@ test_that("create3dGenomicSignals", function() {
   }, ds, ds2)
   ## test for all geometries
   types <- availableGeometries[
-    !availableGeometries %in% c("arrow", "line", "label", "text")
+    !availableGeometries %in% c("arrow", "line", "label", "text", "polygon")
   ]
   x <- lapply(
     types,
@@ -72,5 +72,12 @@ test_that("create3dGenomicSignals", function() {
     }
   )
   names(x) <- types
+  threeJsViewer(x)
+  ## test for Pairs/GInteractions
+  ps <- Pairs(GenoSig, rev(GenoSig), score=GenoSig$score)
+  gi <- GInteractions(GenoSig, rev(GenoSig), score=GenoSig$score)
+  x <- create3dGenomicSignals(ps, targetObj, name='ps', tag='tag')
+  threeJsViewer(x)
+  x <- create3dGenomicSignals(gi, targetObj, name='gi', tag='tag')
   threeJsViewer(x)
 })

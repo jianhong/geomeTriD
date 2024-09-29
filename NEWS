@@ -1,3 +1,7 @@
+Changes in version 0.99.4
+
+    o Add type 'polygon' to threeJsGeometry.
+    
 Changes in version 0.99.3
 
     o Add rotation slot to threeJsGeometry.

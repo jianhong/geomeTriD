@@ -20,7 +20,9 @@ create3dGenomicSignals(
 }
 \arguments{
 \item{GenoSig}{The Genomic signals. An object of
-\link[GenomicRanges:GRanges-class]{GRanges} with scores or
+\link[GenomicRanges:GRanges-class]{GRanges}, 
+\link[S4Vectors:Pairs-class]{Pairs},
+or \link[InteractionSet]{GInteractions} with scores or
  an object of \link[trackViewer:track]{track}.}
 
 \item{targetObj}{The GRanges object with mcols x0, y0, z0, x1, y1, and z1}

@@ -220,6 +220,22 @@ rgl::rglwidget() %>%
   rgl::asRow(last = 10)
 ```
 
+## view the genomic interaction data
+
+Here we will show how to add the interaction pairs into the 3d plot.
+```{r jsviewerHic}
+xyz <- extractBackbonePositions(objs)
+hic <- create3dGenomicSignals(
+  gi_nij,
+  xyz, name='ps', tag='tag',
+  color = c('green', 'darkred'),
+  topN=3)
+# plot it if interactive
+if (interactive()) { ## not run to reduce the package size.
+  threeJsViewer(c(objs, hic))
+}
+```
+
 
 # Plot chromatin interactions data as `loopBouquet` or `MDS` plot
 

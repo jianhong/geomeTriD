@@ -225,6 +225,22 @@ rglViewer <- function(..., background = "gray") {
           z = .ele$properties$radius
         ))
       },
+      polygon = {
+        tryCatch({
+          polygon3d(
+            x = .ele$x,
+            y = .ele$y,
+            z = .ele$z,
+            col = .ele$colors,
+            alpha = ifelse(length(.ele$properties$alpha) == 1,
+                           .ele$properties$alpha, 1),
+            tag = .ele$tag,
+            random = FALSE
+          )
+        }, error=function(e){
+          warning(e)
+        })
+      },
       segment = {
         segments3d(
           x = .ele$x,

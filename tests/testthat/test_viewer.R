@@ -21,19 +21,23 @@ test_that("view3dCells works not correct", {
   vc[[1]]$properties$label <- "text"
   vc[[1]]$rotation <- c(0, pi/2, 0)
   for (type in availableGeometries) {
-    message(type)
-    vc[[1]]$type <- type
-    threeJsViewer(vc)
-    rglViewer(vc)
-    rgl::close3d()
+    if(type!='polygon'){
+      message(type)
+      vc[[1]]$type <- type
+      threeJsViewer(vc)
+      rglViewer(vc)
+      rgl::close3d()
+    }
   }
   vc[[1]]$rotation <- c(pi, 0, 0)
   for (type in availableGeometries) {
-    message(type)
-    vc[[1]]$type <- type
-    threeJsViewer(vc)
-    rglViewer(vc)
-    rgl::close3d()
+    if(type!='polygon'){
+      message(type)
+      vc[[1]]$type <- type
+      threeJsViewer(vc)
+      rglViewer(vc)
+      rgl::close3d()
+    }
   }
 })
 test_that("view3dStructure works not correct", {

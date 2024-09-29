@@ -5,7 +5,7 @@
 \alias{availableGeometries}
 \title{Available Geometries}
 \format{
-An object of class \code{character} of length 17.
+An object of class \code{character} of length 18.
 }
 \usage{
 availableGeometries

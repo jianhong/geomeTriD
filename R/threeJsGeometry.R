@@ -153,6 +153,11 @@ setClass("threeJsGeometry",
                              required for octahedron")
         }
       },
+      polygon = {
+        if (!"indices" %in% names(object@properties)) {
+          return("Property indices is required for polygon")
+        }
+      },
       sphere = {
         if (!"radius" %in% names(object@properties)) {
           return("Property radius is
@@ -204,6 +209,7 @@ availableGeometries <- c(
   "icosahedron",
   "line", "label",
   "octahedron",
+  "polygon",
   "segment", "sphere",
   "tetrahedron", "text", "torus"
 )
