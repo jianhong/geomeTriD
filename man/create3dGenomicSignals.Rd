@@ -42,7 +42,8 @@ output as same dimension data.frame.}
 
 \item{name}{The prefix for the name of the geometries.}
 
-\item{color}{The color of the signal.}
+\item{color}{The color of the signal. If there is metadata 'color' in GenoSig
+this parameter will be ignored.}
 
 \item{rotation}{The rotations in the x, y and 
 z axis in radians.}

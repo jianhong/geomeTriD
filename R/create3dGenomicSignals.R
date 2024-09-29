@@ -14,7 +14,8 @@
 #' output as same dimension data.frame.
 #' @param reverseGenomicSigs Plot the genomic signals in reverse values.
 #' @param type The Geometry type.See \link{threeJsGeometry}
-#' @param color The color of the signal.
+#' @param color The color of the signal. If there is metadata 'color' in GenoSig
+#' this parameter will be ignored.
 #' @param tag The tag used to group geometries.
 #' @param name The prefix for the name of the geometries.
 #' @param rotation The rotations in the x, y and 
@@ -144,7 +145,7 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
                                  na.rm = TRUE
     )
   }else{
-    GenoSig <- getPosByTargetForPairs(GenoSig, targetObj, ...)
+    GenoSig <- getPosByTargetForPairs(GenoSig, targetObj, color, ...)
     type <- 'polygon'
     rotation = c(0, 0, 0)
   }
@@ -170,7 +171,7 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
 
 # get Positions for pairs
 #' @importFrom S4Vectors first second queryHits subjectHits
-getPosByTargetForPairs <- function(queryObj, targetObj, topN = 100, ...){
+getPosByTargetForPairs <- function(queryObj, targetObj, color, topN = 100, ...){
   stopifnot(inherits(queryObj, c('Pairs', 'GInteractions')))
   checkSmoothedGR(targetObj)
   if(length(queryObj)>topN){
@@ -180,6 +181,11 @@ getPosByTargetForPairs <- function(queryObj, targetObj, topN = 100, ...){
     score <- sort(score, decreasing = TRUE)
     score <- score[topN]
     queryObj <- queryObj[mcols(queryObj)$score>=score]
+  }
+  if(length(mcols(queryObj)$color)!=length(queryObj)){
+    if(length(queryObj)==length(color)){
+      mcols(queryObj)$color <- color
+    }
   }
   f <- first(queryObj)
   s <- second(queryObj)
@@ -207,6 +213,9 @@ getPosByTargetForPairs <- function(queryObj, targetObj, topN = 100, ...){
     mcols(res) <- cbind(mcols(res), mc2,
                         score=mcols(queryObj)$score[as.numeric(points$source)], 
                         index=as.numeric(points$source))
+    if(length(mcols(queryObj)$color)){
+      res$color <- mcols(queryObj)$color[res$index]
+    }
     return(res)
   }else{
     stop('Not support for the high resolution interaction signals yet. ',
@@ -271,7 +280,7 @@ createSegmentGeometry <- function(
           drop = FALSE
         ]))),
         type = "segment",
-        colors = color[lwd],
+        colors = if(length(GenoSig$color)) GenoSig$color[idx] else color[lwd],
         tag = tag,
         rotation = rotation,
         properties = list(
@@ -330,7 +339,7 @@ createCircleGeometry <- function(
           y = GenoSig$y[idx],
           z = GenoSig$z[idx],
           type = "circle",
-          colors = color,
+          colors = if(length(GenoSig$color)) GenoSig$color[idx] else color,
           tag = tag,
           rotation = rotation,
           properties = list(
@@ -352,7 +361,7 @@ createCircleGeometry <- function(
           y = GenoSig$y[idx],
           z = GenoSig$z[idx],
           type = "circle",
-          colors = color,
+          colors = if(length(GenoSig$color)) GenoSig$color[idx] else color,
           tag = tag,
           properties = list(
             radius = r,
@@ -406,7 +415,7 @@ createSphereGeometry <- function(
         y = GenoSig$y[idx],
         z = GenoSig$z[idx],
         type = type,
-        colors = .col,
+        colors = if(length(GenoSig$color)) GenoSig$color[idx] else .col,
         tag = tag,
         rotation = rotation,
         properties = list(
@@ -422,7 +431,7 @@ createSphereGeometry <- function(
       y = GenoSig$y,
       z = GenoSig$z,
       type = type,
-      colors = color,
+      colors = if(length(GenoSig$color)) GenoSig$color else color,
       tag = tag,
       rotation = rotation,
       properties = list(
@@ -467,7 +476,7 @@ createBoxGeometry <- function(
         y = GenoSig$y,
         z = GenoSig$z,
         type = "box",
-        colors = color,
+        colors = if(length(GenoSig$color)) GenoSig$color else color,
         tag = tag,
         rotation = rotation,
         properties = list(
@@ -485,7 +494,7 @@ createBoxGeometry <- function(
         y = GenoSig$y[idx],
         z = GenoSig$z[idx],
         type = "box",
-        colors = col,
+        colors = if(length(GenoSig$color)) GenoSig$color[idx] else col,
         tag = tag,
         rotation = rotation,
         properties = list(
@@ -527,7 +536,7 @@ createCapsuleGeometry <- function(
         y = GenoSig$y,
         z = GenoSig$z,
         type = "capsule",
-        colors = color,
+        colors = if(length(GenoSig$color)) GenoSig$color else color,
         tag = tag,
         rotation = rotation,
         properties = list(
@@ -544,7 +553,7 @@ createCapsuleGeometry <- function(
         y = GenoSig$y[idx],
         z = GenoSig$z[idx],
         type = "capsule",
-        colors = col,
+        colors = if(length(GenoSig$color)) GenoSig$color[idx] else col,
         tag = tag,
         rotation = rotation,
         properties = list(
@@ -589,7 +598,7 @@ createCylinderGeometry <- function(
         y = GenoSig$y,
         z = GenoSig$z,
         type = "cylinder",
-        colors = color,
+        colors = if(length(GenoSig$color)) GenoSig$color else color,
         tag = tag,
         rotation = rotation,
         properties = list(
@@ -607,7 +616,7 @@ createCylinderGeometry <- function(
         y = GenoSig$y[idx],
         z = GenoSig$z[idx],
         type = "cylinder",
-        colors = col,
+        colors = if(length(GenoSig$color)) GenoSig$color[idx] else col,
         tag = tag,
         rotation = rotation,
         properties = list(
@@ -649,7 +658,7 @@ createConeGeometry <- function(
         y = GenoSig$y,
         z = GenoSig$z,
         type = "cone",
-        colors = color,
+        colors = if(length(GenoSig$color)) GenoSig$color else color,
         tag = tag,
         rotation = rotation,
         properties = list(
@@ -666,7 +675,7 @@ createConeGeometry <- function(
         y = GenoSig$y[idx],
         z = GenoSig$z[idx],
         type = "cone",
-        colors = col,
+        colors = if(length(GenoSig$color)) GenoSig$color[idx] else col,
         tag = tag,
         rotation = rotation,
         properties = list(
@@ -720,7 +729,7 @@ createTorusGeometry <- function(
         y = GenoSig$y,
         z = GenoSig$z,
         type = "torus",
-        colors = color,
+        colors = if(length(GenoSig$color)) GenoSig$color else color,
         tag = tag,
         rotation = rotation,
         properties = list(
@@ -737,7 +746,7 @@ createTorusGeometry <- function(
         y = GenoSig$y[idx],
         z = GenoSig$z[idx],
         type = "torus",
-        colors = col,
+        colors = if(length(GenoSig$color)) GenoSig$color[idx] else col,
         tag = tag,
         rotation = rotation,
         properties = list(
@@ -770,7 +779,8 @@ createJsonGeometry <- function(
       y = GenoSig$y,
       z = GenoSig$z,
       type = "json",
-      colors = mapScore2Color(GenoSig, color),
+      colors = if(length(GenoSig$color)) GenoSig$color else 
+        mapScore2Color(GenoSig, color),
       tag = tag,
       rotation = rotation,
       properties = list(
@@ -796,8 +806,13 @@ tileSegments <- function(x1, y1, z1, x2, y2, z2, step=10){
                 mapply(seq0, z1, z2, step, SIMPLIFY = FALSE))
   ))
 }
+# get index group
+getIndicesGroups <- function(idx, jj){
+  .ele <- do.call(cbind, rep(list(idx), jj))
+  as.integer(.ele)
+}
 # get indices for given len of points
-getIndices <- function(ii, jj){
+getIndices <- function(ii, jj, index){
   iii <- ii-1
   jjj <- jj-1
   indices <- matrix(nrow=3, ncol = 2*iii*jjj)
@@ -814,7 +829,15 @@ getIndices <- function(ii, jj){
       idx <- idx + 2
     }
   }
-  return(as.integer(indices)-1)
+  ## remove the indices between group
+  indicesGroups <- getIndicesGroups(index, jj)
+  indicesKeep <- indicesGroups[indices]
+  dim(indicesKeep) <- dim(indices)
+  indicesKeep <- indicesKeep[2, , drop=TRUE] == 
+    indicesKeep[1, , drop=TRUE] &
+    indicesKeep[3, , drop=TRUE] == 
+    indicesKeep[1, , drop=TRUE]
+  return(indices[, indicesKeep, drop=FALSE])
 }
 mapScore2Alpha <- function(score, default=0.3){
   ra <- range(score, na.rm=TRUE)
@@ -838,7 +861,7 @@ createPolygonGeometry <- function(
     GenoSig$x0, GenoSig$x1, GenoSig$x1_2, GenoSig$x0_2,
     GenoSig$y0, GenoSig$y1, GenoSig$y1_2, GenoSig$y0_2,
     GenoSig$z0, GenoSig$z1, GenoSig$z1_2, GenoSig$z0_2,
-    mapScore2Color(GenoSig, color),
+    if(length(GenoSig$color)) GenoSig$color else mapScore2Color(GenoSig, color),
     mapScore2Alpha(GenoSig$score))
   colnames(genomic_signal) <- c("x1", "x2", "x3", "x4",
                                 "y1", "y2", "y3", "y4",
@@ -869,17 +892,19 @@ createPolygonGeometry <- function(
             p2p3$z,
             genomic_signal$z3, genomic_signal$z4,
             p4p1$z)
+  indices <- getIndices(nrow(x), ncol(x), GenoSig$index)
+  idJ <- indices[3, , drop=TRUE]# one triangle, one color, alpha
   geo <- list(threeJsGeometry(
     x = as.numeric(x),
     y = as.numeric(y),
     z = as.numeric(z),
     type = 'polygon',
-    colors = rep(genomic_signal$col, ncol(x)),
+    colors = rep(genomic_signal$col, ncol(x))[idJ],
     tag = tag,
     rotation = rotation,
     properties = list(
-      alpha=rep(genomic_signal$alpha, ncol(x)),
-      indices=getIndices(nrow(x), ncol(x))
+      alpha=rep(genomic_signal$alpha, ncol(x))[idJ],
+      indices=as.integer(indices)-1
     )
   ))
   names(geo) <- name

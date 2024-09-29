@@ -45,6 +45,8 @@ test_that("create3dGenomicSignals", function() {
     expect_equal(a$y, b$y)
     expect_equal(a$z + 0.2, b$z)
   }, ds, ds2)
+  ## test for color
+  GenoSig$color <- rep_len(seq.int(7), length(GenoSig))
   ## test for all geometries
   types <- availableGeometries[
     !availableGeometries %in% c("arrow", "line", "label", "text", "polygon")
