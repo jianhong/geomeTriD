@@ -60,7 +60,9 @@ If type is 'box', 'capsule', 'cylinder', 'cone', or 'torus', if
 the properties of correspond geometry is not set, they will be set to
 the transformed score value.
 If type is 'json', please refer the documentation about
-BufferGeometryLoader at threejs.org}
+BufferGeometryLoader at threejs.org
+If input 'GenoSig' is an object of Pairs or GInteractions, the type will be
+set to 'polygon' and topN is used to set how many top events will be plot.}
 }
 \value{
 \link{threeJsGeometry} objects or NULL

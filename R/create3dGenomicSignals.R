@@ -33,6 +33,8 @@
 #' the transformed score value.
 #' If type is 'json', please refer the documentation about
 #' BufferGeometryLoader at threejs.org
+#' If input 'GenoSig' is an object of Pairs or GInteractions, the type will be
+#' set to 'polygon' and topN is used to set how many top events will be plot.
 #' @return \link{threeJsGeometry} objects or NULL
 #' @importFrom utils getFromNamespace
 #' @importFrom methods getPackageName
@@ -207,7 +209,8 @@ getPosByTargetForPairs <- function(queryObj, targetObj, topN = 100, ...){
                         index=as.numeric(points$source))
     return(res)
   }else{
-    stop('Not support for the high resolution interaction signals yet.')
+    stop('Not support for the high resolution interaction signals yet. ',
+         'Try to increase the width of input interactions.')
   }
 }
 # map score to segments lwd
