@@ -1995,6 +1995,24 @@ class tjViewer{
                 octahedrondata.radius));
             });
             break;
+          case 'polygon':
+            ele.recenter <- false;
+            if(ele.colors.length!=ele.positions.length){
+              // single colors
+              for(var i=1; i<len; i++){
+                ele.colors.push(ele.colors[0]);
+                ele.colors.push(ele.colors[1]);
+                ele.colors.push(ele.colors[2]); 
+              }
+            }
+            geometry.setIndex(ele.indices);
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(ele.positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(ele.colors, 3));
+            material.vertexColors = true;
+            material.opacity = 0.3;
+            obj = new THREE.Mesh(geometry, material);
+            obj.layers.set(this.getLayer(ele.tag));
+            break;
           case 'tetrahedron':
             param.radius = ele.radius;
             const tetrahedrondata = {
