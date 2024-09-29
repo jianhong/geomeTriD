@@ -347,10 +347,11 @@ plot.</p>
 <span><span class="co">## it will be used as a position reference for the interaction data.</span></span>
 <span><span class="va">xyz</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extractBackbonePositions.html">extractBackbonePositions</a></span><span class="op">(</span><span class="va">objs</span><span class="op">)</span></span>
 <span><span class="va">hic</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create3dGenomicSignals.html">create3dGenomicSignals</a></span><span class="op">(</span></span>
-<span>  <span class="va">gi_nij</span>, <span class="va">xyz</span>,</span>
+<span>  <span class="va">gi_nij</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/IRanges/man/nearest-methods.html" class="external-link">distance</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Pairs-class.html" class="external-link">first</a></span><span class="op">(</span><span class="va">gi_nij</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Pairs-class.html" class="external-link">second</a></span><span class="op">(</span><span class="va">gi_nij</span><span class="op">)</span><span class="op">)</span><span class="op">&gt;</span><span class="fl">100000</span><span class="op">]</span>, <span class="co"># make easy to see</span></span>
+<span>  <span class="va">xyz</span>,</span>
 <span>  name<span class="op">=</span><span class="st">'nij'</span>, <span class="co"># name prefix for the geometry</span></span>
 <span>  tag<span class="op">=</span><span class="st">'hic'</span>, <span class="co"># name for the layer in the scene</span></span>
-<span>  color <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'green'</span>, <span class="st">'darkred'</span><span class="op">)</span>,</span>
+<span>  color <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'green'</span>, <span class="st">'blue'</span>, <span class="st">'darkred'</span><span class="op">)</span>,</span>
 <span>  topN<span class="op">=</span><span class="fl">3</span> <span class="co"># only plot the top 3 events ordered by the scores.</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="co"># plot it if interactive</span></span>

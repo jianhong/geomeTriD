@@ -1997,7 +1997,7 @@ class tjViewer{
             break;
           case 'polygon':
             ele.recenter <- false;
-            if(ele.colors.length!=ele.positions.length){
+            /*if(ele.colors.length!=ele.positions.length){
               // single colors
               for(var i=1; i<len; i++){
                 ele.colors.push(ele.colors[0]);
@@ -2005,12 +2005,36 @@ class tjViewer{
                 ele.colors.push(ele.colors[2]); 
               }
             }
+            if(!Array.isArray(ele.alpha)){
+              ele.alpha = [ele.alpha];
+              for(var i=1; i<len; i++){
+                ele.alpha.push(ele.alpha[0]);
+              }
+            }*/
             geometry.setIndex(ele.indices);
             geometry.setAttribute('position', new THREE.Float32BufferAttribute(ele.positions, 3));
-            geometry.setAttribute('color', new THREE.Float32BufferAttribute(ele.colors, 3));
-            material.vertexColors = true;
-            material.opacity = 0.3;
-            obj = new THREE.Mesh(geometry, material);
+            geometry.computeVertexNormals();
+            const materials = [];
+            var oldColor = new THREE.Color(ele.colors[0], ele.colors[1], ele.colors[2]);
+            var oldOpacity = ele.alpha[0];
+            var oldI = 0;
+            for(let i=1; i<ele.alpha.length; i++){
+              if(ele.colors[i*3]==ele.colors[oldI*3] &&
+                  ele.colors[i*3+1]==ele.colors[oldI*3+1] &&
+                  ele.colors[i*3+2]==ele.colors[oldI*3+2] &&
+                  ele.alpha[i]==oldOpacity){
+                    continue;
+              }else{
+                var j = materials.push(new THREE.MeshStandardMaterial( { color: oldColor, opacity:oldOpacity, transparent:true } ));
+                geometry.addGroup(oldI*3, (oldI+i)*3, j-1);
+                oldI = i;
+                oldColor = new THREE.Color(ele.colors[i*3], ele.colors[i*3+1], ele.colors[i*3+2]);
+                oldOpacity = ele.alpha[i];
+              }
+            }
+            var j = materials.push(new THREE.MeshStandardMaterial( { color: oldColor, opacity:oldOpacity, transparent:true } ));
+            geometry.addGroup(oldI*3, ele.alpha.length*3, j-1);
+            obj = new THREE.Mesh(geometry, materials);
             obj.layers.set(this.getLayer(ele.tag));
             break;
           case 'tetrahedron':
