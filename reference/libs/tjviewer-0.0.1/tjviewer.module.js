@@ -1703,7 +1703,8 @@ class tjViewer{
               color: 0xffffff,
               linewidth: param.size,
               vertexColors: true,
-              opacity: param.opacity
+              opacity: param.opacity,
+              transparent:true
             });
             obj = new LineSegments2(geometry, material);
             obj.layers.set(this.getLayer(ele.tag));
@@ -1997,20 +1998,6 @@ class tjViewer{
             break;
           case 'polygon':
             ele.recenter <- false;
-            /*if(ele.colors.length!=ele.positions.length){
-              // single colors
-              for(var i=1; i<len; i++){
-                ele.colors.push(ele.colors[0]);
-                ele.colors.push(ele.colors[1]);
-                ele.colors.push(ele.colors[2]); 
-              }
-            }
-            if(!Array.isArray(ele.alpha)){
-              ele.alpha = [ele.alpha];
-              for(var i=1; i<len; i++){
-                ele.alpha.push(ele.alpha[0]);
-              }
-            }*/
             geometry.setIndex(ele.indices);
             geometry.setAttribute('position', new THREE.Float32BufferAttribute(ele.positions, 3));
             geometry.computeVertexNormals();
@@ -2025,14 +2012,14 @@ class tjViewer{
                   ele.alpha[i]==oldOpacity){
                     continue;
               }else{
-                var j = materials.push(new THREE.MeshStandardMaterial( { color: oldColor, opacity:oldOpacity, transparent:true } ));
+                var j = materials.push(new THREE.MeshStandardMaterial( { color: oldColor, opacity:oldOpacity, transparent:true, side:THREE.DoubleSide } ));
                 geometry.addGroup(oldI*3, (oldI+i)*3, j-1);
                 oldI = i;
                 oldColor = new THREE.Color(ele.colors[i*3], ele.colors[i*3+1], ele.colors[i*3+2]);
                 oldOpacity = ele.alpha[i];
               }
             }
-            var j = materials.push(new THREE.MeshStandardMaterial( { color: oldColor, opacity:oldOpacity, transparent:true } ));
+            var j = materials.push(new THREE.MeshStandardMaterial( { color: oldColor, opacity:oldOpacity, transparent:true, side:THREE.DoubleSide } ));
             geometry.addGroup(oldI*3, ele.alpha.length*3, j-1);
             obj = new THREE.Mesh(geometry, materials);
             obj.layers.set(this.getLayer(ele.tag));
