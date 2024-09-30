@@ -145,8 +145,10 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
                                  na.rm = TRUE
     )
   }else{
-    GenoSig <- getPosByTargetForPairs(GenoSig, targetObj, color, ...)
-    type <- 'polygon'
+    if(type!='segment'){
+      type <- 'polygon'
+    }
+    GenoSig <- getPosByTargetForPairs(GenoSig, targetObj, type, color, ...)
     rotation = c(0, 0, 0)
   }
   checkSignalGeometryType(type, ...)
@@ -171,16 +173,25 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
 
 # get Positions for pairs
 #' @importFrom S4Vectors first second queryHits subjectHits
-getPosByTargetForPairs <- function(queryObj, targetObj, color, topN = 100, ...){
+getPosByTargetForPairs <- function(queryObj, targetObj,
+                                   type, color,
+                                   topN = 100,
+                                   ...){
   stopifnot(inherits(queryObj, c('Pairs', 'GInteractions')))
   checkSmoothedGR(targetObj)
-  if(length(queryObj)>topN){
-    message('Only top ', topN, ' event will be kept.',
+  if(length(queryObj)>topN[length(topN)]){
+    if(topN[length(topN)]==100){
+      message('Only top ', topN, ' event will be kept.',
             ' Increase the topN to keep more.')
+    }
     score <- mcols(queryObj)$score
     score <- sort(score, decreasing = TRUE)
     score <- score[topN]
-    queryObj <- queryObj[mcols(queryObj)$score>=score]
+    if(length(topN)>1){
+      queryObj <- queryObj[mcols(queryObj)$score %in% score]
+    }else{
+      queryObj <- queryObj[mcols(queryObj)$score>=score]
+    }
   }
   if(length(mcols(queryObj)$color)!=length(queryObj)){
     if(length(queryObj)==length(color)){
@@ -193,41 +204,68 @@ getPosByTargetForPairs <- function(queryObj, targetObj, color, topN = 100, ...){
               all(c(width(f), width(s))==width(f)[1]))
   stopifnot('Only fixed bin size is supported for pairs.'=
               all(width(targetObj)-width(targetObj)[1]<width(targetObj)[1]/10))
-  if(width(targetObj)[1]<=width(f)[1]){
-    ol_f <- findOverlaps(f, targetObj)
-    ol_s <- findOverlaps(s, targetObj)
-    f_points <- split(subjectHits(ol_f), queryHits(ol_f))
-    s_points <- split(subjectHits(ol_s), queryHits(ol_s))
-    inRangePoints <- intersect(names(f_points), names(s_points))
-    points <- mapply(function(f, s){
-      l <- min(length(f), length(s))
-      data.frame(f=f[seq.int(l)], s=s[seq.int(l)])
-    }, f_points[inRangePoints], s_points[inRangePoints],
-    SIMPLIFY = FALSE)
-    points <- cbind(source=rep(inRangePoints,
-                               vapply(points, nrow, numeric(1L))),
-                    do.call(rbind, points))
-    res <- targetObj[points$f]
-    mc2 <- mcols(targetObj[points$s])
-    colnames(mc2) <- paste(colnames(mc2), 2, sep='_')
-    mcols(res) <- cbind(mcols(res), mc2,
-                        score=mcols(queryObj)$score[as.numeric(points$source)], 
-                        index=as.numeric(points$source))
-    if(length(mcols(queryObj)$color)){
-      res$color <- mcols(queryObj)$color[res$index]
-    }
+  ol_f <- findOverlaps(f, targetObj)
+  ol_s <- findOverlaps(s, targetObj)
+  f_points <- split(subjectHits(ol_f), queryHits(ol_f))
+  s_points <- split(subjectHits(ol_s), queryHits(ol_s))
+  inRangePoints <- intersect(names(f_points), names(s_points))
+  points <- mapply(function(f, s){
+    l <- min(length(f), length(s))
+    data.frame(f=f[seq.int(l)], s=s[seq.int(l)])
+  }, f_points[inRangePoints], s_points[inRangePoints],
+  SIMPLIFY = FALSE)
+  points <- cbind(source=rep(inRangePoints,
+                             vapply(points, nrow, numeric(1L))),
+                  do.call(rbind, points))
+  getXYZ <- function(gr, postfix='0'){
+    res <- getXYZmean(gr)
+    mcols(res) <- mcols(res)[, c('x', 'y', 'z')]
+    colnames(mcols(res)) <- paste0(colnames(mcols(res)), postfix)
     return(res)
-  }else{
-    stop('Not support for the high resolution interaction signals yet. ',
-         'Try to increase the width of input interactions.')
   }
+  if(type=='segment'){
+    res <- getXYZ(targetObj[points$f], '0')
+    mc2 <- getXYZ(targetObj[points$s], '1')
+    mcols(res) <- cbind(
+      mcols(res), mcols(mc2),
+      score=mcols(queryObj)$score[as.numeric(points$source)], 
+      index=as.numeric(points$source))
+  }else{
+    if(width(targetObj)[1]<=width(f)[1]){
+      res <- targetObj[points$f]
+      mc2 <- mcols(targetObj[points$s])
+      colnames(mc2) <- paste(colnames(mc2), 2, sep='_')
+      mcols(res) <- cbind(
+        mcols(res), mc2,
+        score=mcols(queryObj)$score[as.numeric(points$source)], 
+        index=as.numeric(points$source))
+    } else{
+      stop('Only support for the high resolution signals for segment. ',
+           'Try to increase the width of input interactions.')
+    }
+  }
+  if(length(mcols(queryObj)$color)){
+    res$color <- mcols(queryObj)$color[res$index]
+  }
+  return(res)
 }
 # map score to segments lwd
 createSegmentGeometry <- function(
     GenoSig, revGenoSig,
     name, color, tag, rotation,
-    lwd.maxGenomicSigs = 8, alpha = 1,
+    lwd.maxGenomicSigs = 8, alpha = 1, length.out,
     ...) {
+  if(lwd.maxGenomicSigs<2){
+    warning('Small lwd.maxGenomicSigs will lead to some errors when plot it.')
+  }
+  if(missing(length.out)){
+    if(lwd.maxGenomicSigs<3){
+      length.out <- 5
+    }else{
+      length.out <- 2*round(lwd.maxGenomicSigs - 1)
+    }
+  }
+  lwdRange <- seq(0, lwd.maxGenomicSigs, length.out = length.out+1)[-1]
   genomicSigScoreRange <- quantile(GenoSig$score,
     probs = c(.1, .99)
   )
@@ -239,7 +277,7 @@ createSegmentGeometry <- function(
       -1,
       seq(genomicSigScoreRange[1],
         genomicSigScoreRange[2],
-        length.out = lwd.maxGenomicSigs - 1
+        length.out = length.out
       ),
       max(GenoSig$score) + 1
     )
@@ -248,12 +286,12 @@ createSegmentGeometry <- function(
       genomicSiglabels <- rev(genomicSiglabels)
       color <- rev(color)
     }
-    GenoSig$lwd <- as.numeric(as.character(
+    GenoSig$lwd <- lwdRange[as.numeric(as.character(
       cut(GenoSig$score,
         breaks = genomicSigBreaks,
         labels = genomicSiglabels
       )
-    ))
+    ))]
     genomicSigLwd <- sort(unique(GenoSig$lwd))
     if (length(color) > 1) {
       color <-
@@ -793,7 +831,7 @@ createJsonGeometry <- function(
 }
 
 # create segments for two points
-tileSegments <- function(x1, y1, z1, x2, y2, z2, step=10){
+tileSegments <- function(x1, y1, z1, x2, y2, z2, step=5){
   seq0 <- function(from, to, step){
     seq(from, to, length.out=step+2)[-c(1, step+2)]
   }
@@ -839,7 +877,7 @@ getIndices <- function(ii, jj, index){
     indicesKeep[1, , drop=TRUE]
   return(indices[, indicesKeep, drop=FALSE])
 }
-mapScore2Alpha <- function(score, default=0.3){
+mapScore2Alpha <- function(score, default=0.1){
   ra <- range(score, na.rm=TRUE)
   if(ra[2]==ra[1]){
     return(rep(default, length(score)))
@@ -869,29 +907,32 @@ createPolygonGeometry <- function(
                                 "col", "alpha")
   
   p2p3 <- tileSegments(genomic_signal$x2,
-                        genomic_signal$y2,
-                        genomic_signal$z2,
-                        genomic_signal$x3,
-                        genomic_signal$y3,
-                        genomic_signal$z3)
+                       genomic_signal$y2,
+                       genomic_signal$z2,
+                       genomic_signal$x3,
+                       genomic_signal$y3,
+                       genomic_signal$z3)
   p4p1 <- tileSegments(genomic_signal$x4,
-                        genomic_signal$y4,
-                        genomic_signal$z4,
-                        genomic_signal$x1,
-                        genomic_signal$y1,
-                        genomic_signal$z1)
+                       genomic_signal$y4,
+                       genomic_signal$z4,
+                       genomic_signal$x1,
+                       genomic_signal$y1,
+                       genomic_signal$z1)
   x = cbind(genomic_signal$x1, genomic_signal$x2,
             p2p3$x, 
             genomic_signal$x3, genomic_signal$x4,
-            p4p1$x)
+            p4p1$x,
+            genomic_signal$x1)
   y = cbind(genomic_signal$y1, genomic_signal$y2,
             p2p3$y,
             genomic_signal$y3, genomic_signal$y4,
-            p4p1$y)
+            p4p1$y,
+            genomic_signal$y1)
   z = cbind(genomic_signal$z1, genomic_signal$z2,
             p2p3$z,
             genomic_signal$z3, genomic_signal$z4,
-            p4p1$z)
+            p4p1$z,
+            genomic_signal$z1)
   indices <- getIndices(nrow(x), ncol(x), GenoSig$index)
   idJ <- indices[3, , drop=TRUE]# one triangle, one color, alpha
   geo <- list(threeJsGeometry(

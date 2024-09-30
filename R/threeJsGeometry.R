@@ -252,5 +252,6 @@ setReplaceMethod(
 setMethod("show", "threeJsGeometry", function(object) {
   message("An threeJsGeometry object of type ", object@type, " at coordinates:")
   print(head(cbind(x = object$x, y = object$y, z = object$z)))
-  message("with properties:", names(object$properties))
+  properties <- paste(names(object$properties), collapse=', ')
+  message("with properties: ", properties)
 })
