@@ -179,6 +179,7 @@ getPosByTargetForPairs <- function(queryObj, targetObj,
                                    ...){
   stopifnot(inherits(queryObj, c('Pairs', 'GInteractions')))
   checkSmoothedGR(targetObj)
+  queryObj <- subsetByOverlaps(queryObj, targetObj)
   if(length(queryObj)>topN[length(topN)]){
     if(topN[length(topN)]==100){
       message('Only top ', topN, ' event will be kept.',
@@ -255,7 +256,7 @@ createSegmentGeometry <- function(
     name, color, tag, rotation,
     lwd.maxGenomicSigs = 8, alpha = 1, length.out,
     ...) {
-  if(lwd.maxGenomicSigs<2){
+  if(lwd.maxGenomicSigs[1]<2){
     warning('Small lwd.maxGenomicSigs will lead to some errors when plot it.')
   }
   if(missing(length.out)){
@@ -265,7 +266,8 @@ createSegmentGeometry <- function(
       length.out <- 2*round(lwd.maxGenomicSigs - 1)
     }
   }
-  lwdRange <- seq(0, lwd.maxGenomicSigs, length.out = length.out+1)[-1]
+  lwdRange <- c(seq(0, lwd.maxGenomicSigs, length.out = length.out+1)[-1], 
+                lwd.maxGenomicSigs)
   genomicSigScoreRange <- quantile(GenoSig$score,
     probs = c(.1, .99)
   )
@@ -296,15 +298,14 @@ createSegmentGeometry <- function(
     if (length(color) > 1) {
       color <-
         colorRampPalette(colors = color)(
-          length(genomicSiglabels))
-      names(color) <- genomicSiglabels
+          length(genomicSigLwd))
     } else {
       color <- rep(
         color,
         length(genomicSigLwd)
       )
-      names(color) <- genomicSigLwd
     }
+    names(color) <- genomicSigLwd
     genomic_signal <- lapply(genomicSigLwd, function(lwd) {
       idx <- which(GenoSig$lwd == lwd)
       threeJsGeometry(
@@ -318,7 +319,8 @@ createSegmentGeometry <- function(
           drop = FALSE
         ]))),
         type = "segment",
-        colors = if(length(GenoSig$color)) GenoSig$color[idx] else color[lwd],
+        colors = if(length(GenoSig$color)) GenoSig$color[idx] else
+          color[as.character(lwd)],
         tag = tag,
         rotation = rotation,
         properties = list(

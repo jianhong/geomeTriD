@@ -1088,8 +1088,8 @@ class tjViewer{
     if('sideBySide' in x){
       this.sideBySide = x.sideBySide;
       if(x.sideBySide){
-        this.camera.aspect = 2*this.width/this.height;
-        this.camera2.aspect = 2*this.width/this.height;
+        this.camera.aspect = this.width/this.height;
+        this.camera2.aspect = this.width/this.height;
         this.camera.updateProjectionMatrix();
         this.camera2.updateProjectionMatrix();
         this.labelRenderer.setSize( this.width/2, this.height );
@@ -2205,8 +2205,8 @@ class tjViewer{
     this.width = width;
     this.height = height;
     if(this.sideBySide){
-      this.camera.aspect = 2*width/height;
-      this.camera2.aspect = 2*width/height;
+      this.camera.aspect = width/height;
+      this.camera2.aspect = width/height;
       this.camera2.updateProjectionMatrix();
       this.labelRenderer.setSize( width/2, height );
       this.labelRenderer2.setSize( width/2, height );

@@ -73,7 +73,7 @@ to turn it off. The default value 1e5 means show coordinates every 0.1M bp.}
 
 \item{square}{A logical value that controls whether control points for the curve are created city-block fashion or obliquely. See \link[grid]{grid.curve}.}
 
-\item{...}{Not used.}
+\item{...}{Parameters for \link{create3dGenomicSignals}.}
 }
 \value{
 Coordinates for 2d or a list of threeJsGeometry objects or a

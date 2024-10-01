@@ -23,7 +23,7 @@
 #' @param length.arrow Length of the edges of the arrow head (in inches).
 #' @param safe_text_force The loops to avoid the text overlapping.
 #' @param square A logical value that controls whether control points for the curve are created city-block fashion or obliquely. See \link[grid]{grid.curve}.
-#' @param ... Not used.
+#' @param ... Parameters for \link{create3dGenomicSignals}.
 #' @return Coordinates for 2d or a list of threeJsGeometry objects or a
 #' htmlwidget.
 #' @importFrom stats quantile
@@ -262,14 +262,22 @@ view3dStructure <- function(obj, feature.gr,
       if (length(names(genomicSigs)) != length(genomicSigs)) {
         names(genomicSigs) <- paste0("Signal_", seq_along(genomicSigs))
       }
-      if (length(signalTransformFun) != length(genomicSigs)) {
-        signalTransformFun <- rep(
-          list(signalTransformFun),
-          length(genomicSigs)
-        )[seq_along(genomicSigs)]
-      }
       if (!is.list(signalTransformFun)) {
         signalTransformFun <- list(signalTransformFun)
+      }
+      if (length(signalTransformFun) != length(genomicSigs)) {
+        signalTransformFun <- rep_len(
+          signalTransformFun,
+          length(genomicSigs)
+        )
+      }
+      if (!is.list(col.backbone_background)){
+        col.backbone_background <- list(col.backbone_background)
+      }
+      if(length(col.backbone_background) != length(genomicSigs)){
+        col.backbone_background <- rep_len(
+          col.backbone_background, length(genomicSigs)
+        )
       }
       genomic_signal_geometry <- mapply(
         create3dGenomicSignals,
@@ -283,6 +291,7 @@ view3dStructure <- function(obj, feature.gr,
         color = col.backbone_background,
         lwd.maxGenomicSigs = lwd.maxGenomicSigs,
         alpha = alpha.backbone_background,
+        ...,
         SIMPLIFY = FALSE
       )
       geometries <- c(
@@ -416,7 +425,7 @@ view3dStructure <- function(obj, feature.gr,
         notGeneRadius <- genePos$fgf$pch[notGene]
         if (length(notGeneRadius) != sum(notGene)) {
           notGeneRadius <- genePos$fgf$size[notGene]
-          if (length(genePos$fgf$pch[notGene]) == sum(notGene)) {
+          if (length(genePos$fgf$size[notGene]) == sum(notGene)) {
             if (!all(vapply(notGeneRadius, is.unit, logical(1L)))) {
               stop("The size is not in unit format.")
             }
@@ -427,6 +436,8 @@ view3dStructure <- function(obj, feature.gr,
           } else {
             notGeneRadius <- 1
           }
+        }else{
+          notGeneRadius <- notGeneRadius/36
         }
         if (length(unique(notGeneRadius)) == 1) {
           geometries$cRE <- threeJsGeometry(
