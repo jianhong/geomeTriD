@@ -1,3 +1,8 @@
+Changes in version 0.99.6
+
+    o Add LICENSE items for threejs.
+    o Add help page for the package itself.
+    
 Changes in version 0.99.5
 
     o Fix the warning message in create3dGenomicSignals when calling mapply.

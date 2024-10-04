@@ -239,7 +239,7 @@ view3dStructure <- function(obj, feature.gr,
       tag = "backbone",
       properties = list(
         size = lwd.backbone,
-        target = as.character(ranges(obj)),
+        target = unname(as.character(ranges(obj))),
         seqn = seqn
       )
     )
@@ -377,7 +377,7 @@ view3dStructure <- function(obj, feature.gr,
           tag = "gene_body",
           properties = list(
             size = lwd.gene,
-            target = genePos$fgf$label[idx]
+            target = unname(genePos$fgf$label[idx])
           )
         )
       })
@@ -412,7 +412,7 @@ view3dStructure <- function(obj, feature.gr,
               headLength = as.numeric(arrowLen) * .2,
               headWidth = as.numeric(arrowLen) * .2,
               size = lwd.gene / 2,
-              target = genePos$fgf$label[idx]
+              target = unname(genePos$fgf$label[idx])
             )
           )
         })

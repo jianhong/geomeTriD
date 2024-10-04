@@ -74,20 +74,18 @@ cylinder <- threeJsGeometry(
   )
 )
 labels <- x[sample.int(length(x), 5)]
+fontURL <- paste0('https://raw.githubusercontent.com/mrdoob/three.js/refs/',
+   'heads/dev/examples/fonts/helvetiker_regular.typeface.json')
 labels <- threeJsGeometry(
   x = labels$x, y = labels$y, z = labels$z,
   colors = "black",
   type = "text",
   properties = list(
     "label" = "text",
-    "font" = readLines(system.file(
-      "extdata", "fonts",
-      "helvetiker_regular.typeface.json",
-      package = "geomeTriD"
-    )),
+    "font" = readLines(fontURL),
     "size" = .5,
     "depth" = .1
   )
 )
-threeJsViewer(line, sphere, torus, cylinder, labels)
+threeJsViewer(line, sphere, torus, cylinder)
 }
