@@ -1,3 +1,7 @@
+Changes in version 0.99.7
+
+    o Add `saveWidget` sample code to vignettes.
+    
 Changes in version 0.99.6
 
     o Add LICENSE items for threejs.

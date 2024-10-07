@@ -80,6 +80,17 @@ list3d <- view3dStructure(obj,
 threeJsViewer(list3d)
 ```
 
+if you have trouble in seeing the results, please try to save it as a file and
+open it in an explorer.
+```{r eval=FALSE}
+widget <- threeJsViewer(list3d)
+tmpdir <- 'path/to/a/folder'
+dir.create(tmpdir, recursive = TRUE)
+tmp <- tempfile(tmpdir = tmpdir, fileext = '.html')
+htmlwidgets::saveWidget(widget, file=tmp)
+utils::browseURL(tmp)
+```
+
 # Prepare the inputs
 
 The genomic contact frequency, eg output from HiC,
