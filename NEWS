@@ -1,3 +1,7 @@
+Changes in version 0.99.8
+
+    o Fix the warning 'rgl.init' failed, running with 'rgl.useNULL = TRUE'.
+    
 Changes in version 0.99.7
 
     o Add `saveWidget` sample code to vignettes.

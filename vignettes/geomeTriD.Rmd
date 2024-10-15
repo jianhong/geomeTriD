@@ -20,6 +20,7 @@ output:
 
 ```{r, echo=FALSE, results="hide", warning=FALSE}
 suppressPackageStartupMessages({
+  options(rgl.useNULL=TRUE)
   library(geomeTriD)
   library(TxDb.Hsapiens.UCSC.hg19.knownGene)
   library(org.Hs.eg.db)
@@ -80,7 +81,7 @@ list3d <- view3dStructure(obj,
 threeJsViewer(list3d)
 ```
 
-if you have trouble in seeing the results, please try to save it as a file and
+if you have trouble in seeing the results, such as [Firefox snap installation issue](https://github.com/karma-runner/karma-firefox-launcher/issues/183), please try to save it as a file and
 open it in an explorer.
 ```{r eval=FALSE}
 widget <- threeJsViewer(list3d)
