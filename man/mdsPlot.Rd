@@ -30,7 +30,7 @@ mdsPlot(
   length.arrow = NULL,
   safe_text_force = 3,
   square = TRUE,
-  renderer = c("rgl", "threejs", "none"),
+  renderer = c("rgl", "threejs", "none", "granges"),
   ...
 )
 }
@@ -74,12 +74,13 @@ to turn it off. The default value 1e5 means show coordinates every 0.1M bp.}
 
 \item{renderer}{The renderer of the 3D plots. Could be rgl or threejs.
 The threejs will create a htmlwidgets. If 'none' is set, a list of object
-will be returned.}
+will be returned.
+If 'granges' is set, A GRanges with coordinates will be returned.}
 
 \item{...}{Parameter will be passed to \link[MASS]{isoMDS}.}
 }
 \value{
-Coordinates for 2d.
+Coordinates for 2d or 3d.
 }
 \description{
 This function will convert the interactions scores into a

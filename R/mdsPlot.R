@@ -24,8 +24,9 @@
 #' @param renderer The renderer of the 3D plots. Could be rgl or threejs.
 #' The threejs will create a htmlwidgets. If 'none' is set, a list of object
 #' will be returned.
+#' If 'granges' is set, A GRanges with coordinates will be returned.
 #' @param ... Parameter will be passed to \link[MASS]{isoMDS}.
-#' @return Coordinates for 2d.
+#' @return Coordinates for 2d or 3d.
 #' @importClassesFrom InteractionSet GInteractions
 #' @importMethodsFrom InteractionSet regions anchorIds
 #' @importFrom MASS isoMDS
@@ -76,7 +77,7 @@ mdsPlot <- function(gi, range, feature.gr, k = 2,
                     length.arrow = NULL,
                     safe_text_force = 3,
                     square = TRUE,
-                    renderer = c("rgl", "threejs", "none"),
+                    renderer = c("rgl", "threejs", "none", "granges"),
                     ...) {
   gi <- checkGI(gi, fixedBin = TRUE)
   stopifnot(is.numeric(k))
@@ -127,6 +128,7 @@ mdsPlot <- function(gi, range, feature.gr, k = 2,
   p <- r[as.numeric(rownames(mds$points))]
   mcols(p) <- mds$points
   colnames(mcols(p)) <- c("x", "y", "z")[seq.int(k)]
+  if(renderer=='granges') return(p)
   view3dStructure(
     obj = p, k = k,
     feature.gr = feature.gr,
