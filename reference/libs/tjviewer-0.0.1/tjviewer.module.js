@@ -110,6 +110,7 @@ class tjViewer{
     this.backgroundBottom2 = new THREE.Color(1, 1, 1);
     this.bckalphaBottom2 = 1;
     
+    // top & bottom slider
     this.slider = document.createElement('div');
     this.slider.className = 'tjviewer_slider';
     this.slider.style.display = 'none';
@@ -117,11 +118,20 @@ class tjViewer{
     el.appendChild(this.slider);
     this.sliderPos = this.height/2;
     
+    // resize canvas blocker
     this.resizeBlock = document.createElement('div');
     this.resizeBlock.className = 'tjviewer_resizeblock';
     this.setResizeBlockPos();
     el.appendChild(this.resizeBlock);
     this.resizeCanvas(this.resizeBlock);
+    
+    // title region
+    this.titleBox = document.createElement('div');
+    this.titleBox.className = 'tjviewer_titlebox';
+    el.appendChild(this.titleBox);
+    this.titleBox2 = document.createElement('div');
+    this.titleBox2.className = 'tjviewer_titlebox2';
+    el.appendChild(this.titleBox2);
       
     var near = .0001
     var far = 100
@@ -1023,7 +1033,7 @@ class tjViewer{
   
   initSlider() {
     this.slider.style.display = 'block';
-    this.slider.style.top = this.container.getBoundingClientRect().top +
+    this.slider.style.top = this.container.offsetTop +
         this.sliderPos + 'px';
     var onPointerDown = function() {
       if ( event.isPrimary === false ) return;
@@ -1042,7 +1052,7 @@ class tjViewer{
     
     var onPointerMove = function ( e ) {
       if ( event.isPrimary === false ) return;
-      var offset = this.container.getBoundingClientRect().top;
+      var offset = this.container.offsetTop;
       this.sliderPos = Math.max( 0, Math.min( this.height, e.pageY -
         offset ) );
       this.slider.style.top = this.sliderPos + offset + 'px';
@@ -1053,7 +1063,7 @@ class tjViewer{
   }
   
   create_plot(x){
-    //console.log(x);
+    console.log(x);
     //const twoPi = Math.PI * 2;
     //x is a named array
     if('background' in x){
@@ -1068,6 +1078,13 @@ class tjViewer{
       this.bckcolparam.alpha = this.bckalpha;
       this.bckcolGUI.controllers[0].setValue(this.background);
       this.bckcolGUI.controllers[1].setValue(this.bckalpha);
+      
+      this.titleBox.style.color = '#'+new THREE.Color(
+        1-x.background.r[0],
+        1-x.background.g[0],
+        1-x.background.b[0]
+      ).getHexString();
+      
       this.background2 = new THREE.Color(
         x.background.r[2],
         x.background.g[2],
@@ -1078,6 +1095,12 @@ class tjViewer{
       this.bckcolparam.rightAlpha = this.bckalpha2;
       this.bckcolGUI.controllers[4].setValue(this.background2);
       this.bckcolGUI.controllers[5].setValue(this.bckalpha2);
+      
+      this.titleBox2.style.color = '#'+new THREE.Color(
+        1-x.background.r[2],
+        1-x.background.g[2],
+        1-x.background.b[2]
+      ).getHexString();
     }
     if('maxRadius' in x){
       this.maxRadius = x.maxRadius;
@@ -1085,6 +1108,13 @@ class tjViewer{
     if('maxLineWidth' in x){
       this.maxLineWidth = x.maxLineWidth;
     }
+    
+    if('title' in x){
+       this.titleBox.innerText = x.title[0];
+       this.titleBox.style.top = this.container.offsetTop + 2 +'px';
+       this.titleBox.style.left = this.container.offsetLeft + 2+ 'px';
+    }
+    
     if('sideBySide' in x){
       this.sideBySide = x.sideBySide;
       if(x.sideBySide){
@@ -1099,6 +1129,11 @@ class tjViewer{
         this.bckcolGUI.controllers[4].show();
         this.bckcolGUI.controllers[5].show();
         this.animateLinkedGUI.show();
+        if('title' in x){
+           this.titleBox2.innerText = x.title[1];
+           this.titleBox2.style.top = this.container.offsetTop + 2 +'px';
+           this.titleBox2.style.left = this.container.offsetLeft + this.width/2 + 2 + 'px';
+        }
       }
     }
     if('overlay' in x){
@@ -1235,7 +1270,8 @@ class tjViewer{
       if(k!='background' && k!='maxRadius' &&
          k!='maxLineWidth' && k!='taglayers' &&
          k!='tagWithChild' &&
-         k!='overlay' && k!='sideBySide'){
+         k!='overlay' && k!='sideBySide' &&
+         k!='title'){
         let ele = x[k];
         const param = {
           'size': 0.08,
