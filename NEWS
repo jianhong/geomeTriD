@@ -1,3 +1,7 @@
+Changes in version 0.99.10
+
+    o Add title and subregion for threeJsViewer.
+
 Changes in version 0.99.9
 
     o Add possible to export the GRanges object for mdsPlot.

@@ -8,6 +8,7 @@ view3dStructure(
   obj,
   feature.gr,
   genomicSigs,
+  region,
   signalTransformFun = function(x) {
      log2(x + 1)
  },
@@ -39,6 +40,8 @@ view3dStructure(
 \item{feature.gr}{The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.}
 
 \item{genomicSigs}{The Genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.}
+
+\item{region}{A GRanges object with the region to be plot.}
 
 \item{signalTransformFun}{The transformation function for genomic signals.}
 

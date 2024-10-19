@@ -26,3 +26,15 @@
   width: 5px;
   height: 5px;
 }
+
+.tjviewer_titlebox {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+}
+
+.tjviewer_titlebox2 {
+  position: absolute;
+  top: 2px;
+  left: calc(50% + 2px);
+}

@@ -6,6 +6,7 @@
 #' @param background background of the main camera (left and right).
 #' @param maxRadius max value of the controls for radius.
 #' @param maxLineWidth max value of the controls for line width.
+#' @param title the titles of the plot.
 #' @param width,height width and height of the widgets.
 #' @return A htmlwidgets widget.
 #' @examples
@@ -71,7 +72,12 @@ threeJsViewer <- function(...,
                           ),
                           maxRadius = 1,
                           maxLineWidth = 50,
+                          title = NULL,
                           width = NULL, height = NULL) {
+  if(!missing(title)){
+    stopifnot(is.character(title))
+    title <- unname(title)
+  }
   geos <- list(...)
   if (length(geos) == 1) {
     if (is.list(geos[[1]])) {
@@ -126,6 +132,9 @@ threeJsViewer <- function(...,
     taglayers = unique(tags),
     tagWithChild = unique(tags[duplicated(tags)])
   )
+  if(!missing(title)){
+    x$title <- c(title, '')[c(1, 2)]
+  }
   x <- c(
     x,
     lapply(geos, function(.geo) {

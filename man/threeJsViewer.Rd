@@ -10,6 +10,7 @@ threeJsViewer(
   background = c("#33333388", "#FFFFFFDD", "#FFFFFFDD", "#33333388"),
   maxRadius = 1,
   maxLineWidth = 50,
+  title = NULL,
   width = NULL,
   height = NULL
 )
@@ -22,6 +23,8 @@ threeJsViewer(
 \item{maxRadius}{max value of the controls for radius.}
 
 \item{maxLineWidth}{max value of the controls for line width.}
+
+\item{title}{the titles of the plot.}
 
 \item{width, height}{width and height of the widgets.}
 }

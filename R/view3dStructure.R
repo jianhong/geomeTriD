@@ -4,6 +4,7 @@
 #' @param obj GRanges object with mcols x, y, and/or z
 #' @param feature.gr The annotation features to be added. An object of \link[GenomicRanges:GRanges-class]{GRanges}.
 #' @param genomicSigs The Genomic signals. An object of \link[GenomicRanges:GRanges-class]{GRanges} with scores or an object of \link[trackViewer:track]{track}.
+#' @param region A GRanges object with the region to be plot.
 #' @param signalTransformFun The transformation function for genomic signals.
 #' @param renderer The renderer of the 3D plots. Could be rgl or threejs.
 #' The threejs will create a htmlwidgets. If 'none' is set, a list of object
@@ -48,6 +49,7 @@
 #' )
 view3dStructure <- function(obj, feature.gr,
                             genomicSigs,
+                            region,
                             signalTransformFun = function(x) {
                               log2(x + 1)
                             },
@@ -70,6 +72,10 @@ view3dStructure <- function(obj, feature.gr,
                             square = TRUE,
                             ...) {
   stopifnot(is(obj, "GRanges"))
+  if(!missing(region)){
+    stopifnot(is(region, 'GRanges'))
+    obj <- subsetByOverlaps(obj, region)
+  }
   checkSignalTransformFun(signalTransformFun)
   stopifnot(
     "Only work for data in a single chromsome." =
