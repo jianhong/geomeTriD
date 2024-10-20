@@ -1,3 +1,7 @@
+Changes in version 0.99.12
+
+    o change OrbitControls to ArcballControls.
+
 Changes in version 0.99.11
 
     o Handle the error if NA values is in the GenoSig of create3dGenomicSignals.

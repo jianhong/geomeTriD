@@ -3,7 +3,8 @@ import * as THREE from 'three';
 //import Stats from 'three/addons/libs/stats.module.js';
 //import { GPUStatsPanel } from 'three/addons/utils/GPUStatsPanel.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+//import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { ArcballControls } from 'three/addons/controls/ArcballControls.js';
 // lines
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
@@ -149,15 +150,17 @@ class tjViewer{
     this.cameraInsert.layers.enableAll();
     
     // mouse controls
-    this.controls = new OrbitControls( this.camera, this.labelRenderer.domElement );
+    this.controls = new ArcballControls( this.camera, this.labelRenderer.domElement, this.scene );
     this.controls.enableDamping = true;
     this.controls.minDistance = near*2;
     this.controls.maxDistance = far/2;
+    this.controls.setGizmosVisible(false);
     
-    this.controls2 = new OrbitControls( this.camera2, this.labelRenderer2.domElement );
+    this.controls2 = new ArcballControls( this.camera2, this.labelRenderer2.domElement, this.scene2 );
     this.controls2.enableDamping = true;
     this.controls2.minDistance = near*2;
     this.controls2.maxDistance = far/2;
+    this.controls2.setGizmosVisible(false);
     
     /*
     this.stats = new Stats();
@@ -604,14 +607,20 @@ class tjViewer{
       play : false,
       stepX : 0.3,
       stepY : 0.3,
+      stepZ : 0.3, 
       linked: true,
       up : false,
       down : false,
       left : false,
       right : false,
       ctrl : false,
-      option : false
+      option : false,
+      'scene' : 'left',
+      'rotate x' : 0,
+      'rotate y' : 0,
+      'rotate z' : 0
     };
+    
     const animateGUI = this.gui.addFolder('animate');
     animateGUI.add(this.animateparam, 'play');
     animateGUI.add(this.animateparam, 'stepX', 0, 5 ).onChange( function ( val ) {
@@ -620,9 +629,52 @@ class tjViewer{
     animateGUI.add(this.animateparam, 'stepY', 0, 5 ).onChange( function ( val ) {
       this.animateparam.stepY = val;
     }.bind(this) );
-    this.animateLinkedGUI = this.gui.add(this.animateparam, 'linked').onChange( function(val){
+    
+    const rotationGUI = this.gui.addFolder('rotation');
+    rotationGUI.add(this.animateparam, 'scene', ['left', 'right']).onChange( function( val) {
+              this.animateparam.scene = val;
+    }.bind(this));
+    rotationGUI.add(this.animateparam, 'rotate x', -2*Math.PI, 2*Math.PI).onChange( function( val) {
+              if(this.animateparam.linked){
+                this.scene.rotation.x = val;
+                this.scene2.rotation.x = val;
+              } else {
+                if(this.animateparam.scene=='left'){
+                  this.scene.rotation.x = val;
+                }else{
+                  this.scene2.rotation.x = val;
+                }
+              }
+    }.bind(this));
+    rotationGUI.add(this.animateparam, 'rotate y', -2*Math.PI, 2*Math.PI).onChange( function( val) {
+              if(this.animateparam.linked){
+                this.scene.rotation.y = val;
+                this.scene2.rotation.y = val;
+              } else {
+                if(this.animateparam.scene=='left'){
+                  this.scene.rotation.y = val;
+                }else{
+                  this.scene2.rotation.y = val;
+                }
+              }
+    }.bind(this));
+    rotationGUI.add(this.animateparam, 'rotate z', -2*Math.PI, 2*Math.PI).onChange( function( val) {
+              if(this.animateparam.linked){
+                this.scene.rotation.z = val;
+                this.scene2.rotation.z = val;
+              } else {
+                if(this.animateparam.scene=='left'){
+                  this.scene.rotation.z = val;
+                }else{
+                  this.scene2.rotation.z = val;
+                }
+              }
+    }.bind(this));
+    this.animateLinkedGUI = rotationGUI.add(this.animateparam, 'linked').onChange( function(val){
       this.animateparam.linked = val;
     }.bind(this)).hide();
+    rotationGUI.close();
+    
     // keyboard
     window.addEventListener("keydown", (event)=>{
       switch (event.keyCode) {
@@ -683,12 +735,24 @@ class tjViewer{
         this.controls2.target.copy( this.controls.target );
       }
     });
+    this.controls.addEventListener('start', ()=>{
+      this.controls.setGizmosVisible(true);
+    });
+    this.controls.addEventListener('end', ()=>{
+      this.controls.setGizmosVisible(false);
+    });
     this.controls2.addEventListener('change', () => {
       if(this.animateparam.linked){
         this.camera.position.copy( this.camera2.position );
         this.camera.rotation.copy( this.camera2.rotation );
         this.controls.target.copy( this.controls2.target );
       }
+    });
+    this.controls2.addEventListener('start', ()=>{
+      this.controls2.setGizmosVisible(true);
+    });
+    this.controls2.addEventListener('end', ()=>{
+      this.controls2.setGizmosVisible(false);
     });
     
     animateGUI.close();
