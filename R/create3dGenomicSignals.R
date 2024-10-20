@@ -139,6 +139,9 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
   stopifnot("score" %in% colnames(mcols(GenoSig)))
   stopifnot(length(GenoSig)>0)
   mcols(GenoSig)$score <- signalTransformFun(mcols(GenoSig)$score)
+  GenoSig <- GenoSig[!is.na(mcols(GenoSig)$score)]
+  stopifnot('After removing NA scores, no input GenoSig is available'=
+              length(GenoSig)>0)
   if(is(GenoSig, 'GRanges')){
     GenoSig <- resampleDataByFun(GenoSig, targetObj,
                                  dropZERO = !(reverseGenomicSigs[1]),

@@ -1,3 +1,7 @@
+Changes in version 0.99.11
+
+    o Handle the error if NA values is in the GenoSig of create3dGenomicSignals.
+    
 Changes in version 0.99.10
 
     o Add title and subregion for threeJsViewer.
