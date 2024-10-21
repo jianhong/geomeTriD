@@ -29,38 +29,7 @@ class tjViewer{
     el.textContent = '';
     //add gui first
     this.gui = new GUI({container:el});
-    function dragGUI(elmnt){
-      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-      elmnt.children[0].onmousedown = dragMouseDown;
-      function dragMouseDown(e) {
-        e = e || window.event;
-        e.preventDefault();
-        // get the mouse cursor position at startup:
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        // call a function whenever the cursor moves:
-        document.onmousemove = elementDrag;
-      }
-      function elementDrag(e) {
-        e = e || window.event;
-        e.preventDefault();
-        // calculate the new cursor position:
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        // set the element's new position:
-        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-      }
-      function closeDragElement() {
-        // stop moving when mouse button is released:
-        document.onmouseup = null;
-        document.onmousemove = null;
-      }
-    }
-    dragGUI(this.gui.domElement);
+    this.dragGUI(this.gui.domElement);
     
     //viewer
     this.width = width;
@@ -134,33 +103,26 @@ class tjViewer{
     this.titleBox2.className = 'tjviewer_titlebox2';
     el.appendChild(this.titleBox2);
       
-    var near = .0001
-    var far = 100
-    var fov = 50
-    this.camera = new THREE.PerspectiveCamera( fov, width / height, near, far );
-    this.camera.position.set( 0, 0, -far/10 ); // set to x, y, z;
-    this.camera.layers.enableAll();
-    this.camera2 = new THREE.PerspectiveCamera( fov, width / height, near, far );;
-    this.camera2.position.set( 0, 0, -far/10 ); // set to x, y, z;
-    this.camera2.layers.enableAll();
+    this.perspectiveDistance = -10;
+    this.orthographicDistance = 120;
+    this.fov = 50;
+    this.near = .0001;
+    this.far = 1000;
+    this.camera = this.makePerspectiveCamera();
+    this.camera.position.set( 0, 0, this.perspectiveDistance ); // set to x, y, z;
+    this.camera2 = this.makePerspectiveCamera();
+    this.camera2.position.set( 0, 0, this.perspectiveDistance ); // set to x, y, z;
+    // link zoom in and out
+    this.linkPan();
     
     // viewport
-    this.cameraInsert = new THREE.PerspectiveCamera( fov, 1, near, far );
+    this.cameraInsert = new THREE.PerspectiveCamera( this.fov, 1, this.near, this.far );
     this.cameraInsert.position.copy( this.camera.position );
     this.cameraInsert.layers.enableAll();
     
     // mouse controls
-    this.controls = new ArcballControls( this.camera, this.labelRenderer.domElement, this.scene );
-    this.controls.enableDamping = true;
-    this.controls.minDistance = near*2;
-    this.controls.maxDistance = far/2;
-    this.controls.setGizmosVisible(false);
-    
-    this.controls2 = new ArcballControls( this.camera2, this.labelRenderer2.domElement, this.scene2 );
-    this.controls2.enableDamping = true;
-    this.controls2.minDistance = near*2;
-    this.controls2.maxDistance = far/2;
-    this.controls2.setGizmosVisible(false);
+    this.controls = this.makeControls(this.camera, this.labelRenderer, this.scene);
+    this.controls2 = this.makeControls( this.camera2, this.labelRenderer2, this.scene2 );
     
     /*
     this.stats = new Stats();
@@ -170,23 +132,12 @@ class tjViewer{
     this.stats.addPanel( this.gpuPanel );
     this.stats.showPanel( 0 );*/
     
-    el.parentElement.addEventListener('wheel', (event)=>{
-      // Infinity zoom in.
-      //this.camera.fov += event.deltaY*0.005;
-      if(this.camera.fov<=0.1) this.camera.fov=0.1;
-      //console.log(this.camera.fov);
-      this.camera.updateProjectionMatrix();
-      if(this.sideBySide){
-        //this.camera2.fov += event.deltaY*0.005;
-        if(this.camera2.fov<=0.1) this.camera2.fov=0.1;
-        this.camera2.updateProjectionMatrix(); 
-      }
-    })
-    
+    this.clock = new THREE.Clock();
     // camera ratio GUI
     this.insetCamera = true;
-    const cameraparam = {
+    this.cameraparam = {
       YX_aspect : this.camera.aspect,
+      type : 'Perspective',
       world_center : function(){
         this.objects.position.set(0, 0, 0);
         if(this.overlay){
@@ -233,57 +184,68 @@ class tjViewer{
       changed : false,
       insetCamera: true,
       setAspect : function(){
-        this.camera.aspect = cameraparam.YX_aspect;
-        this.camera2.aspect = cameraparam.YX_aspect;
+        this.camera.aspect = this.cameraparam.YX_aspect;
+        this.camera2.aspect = this.cameraparam.YX_aspect;
         this.camera.updateProjectionMatrix();
         this.camera2.updateProjectionMatrix();
       }.bind(this),
       setPosition : function(){
         this.objects.position.set(
-          cameraparam.center_x,
-          cameraparam.center_y,
-          cameraparam.center_z);
+          this.cameraparam.center_x,
+          this.cameraparam.center_y,
+          this.cameraparam.center_z);
         if(this.overlay){
           this.objectsBottom.position.set(
-            cameraparam.center_x,
-            cameraparam.center_y,
-            cameraparam.center_z);
+            this.cameraparam.center_x,
+            this.cameraparam.center_y,
+            this.cameraparam.center_z);
         }
         if(this.sideBySide){
           this.objects2.position.set(
-            cameraparam.center_x,
-            cameraparam.center_y,
-            cameraparam.center_z);
+            this.cameraparam.center_x,
+            this.cameraparam.center_y,
+            this.cameraparam.center_z);
           if(this.overlay){
             this.objectsBottom2.position.set(
-              cameraparam.center_x,
-              cameraparam.center_y,
-              cameraparam.center_z);
+              this.cameraparam.center_x,
+              this.cameraparam.center_y,
+              this.cameraparam.center_z);
           }
         }
       }.bind(this)
     }
     const cameraGUI = this.gui.addFolder('camera');
-    cameraGUI.add(cameraparam, 'YX_aspect', 0, 10).onChange( function(val){
-      cameraparam.YX_aspect = val;
-      cameraparam.changed = true;
-    }).onFinishChange(cameraparam.setAspect);
-    cameraGUI.add(cameraparam, 'center_x', -10, 10).onChange( function(val){
-      cameraparam.center_x = val;
-      cameraparam.setPosition();
-    });
-    cameraGUI.add(cameraparam, 'center_y', -10, 10).onChange( function(val){
-      cameraparam.center_y = val;
-      cameraparam.setPosition();
-    });
-    cameraGUI.add(cameraparam, 'center_z', -10, 10).onChange( function(val){
-      cameraparam.center_z = val;
-      cameraparam.setPosition;
-    });
-    cameraGUI.add(cameraparam, 'world_center');
-    cameraGUI.add(cameraparam, 'object_center');
-    cameraGUI.add(cameraparam, 'insetCamera').onChange( function(val){
-      cameraparam.insetCamera = val;
+    cameraGUI.add(this.cameraparam, 'YX_aspect', 0, 10).onChange( function(val){
+      this.cameraparam.YX_aspect = val;
+      this.cameraparam.changed = true;
+    }.bind(this)).onFinishChange(this.cameraparam.setAspect);
+    cameraGUI.add(this.cameraparam, 'type', [ 'Orthographic', 'Perspective' ] )
+      .name( 'projection method' ).onChange( function () {
+        this.removeLinkedControls();
+        this.camera = this.setCamera();
+        this.controls.setCamera(this.camera);
+        this.camera2 = this.setCamera();
+        this.controls2.setCamera(this.camera2);
+        this.linkPan();
+        this.linkControls();
+        this.animate();
+      }.bind(this) );
+    cameraGUI.add(this.cameraparam, 'center_x', -10, 10).onChange( function(val){
+      this.cameraparam.center_x = val;
+      this.cameraparam.setPosition();
+    }.bind(this));
+    cameraGUI.add(this.cameraparam, 'center_y', -10, 10).onChange( function(val){
+      this.cameraparam.center_y = val;
+      this.cameraparam.setPosition();
+    }.bind(this));
+    cameraGUI.add(this.cameraparam, 'center_z', -10, 10).onChange( function(val){
+      this.cameraparam.center_z = val;
+      this.cameraparam.setPosition;
+    }.bind(this));
+    cameraGUI.add(this.cameraparam, 'world_center');
+    cameraGUI.add(this.cameraparam, 'object_center');
+    cameraGUI.add(this.cameraparam, 'insetCamera').onChange( function(val){
+      this.cameraparam.insetCamera = val;
       this.insetCamera = val;
     }.bind(this));
     cameraGUI.close();
@@ -602,7 +564,6 @@ class tjViewer{
     }).onFinishChange(searchparam.search);
     searchGUI.add(searchparam, 'search');
     // animate GUI
-    this.clock = new THREE.Clock();
     this.animateparam = {
       play : false,
       stepX : 0.3,
@@ -618,7 +579,8 @@ class tjViewer{
       'scene' : 'left',
       'rotate x' : 0,
       'rotate y' : 0,
-      'rotate z' : 0
+      'rotate z' : 0,
+      'flip' : ''
     };
     
     const animateGUI = this.gui.addFolder('animate');
@@ -635,41 +597,15 @@ class tjViewer{
               this.animateparam.scene = val;
     }.bind(this));
     rotationGUI.add(this.animateparam, 'rotate x', -2*Math.PI, 2*Math.PI).onChange( function( val) {
-              if(this.animateparam.linked){
-                this.scene.rotation.x = val;
-                this.scene2.rotation.x = val;
-              } else {
-                if(this.animateparam.scene=='left'){
-                  this.scene.rotation.x = val;
-                }else{
-                  this.scene2.rotation.x = val;
-                }
-              }
+      this.rotateXYZ('x', val);
     }.bind(this));
     rotationGUI.add(this.animateparam, 'rotate y', -2*Math.PI, 2*Math.PI).onChange( function( val) {
-              if(this.animateparam.linked){
-                this.scene.rotation.y = val;
-                this.scene2.rotation.y = val;
-              } else {
-                if(this.animateparam.scene=='left'){
-                  this.scene.rotation.y = val;
-                }else{
-                  this.scene2.rotation.y = val;
-                }
-              }
+      this.rotateXYZ('y', val);
     }.bind(this));
     rotationGUI.add(this.animateparam, 'rotate z', -2*Math.PI, 2*Math.PI).onChange( function( val) {
-              if(this.animateparam.linked){
-                this.scene.rotation.z = val;
-                this.scene2.rotation.z = val;
-              } else {
-                if(this.animateparam.scene=='left'){
-                  this.scene.rotation.z = val;
-                }else{
-                  this.scene2.rotation.z = val;
-                }
-              }
+      this.rotateXYZ('z', val);
     }.bind(this));
+    rotationGUI.add(this.animateparam, 'flip', ['', 'x', 'y', 'z']).onChange(this.flipXYZ.bind(this));
     this.animateLinkedGUI = rotationGUI.add(this.animateparam, 'linked').onChange( function(val){
       this.animateparam.linked = val;
     }.bind(this)).hide();
@@ -728,32 +664,8 @@ class tjViewer{
     });
         
     // link the cameras
-    this.controls.addEventListener('change', () => {
-      if(this.animateparam.linked){
-        this.camera2.position.copy( this.camera.position );
-        this.camera2.rotation.copy( this.camera.rotation );
-        this.controls2.target.copy( this.controls.target );
-      }
-    });
-    this.controls.addEventListener('start', ()=>{
-      this.controls.setGizmosVisible(true);
-    });
-    this.controls.addEventListener('end', ()=>{
-      this.controls.setGizmosVisible(false);
-    });
-    this.controls2.addEventListener('change', () => {
-      if(this.animateparam.linked){
-        this.camera.position.copy( this.camera2.position );
-        this.camera.rotation.copy( this.camera2.rotation );
-        this.controls.target.copy( this.controls2.target );
-      }
-    });
-    this.controls2.addEventListener('start', ()=>{
-      this.controls2.setGizmosVisible(true);
-    });
-    this.controls2.addEventListener('end', ()=>{
-      this.controls2.setGizmosVisible(false);
-    });
+    this.linkControls();
+    this.addGizmos();
     
     animateGUI.close();
     
@@ -1084,6 +996,85 @@ class tjViewer{
       lightparams.setPosition(false);
     } );
     spotlightGUI.close();
+  }
+  
+  dragGUI(elmnt){
+      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      elmnt.children[0].onmousedown = dragMouseDown;
+      function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+      }
+      function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+      }
+      function closeDragElement() {
+        // stop moving when mouse button is released:
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+  
+  rotateXYZ(xyz, val){
+    if(this.animateparam.linked){
+      this.scene.rotation[xyz] = val;
+      this.sceneBottom.rotation[xyz] = val;
+      this.scene2.rotation[xyz] = val;
+      this.sceneBottom2.rotation[xyz] = val;
+    } else {
+      if(this.animateparam.scene=='left'){
+        this.scene.rotation[xyz] = val;
+        this.sceneBottom.rotation[xyz] = val;
+      }else{
+        this.scene2.rotation[xyz] = val;
+        this.sceneBottom2.rotation[xyz] = val;
+      }
+    }
+  }
+  
+  flipXYZ(){
+    const scale = new THREE.Vector3(1, 1, 1);
+    if (this.animateparam.flip=='x') {
+        scale.y = -1;
+        scale.z = -1;
+    }
+    if (this.animateparam.flip=='y') {
+        scale.x = -1;
+        scale.z = -1;
+    }
+    if (this.animateparam.flip=='z') {
+        scale.x = -1;
+        scale.y = -1;
+    }
+    if(this.animateparam.linked){
+      this.objects.scale.multiply(scale);
+      this.objects2.scale.multiply(scale);
+      this.objectsBottom.scale.multiply(scale);
+      this.objectsBottom2.scale.multiply(scale);
+    }else{
+      if(this.animateparam.scene=='left'){
+        this.objects.scale.multiply(scale);
+        this.objectsBottom.scale.multiply(scale);
+      }else{
+        this.objects2.scale.multiply(scale);
+        this.objectsBottom2.scale.multiply(scale);
+      }
+    }
   }
   
   getLayer(tag){
@@ -2267,6 +2258,115 @@ class tjViewer{
     this.gui.close();
   }
   
+  makeOrthographicCamera() {
+    const halfFovV = THREE.MathUtils.DEG2RAD * 45 * 0.5;
+    const halfFovH = Math.atan( ( this.width / this.height ) * Math.tan( halfFovV ) );
+    const halfW = this.perspectiveDistance * Math.tan( halfFovH );
+    const halfH = this.perspectiveDistance * Math.tan( halfFovV );
+    const newCamera = new THREE.OrthographicCamera( - halfW, halfW, halfH, - halfH, this.near, this.far );
+    newCamera.layers.enableAll();
+    return newCamera;
+  }
+  
+  makePerspectiveCamera() {
+    const aspect = this.width / this.height;
+    const newCamera = new THREE.PerspectiveCamera( this.fov, aspect, this.near, this.far );
+    newCamera.layers.enableAll();
+    return newCamera;
+  }
+  
+  makeCamera(camera) {
+    if ( camera.type == 'OrthographicCamera' ) {
+      const halfFovV = THREE.MathUtils.DEG2RAD * 45 * 0.5;
+      const halfFovH = Math.atan( ( this.width / this.height ) * Math.tan( halfFovV ) );
+      const halfW = this.perspectiveDistance * Math.tan( halfFovH );
+      const halfH = this.perspectiveDistance * Math.tan( halfFovV );
+      camera.left = - halfW;   
+      camera.right = halfW;
+      camera.top = halfH;
+      camera.bottom = - halfH;
+    } else if ( camera.type == 'PerspectiveCamera' ) {
+      camera.aspect = this.width / this.height;
+    }
+  }
+  
+  setCamera() {
+    var camera;
+    if ( this.cameraparam.type == 'Orthographic' ) {
+      camera = this.makeOrthographicCamera();
+      camera.position.set( 0, 0, this.orthographicDistance );
+    } else if ( this.cameraparam.type == 'Perspective' ) {
+      camera = this.makePerspectiveCamera();
+      camera.position.set( 0, 0, this.perspectiveDistance );
+    }
+    camera.layers.enableAll();
+    return(camera);
+  }
+  
+  makeControls(camera, labelRenderer, scene){
+    const newControls = new ArcballControls( camera, labelRenderer.domElement, scene );
+    newControls.enableDamping = true;
+    newControls.minDistance = this.near*2;
+    newControls.maxDistance = this.far/2;
+    newControls.setGizmosVisible(false);
+    return(newControls);
+  }
+  
+  linkPan(){
+    this.container.parentElement.addEventListener('wheel', (event)=>{
+      // Infinity zoom in.
+      //this.camera.fov += event.deltaY*0.005;
+      if(this.camera.fov<=0.1) this.camera.fov=0.1;
+      //console.log(this.camera.fov);
+      this.camera.updateProjectionMatrix();
+      if(this.sideBySide){
+        //this.camera2.fov += event.deltaY*0.005;
+        if(this.camera2.fov<=0.1) this.camera2.fov=0.1;
+        this.camera2.updateProjectionMatrix(); 
+      }
+    })
+  }
+  
+  addGizmos(){
+    this.controls.addEventListener('start', ()=>{
+      this.controls.setGizmosVisible(true);
+    });
+    this.controls.addEventListener('end', ()=>{
+      this.controls.setGizmosVisible(false);
+    });
+    this.controls2.addEventListener('start', ()=>{
+      this.controls2.setGizmosVisible(true);
+    });
+    this.controls2.addEventListener('end', ()=>{
+      this.controls2.setGizmosVisible(false);
+    });
+  }
+  
+  linkCamera(cam1, cam2, ctl1, ctl2){
+    if(this.animateparam.linked){
+        cam2.position.copy( cam1.position );
+        cam2.rotation.copy( cam1.rotation );
+        cam2.zoom = cam1.zoom;
+        ctl2.target.copy( ctl1.target );
+    }
+  }
+  
+  linkCam1ToCam2(){
+    this.linkCamera(this.camera, this.camera2, this.controls, this.controls2);
+  }
+  linkCam2ToCam1(){
+    this.linkCamera(this.camera2, this.camera, this.controls2, this.controls);
+  }
+  
+  removeLinkedControls(){
+    this.controls.removeEventListener('change', this.linkCam1ToCam2);
+    this.controls2.removeEventListener('change', this.linkCam2ToCam1);
+  }
+  
+  linkControls(){
+    this.controls.addEventListener('change', this.linkCam1ToCam2.bind(this));
+    this.controls2.addEventListener('change', this.linkCam2ToCam1.bind(this));
+  }
   
   resizeCanvas(elmnt){
       var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -2304,9 +2404,12 @@ class tjViewer{
   onWindowResize(width, height){
     this.width = width;
     this.height = height;
+    
     if(this.sideBySide){
-      this.camera.aspect = width/height;
-      this.camera2.aspect = width/height;
+      this.makeCamera(this.camera);
+      this.makeCamera(this.camera2);
+      //this.camera.aspect = width/height;
+      //this.camera2.aspect = width/height;
       this.camera2.updateProjectionMatrix();
       this.labelRenderer.setSize( width/2, height );
       this.labelRenderer2.setSize( width/2, height );
