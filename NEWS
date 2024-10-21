@@ -1,3 +1,8 @@
+Changes in version 0.99.13
+
+    o add switch for orthographic and perspective projection to camera.
+    o add flip controler.
+
 Changes in version 0.99.12
 
     o change OrbitControls to ArcballControls.
