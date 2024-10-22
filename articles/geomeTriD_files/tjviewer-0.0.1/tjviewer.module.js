@@ -133,8 +133,48 @@ class tjViewer{
     this.stats.showPanel( 0 );*/
     
     this.clock = new THREE.Clock();
-    // camera ratio GUI
     this.insetCamera = true;
+    this.maxRadius = 1;
+    this.maxLineWidth = 50;
+    this.layer = {};
+    
+    // add GUIs
+    this.setGUI();
+  }
+  
+  dragGUI(elmnt){
+      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      elmnt.children[0].onmousedown = dragMouseDown;
+      function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+      }
+      function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+      }
+      function closeDragElement() {
+        // stop moving when mouse button is released:
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+  
+  setCameraGUI(){
     this.cameraparam = {
       YX_aspect : this.camera.aspect,
       type : 'Perspective',
@@ -249,11 +289,45 @@ class tjViewer{
       this.insetCamera = val;
     }.bind(this));
     cameraGUI.close();
-    
-    
-    this.maxRadius = 1;
-    this.maxLineWidth = 50;
-    // search GUI
+  }
+  
+  searchGeneByGeneName(keyword, scene, sceneBottom){
+    let result = [];
+    scene.traverse(obj =>  {
+      if(obj.isCSS2DObject === true){
+        if(obj.name==keyword){
+          result.push(obj);
+        }
+      }
+    });
+    sceneBottom.traverse(obj =>  {
+      if(obj.isCSS2DObject === true){
+        if(obj.name==keyword){
+          result.push(obj);
+        }
+      }
+    });
+    return(result);
+  }
+  searchGeneBodyByGeneName(keyword, scene, sceneBottom){
+    let gene_body = [];
+    scene.traverse(obj =>  {
+      if(obj.isLine2 === true){
+        if(obj.name==keyword){
+          gene_body.push(obj);
+        }
+      }
+    });
+    sceneBottom.traverse(obj =>  {
+      if(obj.isLine2 === true){
+        if(obj.name==keyword){
+          gene_body.push(obj);
+        }
+      }
+    });
+    return(gene_body);
+  }
+  setSearchGUI(){
     const searchGUI = this.gui.addFolder('search');
     const searchparam = {
       keyword : '',
@@ -441,31 +515,7 @@ class tjViewer{
             }
           }
         }else{
-          let gene_body = [];
-          this.scene.traverse(obj =>  {
-            if(obj.isCSS2DObject === true){
-              if(obj.name==searchparam.keyword){
-                result.push(obj);
-              }
-            }
-            if(obj.isLine2 === true){
-              if(obj.name==searchparam.keyword){
-                gene_body.push(obj);
-              }
-            }
-          });
-          this.sceneBottom.traverse(obj =>  {
-            if(obj.isCSS2DObject === true){
-              if(obj.name==searchparam.keyword){
-                result.push(obj);
-              }
-            }
-            if(obj.isLine2 === true){
-              if(obj.name==searchparam.keyword){
-                gene_body.push(obj);
-              }
-            }
-          });
+          let gene_body = this.searchGeneBodyByGeneName(searchparam.keyword, this.scene, this.sceneBottom);
           if(gene_body.length>0){
             const lineObj = gene_body[0];
             //lineObj.geometry.setColors([1, 0, 0]);
@@ -491,6 +541,7 @@ class tjViewer{
               (box.max.z+box.min.z) );
             this.animate();
           }else{
+            retult = this.searchGeneByGeneName(searchparam.keyword, this.scene, this.sceneBottom);
             if(result.length>0){
               const pos = result[0].position;
               this.camera.position.set( pos.x, pos.y, pos.z );
@@ -499,31 +550,7 @@ class tjViewer{
           }
           if(this.sideBySide){
             result = [];
-            gene_body = [];
-            this.scene2.traverse(obj =>  {
-              if(obj.isCSS2DObject === true){
-                if(obj.name==searchparam.keyword){
-                  result.push(obj);
-                }
-              }
-              if(obj.isLine2 === true){
-                if(obj.name==searchparam.keyword){
-                  gene_body.push(obj);
-                }
-              }
-            });
-            this.sceneBottom2.traverse(obj =>  {
-              if(obj.isCSS2DObject === true){
-                if(obj.name==searchparam.keyword){
-                  result.push(obj);
-                }
-              }
-              if(obj.isLine2 === true){
-                if(obj.name==searchparam.keyword){
-                  gene_body.push(obj);
-                }
-              }
-            });
+            gene_body = this.searchGeneBodyByGeneName(searchparam.keyword, this.scene2, this.sceneBottom2);
             if(gene_body.length>0){
               const lineObj = gene_body[0];
               //lineObj.geometry.setColors([1, 0, 0]);
@@ -549,6 +576,7 @@ class tjViewer{
                 (box.max.z+box.min.z) );
               this.animate();
             }else{
+              retult = this.searchGeneByGeneName(searchparam.keyword, this.scene2, this.sceneBottom2);
               if(result.length>0){
                 const pos = result[0].position;
                 this.camera2.position.set( pos.x, pos.y, pos.z );
@@ -563,7 +591,9 @@ class tjViewer{
       searchparam.keyword = val;
     }).onFinishChange(searchparam.search);
     searchGUI.add(searchparam, 'search');
-    // animate GUI
+  }
+  
+  setAnimatGUI(){
     this.animateparam = {
       play : false,
       stepX : 0.3,
@@ -668,8 +698,9 @@ class tjViewer{
     this.addGizmos();
     
     animateGUI.close();
-    
-    // exporter GUI
+  }
+  
+  setExporterGUI(){
     const saveBlob = (function(){
         const a = document.createElement('a');
         document.body.appendChild(a);
@@ -827,9 +858,9 @@ class tjViewer{
     );
     const exporterBotton = exporterGUI.add(expparam, 'export');
     exporterGUI.close();
-    this.layer = {};
-    
-    // background color gui
+  }
+  
+  setBackgroundColorGUI(){
     this.bckcolparam = {
       color: this.background,
       alpha: this.bckalpha,
@@ -914,7 +945,9 @@ class tjViewer{
           );
     }).hide();
     this.bckcolGUI.close();
-    
+  }
+  
+  setLightGUI(){
     //soft white light
     const ambientLight = new THREE.AmbientLight( 0x404040, 2);
     this.scene.add( ambientLight );
@@ -998,37 +1031,231 @@ class tjViewer{
     spotlightGUI.close();
   }
   
-  dragGUI(elmnt){
-      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-      elmnt.children[0].onmousedown = dragMouseDown;
-      function dragMouseDown(e) {
-        e = e || window.event;
-        e.preventDefault();
-        // get the mouse cursor position at startup:
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        // call a function whenever the cursor moves:
-        document.onmousemove = elementDrag;
+  setMeasureGUI(){
+    const measureGUI = this.gui.addFolder('measure TSS distance');
+    const measureparam = {
+      'measure by cursor': false,
+      'gene 1': '',
+      'gene 2': '',
+      'result' : ''
+    };
+    /*measureGUI.add(measureparam, 'measure by cursor').onChange((val)=>{
+      if(val){
+        document.addEventListener("mousedown", startMeasure, false);
+      }else{
+        endMeasure();
       }
-      function elementDrag(e) {
-        e = e || window.event;
-        e.preventDefault();
-        // calculate the new cursor position:
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        // set the element's new position:
-        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-      }
-      function closeDragElement() {
-        // stop moving when mouse button is released:
-        document.onmouseup = null;
-        document.onmousemove = null;
+    });*/
+    measureGUI.add(measureparam, 'gene 1').onChange(val => {checkGene(val)});
+    measureGUI.add(measureparam, 'gene 2').onChange(val => {checkGene(val)});
+    const distancePlace = measureGUI.add(measureparam, 'result');
+    
+    var points = [
+        new THREE.Vector3(),
+        new THREE.Vector3()
+    ]
+    var points2 = [
+        new THREE.Vector3(),
+        new THREE.Vector3()
+    ]
+    var clicks = 0;
+    var clicks2 = 0;
+    var vector = new THREE.Vector2();
+    var raycaster = new THREE.Raycaster();
+        
+    var markerA = new THREE.Mesh(
+        new THREE.SphereGeometry(0.1, 10, 20),
+        new THREE.MeshBasicMaterial({
+          color: 0xff5555
+        })
+    );
+    markerA.visible = false;
+    var markerB = new THREE.Mesh(
+        new THREE.SphereGeometry(0.1, 10, 20),
+        new THREE.MeshBasicMaterial({
+          color: 0x00ff55
+        })
+    );
+    markerB.visible = false;
+    var markers = [
+        markerA, markerB
+    ];
+    var markerA2 = markerA.clone();
+    var markerB2 = markerB.clone();
+    var markers2 = [
+        markerA2, markerB2
+    ];
+    
+    var lineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+    var lineGeometry2 = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+    var lineMaterial = new THREE.LineBasicMaterial({
+        color: 0xff5555
+      });
+    var line = new THREE.Line(lineGeometry, lineMaterial);
+    var line2 = new THREE.Line(lineGeometry2, lineMaterial);
+    
+    var labelDiv = document.createElement('div');
+    labelDiv.style.backgroundColor = 'transparent';
+    labelDiv.style.color='#ff5555';
+    labelDiv.textContent = '';
+    var labelDiv2 = document.createElement('div');
+    labelDiv2.style.backgroundColor = 'transparent';
+    labelDiv2.style.color='#ff5555';
+    labelDiv2.textContent = '';
+    var result = new CSS2DObject(labelDiv);
+    var result2 = new CSS2DObject(labelDiv2);
+    
+    var getCurrentCursorPos = function(event) {
+      vector.x = ( (event.clientX - this.container.offsetLeft) / this.width ) * 2 - 1;
+      vector.y = - ( (event.clientY - this.container.offsetTop) / this.height ) * 2 + 1;
+    }.bind(this);
+    
+    var getIntersections = function(event, scene, camera) {
+        getCurrentCursorPos(event);
+        //console.log(vector);
+        camera.updateMatrixWorld();
+        raycaster.setFromCamera(vector, camera);
+        var target = scene.children;
+        // remove unwanted target
+        target = target.filter(v => !v.isLight && !v.isMesh && !v.isLine && v.children.length>3);
+        var intersects = raycaster.intersectObjects(target);
+        return intersects;
+    };
+    
+    function setLine(l, res, vectorA, vectorB) {
+        l.geometry.attributes.position.setXYZ(0, vectorA.x, vectorA.y, vectorA.z);
+        l.geometry.attributes.position.setXYZ(1, vectorB.x, vectorB.y, vectorB.z);
+        l.geometry.attributes.position.needsUpdate = true;
+        
+        res.position.set(
+          (vectorA.x + vectorB.x)/2,
+          (vectorA.y + vectorB.y)/2,
+          (vectorA.z + vectorB.z)/2
+        );
+        res.center.set(0.5,0.5);
+    }
+    
+    function showResults1(collection, scene){
+      if (collection.length > 0) {
+          points[clicks].copy(collection[0].point);
+          markers[clicks].position.copy(collection[0].point);
+          setLine(line, result, collection[0].point, collection[0].point);
+          clicks++;
+          if (clicks > 1){
+            markerB.visible = true;
+            var distance = points[0].distanceTo(points[1]);
+            let formattedNumber = distance.toLocaleString('en-US', {
+              minimumIntegerDigits: 1,
+              useGrouping: false
+            })
+            measureparam.result = formattedNumber;
+            distancePlace.setValue(formattedNumber);
+            labelDiv.textContent = formattedNumber;
+            setLine(line, result, points[0], points[1]);
+            clicks = 0;
+          }else{
+            if(clicks == 1){
+              markerA.visible = true;
+              markerB.visible = false;
+            }
+          }
       }
     }
+    function showResults2(collection, scene){
+      if (collection.length > 0) {
+          points2[clicks2].copy(collection[0].point);
+          markers2[clicks2].position.copy(collection[0].point);
+          setLine(line2, result2, collection[0].point, collection[0].point);
+          clicks2++;
+          if (clicks2 > 1){
+            markerB2.visible = true;
+            var distance = points2[0].distanceTo(points2[1]);
+            let formattedNumber = distance.toLocaleString('en-US', {
+              minimumIntegerDigits: 1,
+              useGrouping: false
+            })
+            measureparam.result = formattedNumber;
+            distancePlace.setValue(formattedNumber);
+            labelDiv2.textContent = formattedNumber;
+            setLine(line2, result2, points2[0], points2[1]);
+            clicks2 = 0;
+          }else{
+            if(clicks2 == 1){
+              markerA2.visible = true;
+              markerB2.visible = false;
+            }
+          }
+      }
+    }
+    
+    this.scene.add(markerA);
+    this.scene.add(markerB);
+    this.scene.add(line);
+    this.scene.add(result);
+    this.scene2.add(markerA2);
+    this.scene2.add(markerB2);
+    this.scene2.add(line2);
+    this.scene2.add(result2);
+    var startMeasure = function(event){
+      event.preventDefault();
+      
+      var intersects = getIntersections(event, this.scene, this.camera);
+      var intersects2 = getIntersections(event, this.scene2, this.camera2);
+
+      if(intersects.length>0){
+        showResults1(intersects, this.scene);
+      }
+      if(intersects2.length>0){
+        showResults2(intersects2, this.scene2);
+      }
+    }.bind(this);
+    
+    var endMeasure = function(){
+      document.removeEventListener("mousedown", startMeasure);
+      markerA.visible = false;
+      markerB.visible = false;
+      markerA2.visible = false;
+      markerB2.visible = false;
+    }.bind(this);
+    
+    var checkGene = function(val){
+      var gene_body = this.searchGeneByGeneName(val, this.scene, this.sceneBottom);
+      if(gene_body.length>0){
+        var intersects = [{point:gene_body[0].position}];
+        showResults1(intersects, this.scene);
+      }
+      var gene_body2 = this.searchGeneByGeneName(val, this.scene2, this.sceneBottom2);
+      if(gene_body2.length>0){
+        var intersects2 = [{point:gene_body2[0].position}];
+        showResults2(intersects2, this.scene2);
+      }
+    }.bind(this);
+    
+    measureGUI.close();
+  }
+  
+  setGUI(){
+    // camera ratio GUI
+    this.setCameraGUI();
+    
+    // search GUI
+    this.setSearchGUI();
+    
+    // animate GUI
+    this.setAnimatGUI();
+    
+    // exporter GUI
+    this.setExporterGUI();
+    
+    // measurment GUI
+    this.setMeasureGUI();
+
+    // background color gui
+    this.setBackgroundColorGUI();
+    
+    // light gui
+    this.setLightGUI();
+  }
   
   rotateXYZ(xyz, val){
     if(this.animateparam.linked){
@@ -1117,10 +1344,7 @@ class tjViewer{
     this.slider.addEventListener( 'pointerdown', onPointerDown );
   }
   
-  create_plot(x){
-    console.log(x);
-    //const twoPi = Math.PI * 2;
-    //x is a named array
+  setBackground(x){
     if('background' in x){
       //Separate RGB values between 0 and 1
       this.background = new THREE.Color(
@@ -1157,40 +1381,9 @@ class tjViewer{
         1-x.background.b[2]
       ).getHexString();
     }
-    if('maxRadius' in x){
-      this.maxRadius = x.maxRadius;
-    }
-    if('maxLineWidth' in x){
-      this.maxLineWidth = x.maxLineWidth;
-    }
-    
-    if('title' in x){
-       this.titleBox.innerText = x.title[0];
-       this.titleBox.style.top = this.container.offsetTop + 2 +'px';
-       this.titleBox.style.left = this.container.offsetLeft + 2+ 'px';
-    }
-    
-    if('sideBySide' in x){
-      this.sideBySide = x.sideBySide;
-      if(x.sideBySide){
-        this.camera.aspect = this.width/this.height;
-        this.camera2.aspect = this.width/this.height;
-        this.camera.updateProjectionMatrix();
-        this.camera2.updateProjectionMatrix();
-        this.labelRenderer.setSize( this.width/2, this.height );
-        this.labelRenderer2.setSize( this.width/2, this.height );
-        this.labelRenderer2.domElement.style.left = this.width/2+'px';
-        this.container.insertBefore(this.labelRenderer2.domElement, this.slider);
-        this.bckcolGUI.controllers[4].show();
-        this.bckcolGUI.controllers[5].show();
-        this.animateLinkedGUI.show();
-        if('title' in x){
-           this.titleBox2.innerText = x.title[1];
-           this.titleBox2.style.top = this.container.offsetTop + 2 +'px';
-           this.titleBox2.style.left = this.container.offsetLeft + this.width/2 + 2 + 'px';
-        }
-      }
-    }
+  }
+  
+  setOverlay(x){
     if('overlay' in x){
       this.overlay = x.overlay;
     }
@@ -1243,6 +1436,62 @@ class tjViewer{
           }
         }
     }
+  }
+  
+  setSecondTitlePosition(){
+    this.titleBox2.style.top = this.container.offsetTop + 2 +'px';
+    this.titleBox2.style.left = this.container.offsetLeft + this.width/2 + 2 + 'px';
+  }
+  
+  setSideBySide(x){
+    if('sideBySide' in x){
+      this.sideBySide = x.sideBySide;
+      if(x.sideBySide){
+        this.camera.aspect = this.width/this.height;
+        this.camera2.aspect = this.width/this.height;
+        this.camera.updateProjectionMatrix();
+        this.camera2.updateProjectionMatrix();
+        this.labelRenderer.setSize( this.width/2, this.height );
+        this.labelRenderer2.setSize( this.width/2, this.height );
+        this.labelRenderer2.domElement.style.left = this.width/2+'px';
+        this.container.insertBefore(this.labelRenderer2.domElement, this.slider);
+        this.bckcolGUI.controllers[4].show();
+        this.bckcolGUI.controllers[5].show();
+        this.animateLinkedGUI.show();
+        if('title' in x){
+           this.titleBox2.innerText = x.title[1];
+           this.setSecondTitlePosition();
+        }
+      }
+    }
+  }
+  
+  setDefaultValues(x){
+    if('maxRadius' in x){
+      this.maxRadius = x.maxRadius;
+    }
+    if('maxLineWidth' in x){
+      this.maxLineWidth = x.maxLineWidth;
+    }
+  }
+  
+  setMainTitle(x){
+    if('title' in x){
+       this.titleBox.innerText = x.title[0];
+       this.titleBox.style.top = this.container.offsetTop + 2 +'px';
+       this.titleBox.style.left = this.container.offsetLeft + 2+ 'px';
+    }
+  }
+  
+  create_plot(x){
+    console.log(x);
+    //const twoPi = Math.PI * 2;
+    //x is a named array
+    this.setBackground(x);
+    this.setDefaultValues(x);
+    this.setMainTitle(x);
+    this.setSideBySide(x);
+    this.setOverlay(x);
     
     const arrowLayer = [];
     const groupFolder = this.gui.addFolder('Group setting');
@@ -2415,6 +2664,7 @@ class tjViewer{
       this.labelRenderer2.setSize( width/2, height );
       this.labelRenderer2.domElement.style.top = '-'+2*height+'px';
       this.labelRenderer2.domElement.style.left = width/2+'px';
+      this.setSecondTitlePosition();
     }else{
       this.camera.aspect = width / height;
       this.labelRenderer.setSize( width, height );
