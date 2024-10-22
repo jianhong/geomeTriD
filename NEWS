@@ -1,3 +1,7 @@
+Changes in version 0.99.14
+
+    o add measurement for threeJsViewer.
+    
 Changes in version 0.99.13
 
     o add switch for orthographic and perspective projection to camera.
