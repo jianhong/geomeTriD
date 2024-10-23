@@ -67,8 +67,8 @@
 #' threeJsViewer(line, sphere, torus, cylinder)
 threeJsViewer <- function(...,
                           background = c(
-                            "#33333388", "#FFFFFFDD",
-                            "#FFFFFFDD", "#33333388"
+                            "#33333388", "#444444DD",
+                            "#444444DD", "#33333388"
                           ),
                           maxRadius = 1,
                           maxLineWidth = 50,

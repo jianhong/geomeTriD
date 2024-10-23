@@ -1,3 +1,8 @@
+Changes in version 0.99.15
+
+    o Change the background color set.
+    o Remove local version of CSS2DRenderer.
+
 Changes in version 0.99.14
 
     o add measurement for threeJsViewer.

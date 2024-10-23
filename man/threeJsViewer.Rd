@@ -7,7 +7,7 @@ The htmlwidgets viewer for threeJs.}
 \usage{
 threeJsViewer(
   ...,
-  background = c("#33333388", "#FFFFFFDD", "#FFFFFFDD", "#33333388"),
+  background = c("#33333388", "#444444DD", "#444444DD", "#33333388"),
   maxRadius = 1,
   maxLineWidth = 50,
   title = NULL,
