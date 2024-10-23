@@ -14,8 +14,8 @@ import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js
 // text
 import { Font } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-// label , local patch 
-import { CSS2DRenderer, CSS2DObject } from 'tjviewer/CSS2DRenderer.js';
+// label
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 // exporters
 import { SVGRenderer } from 'three/addons/renderers/SVGRenderer.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
@@ -1037,7 +1037,20 @@ class tjViewer{
       'measure by cursor': false,
       'gene 1': '',
       'gene 2': '',
-      'result' : ''
+      'result' : 0,
+      'clear' : function(){
+                  markerA.visible = false;
+                  markerB.visible = false;
+                  markerA2.visible = false;
+                  markerB2.visible = false;
+                  measureparam['gene 1'] = '';
+                  measureparam['gene 2'] = '';
+                  measureparam.result = 0;
+                  labelDiv.textContent = '';
+                  labelDiv2.textContent = '';
+                  setLine(line, result, new THREE.Vector3(), new THREE.Vector3());
+                  setLine(line2, result2, new THREE.Vector3(), new THREE.Vector3());
+                }
     };
     /*measureGUI.add(measureparam, 'measure by cursor').onChange((val)=>{
       if(val){
@@ -1046,9 +1059,10 @@ class tjViewer{
         endMeasure();
       }
     });*/
-    measureGUI.add(measureparam, 'gene 1').onChange(val => {checkGene(val)});
-    measureGUI.add(measureparam, 'gene 2').onChange(val => {checkGene(val)});
+    measureGUI.add(measureparam, 'gene 1').onChange(val => {starMeasureByGene(val)});
+    measureGUI.add(measureparam, 'gene 2').onChange(val => {starMeasureByGene(val)});
     const distancePlace = measureGUI.add(measureparam, 'result');
+    measureGUI.add(measureparam, 'clear');
     
     var points = [
         new THREE.Vector3(),
@@ -1066,14 +1080,14 @@ class tjViewer{
     var markerA = new THREE.Mesh(
         new THREE.SphereGeometry(0.1, 10, 20),
         new THREE.MeshBasicMaterial({
-          color: 0xff5555
+          color: 0x00ff55
         })
     );
     markerA.visible = false;
     var markerB = new THREE.Mesh(
         new THREE.SphereGeometry(0.1, 10, 20),
         new THREE.MeshBasicMaterial({
-          color: 0x00ff55
+          color: 0xff5555
         })
     );
     markerB.visible = false;
@@ -1112,13 +1126,12 @@ class tjViewer{
     
     var getIntersections = function(event, scene, camera) {
         getCurrentCursorPos(event);
-        //console.log(vector);
-        camera.updateMatrixWorld();
         raycaster.setFromCamera(vector, camera);
         var target = scene.children;
         // remove unwanted target
-        target = target.filter(v => !v.isLight && !v.isMesh && !v.isLine && v.children.length>3);
+        target = target.filter(v => !v.isLight && !v.isMesh && !v.isLine && v.children.length!=3);
         var intersects = raycaster.intersectObjects(target);
+        //console.log(intersects);
         return intersects;
     };
     
@@ -1135,6 +1148,27 @@ class tjViewer{
         res.center.set(0.5,0.5);
     }
     
+    function showDistance(line, result, points, labelDiv){
+      var distance = points[0].distanceTo(points[1]);
+      let formattedNumber = distance.toLocaleString('en-US', {
+              minimumIntegerDigits: 1,
+              useGrouping: false
+      })
+      measureparam.result = formattedNumber;
+      distancePlace.setValue(formattedNumber);
+      labelDiv.textContent = formattedNumber;
+      setLine(line, result, points[0], points[1]);
+    }
+    
+    function swapPosition(markers, points){
+      var position = markers[1].position.clone();
+      markers[1].position.copy(markers[0].position);
+      markers[0].position.copy(position);
+      points[1].copy(points[0]);
+      points[0].copy(position);
+    }
+    
+    var more = false;
     function showResults1(collection, scene){
       if (collection.length > 0) {
           points[clicks].copy(collection[0].point);
@@ -1143,24 +1177,23 @@ class tjViewer{
           clicks++;
           if (clicks > 1){
             markerB.visible = true;
-            var distance = points[0].distanceTo(points[1]);
-            let formattedNumber = distance.toLocaleString('en-US', {
-              minimumIntegerDigits: 1,
-              useGrouping: false
-            })
-            measureparam.result = formattedNumber;
-            distancePlace.setValue(formattedNumber);
-            labelDiv.textContent = formattedNumber;
-            setLine(line, result, points[0], points[1]);
+            showDistance(line, result, points, labelDiv);
             clicks = 0;
+            more = true;
           }else{
             if(clicks == 1){
-              markerA.visible = true;
-              markerB.visible = false;
+              if(more){
+                swapPosition(markers, points);
+                showDistance(line, result, points, labelDiv);
+              }else{
+                markerA.visible = true;
+                markerB.visible = false;
+              }
             }
           }
       }
     }
+    var more2 = false;
     function showResults2(collection, scene){
       if (collection.length > 0) {
           points2[clicks2].copy(collection[0].point);
@@ -1169,20 +1202,18 @@ class tjViewer{
           clicks2++;
           if (clicks2 > 1){
             markerB2.visible = true;
-            var distance = points2[0].distanceTo(points2[1]);
-            let formattedNumber = distance.toLocaleString('en-US', {
-              minimumIntegerDigits: 1,
-              useGrouping: false
-            })
-            measureparam.result = formattedNumber;
-            distancePlace.setValue(formattedNumber);
-            labelDiv2.textContent = formattedNumber;
-            setLine(line2, result2, points2[0], points2[1]);
+            showDistance(line2, result2, points2, labelDiv2);
             clicks2 = 0;
+            more2 = true;
           }else{
             if(clicks2 == 1){
-              markerA2.visible = true;
-              markerB2.visible = false;
+              if(more){
+                swapPosition(markers2, points2);
+                showDistance(line2, result2, points2, labelDiv2);
+              }else{
+                markerA2.visible = true;
+                markerB2.visible = false;
+              }
             }
           }
       }
@@ -1200,18 +1231,19 @@ class tjViewer{
       event.preventDefault();
       
       var intersects = getIntersections(event, this.scene, this.camera);
-      var intersects2 = getIntersections(event, this.scene2, this.camera2);
-
       if(intersects.length>0){
         showResults1(intersects, this.scene);
       }
-      if(intersects2.length>0){
-        showResults2(intersects2, this.scene2);
+      if(this.sideBySide){
+        var intersects2 = getIntersections(event, this.scene2, this.camera2);
+        if(intersects2.length>0){
+          showResults2(intersects2, this.scene2);
+        }
       }
     }.bind(this);
     
     var endMeasure = function(){
-      document.removeEventListener("mousedown", startMeasure);
+      //document.removeEventListener("mousedown", startMeasure);
       markerA.visible = false;
       markerB.visible = false;
       markerA2.visible = false;
@@ -1230,6 +1262,24 @@ class tjViewer{
         showResults2(intersects2, this.scene2);
       }
     }.bind(this);
+    
+    var starMeasureByGene = function(val){
+      if(val==measureparam['gene 1']){
+        if(measureparam['gene 2']!=''){
+          checkGene(measureparam['gene 2']);
+        }
+        if(measureparam['gene 1']!=''){
+          checkGene(measureparam['gene 1']);
+        }
+      }else{
+        if(measureparam['gene 1']!=''){
+          checkGene(measureparam['gene 1']);
+        }
+        if(measureparam['gene 2']!=''){
+          checkGene(measureparam['gene 2']);
+        }
+      }
+    }
     
     measureGUI.close();
   }
@@ -2808,10 +2858,14 @@ class tjViewer{
     }
     
     this.controls.update();
+    
+    this.camera.updateMatrixWorld();
+    
     //this.gpuPanel.startQuery();
     if(this.overlay){
       if(this.sideBySide){
         this.controls2.update();
+        this.camera2.updateMatrixWorld();
         this.renderer.setScissorTest( true );
         this.renderer.setViewport( 0, 0, this.width/2, this.height );
         this.renderer.setScissor( 0, 0, this.width/2, this.height - this.sliderPos );
@@ -2842,6 +2896,7 @@ class tjViewer{
     }else{
       if(this.sideBySide){
         this.controls2.update();
+        this.camera2.updateMatrixWorld();
         this.renderer.setScissorTest( true );
         this.renderer.setViewport( 0, 0, this.width/2, this.height );
         this.renderer.setScissor( 0, 0, this.width/2, this.height );

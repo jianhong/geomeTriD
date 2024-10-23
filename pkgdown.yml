@@ -3,7 +3,7 @@ pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
   geomeTriD: geomeTriD.html
-last_built: 2024-10-22T23:27Z
+last_built: 2024-10-23T17:27Z
 urls:
   reference: https://jianhong.github.io/geometrid/reference
   article: https://jianhong.github.io/geometrid/articles
