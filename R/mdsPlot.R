@@ -110,6 +110,8 @@ mdsPlot <- function(gi, range, feature.gr, k = 2,
   ids <- sort(unique(c(x, y)))
   v <- mcols(gi)$score
   r <- regions(gi)[ids]
+  ## in case the regions has missing bins
+  r <- addMissingBins(r, ids)
   x <- x - min(ids) + 1
   y <- y - min(ids) + 1
   l <- length(r)
@@ -162,4 +164,27 @@ cf2pd <- function(m, alpha = -0.25, inf_dist) {
   }
   pd[is.na(pd) | is.infinite(pd)] <- inf_dist
   pd
+}
+
+#' @importFrom IRanges gaps
+#' @importFrom GenomicRanges slidingWindows
+addMissingBins <- function(r, ids){
+  if(length(r)!=diff(range(ids))+1){
+    w <- width(r)[1]
+    if(any(width(r)!=w)){
+      stop('can not handle different width of bins.')
+    }
+    strand(r) <- '*'
+    gaps <- gaps(r)
+    gaps <- gaps[start(gaps)>start(r)[1]]
+    if(any(width(gaps)>w)){
+      gapsBin <- slidingWindows(gaps[width(gaps)>w], width = w, step = w)
+      gaps <- sort(c(gaps[width(gaps)<=w], unlist(gapsBin)))
+    }
+    if(length(r)+length(gaps)!=diff(range(ids))+1){
+      stop('Something wrong, please report the bug! Thank you.')
+    }
+    r <- sort(c(r, gaps))
+  }
+  return(r)
 }
