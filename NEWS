@@ -1,3 +1,7 @@
+Changes in version 0.99.17
+
+    o Add parameter genomicScoreRange parameter for create3dGenomicSignals.
+    
 Changes in version 0.99.16
 
     o Fix the error in mdsPlot: 'dims' must contain all (i,j) pairs

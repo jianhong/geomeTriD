@@ -58,6 +58,7 @@ test_that("create3dGenomicSignals", function() {
         signalTransformFun = function(x) {
           log2(x + 1)
         },
+        genomicScoreRange = c(0, 11),
         reverseGenomicSigs = FALSE,
         type = type,
         lwd.maxGenomicSigs = 8,

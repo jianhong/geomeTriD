@@ -12,6 +12,7 @@
 #' The function must have input as a data.frame with colnames
 #'  x0, y0, z0, x1, y1, and z1. And it must have
 #' output as same dimension data.frame.
+#' @param genomicScoreRange The genomic signals range.
 #' @param reverseGenomicSigs Plot the genomic signals in reverse values.
 #' @param type The Geometry type.See \link{threeJsGeometry}
 #' @param color The color of the signal. If there is metadata 'color' in GenoSig
@@ -72,6 +73,7 @@
 create3dGenomicSignals <- function(GenoSig, targetObj,
                                    signalTransformFun,
                                    positionTransformFun,
+                                   genomicScoreRange,
                                    reverseGenomicSigs,
                                    type = "segment",
                                    tag,
@@ -81,6 +83,10 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
                                    ...) {
   if(missing(reverseGenomicSigs)) reverseGenomicSigs <- FALSE
   if(missing(signalTransformFun)) signalTransformFun <- c
+  if(!missing(genomicScoreRange)){
+    stopifnot(is.numeric(genomicScoreRange))
+    stopifnot(length(genomicScoreRange)==2)
+  }
   checkSmoothedGR(targetObj)
   checkSignalTransformFun(signalTransformFun)
   stopifnot(is.character(name))
@@ -164,6 +170,7 @@ create3dGenomicSignals <- function(GenoSig, targetObj,
   FUN <- getFromNamespace(FUN, ns = getPackageName())
   geo <- FUN(
     GenoSig = GenoSig,
+    genomicScoreRange = genomicScoreRange,
     revGenoSig = reverseGenomicSigs,
     name = name,
     color = color,
@@ -255,7 +262,7 @@ getPosByTargetForPairs <- function(queryObj, targetObj,
 }
 # map score to segments lwd
 createSegmentGeometry <- function(
-    GenoSig, revGenoSig,
+    GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     lwd.maxGenomicSigs = 8, alpha = 1, length.out,
     ...) {
@@ -271,12 +278,20 @@ createSegmentGeometry <- function(
   }
   lwdRange <- c(seq(0, lwd.maxGenomicSigs, length.out = length.out+1)[-1], 
                 lwd.maxGenomicSigs)
-  genomicSigScoreRange <- quantile(GenoSig$score,
-    probs = c(.1, .99)
-  )
-  if (genomicSigScoreRange[1] == genomicSigScoreRange[2]) {
-    genomicSigScoreRange <- range(GenoSig$score)
+  if(missing(genomicScoreRange)){
+    genomicSigScoreRange <- quantile(GenoSig$score,
+                                     probs = c(.1, .99)
+    )
+    if (genomicSigScoreRange[1] == genomicSigScoreRange[2]) {
+      genomicSigScoreRange <- range(GenoSig$score)
+    }
+  }else{
+    genomicSigScoreRange <- genomicScoreRange
+    if (genomicSigScoreRange[1] == genomicSigScoreRange[2]) {
+      stop('The input genomicScoreRange are identical.')
+    }
   }
+  
   if (genomicSigScoreRange[1] != genomicSigScoreRange[2]) {
     genomicSigBreaks <- c(
       -1,
@@ -361,7 +376,7 @@ extendParam <- function(param, l) {
 
 # map score to thetaLength
 createCircleGeometry <- function(
-    GenoSig, revGenoSig,
+    GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     radius = 8, maxVal = 1, thetaStart = 0,
     ...) {
@@ -425,9 +440,13 @@ createCircleGeometry <- function(
 
 # map color to score
 #' @importFrom grDevices colorRampPalette
-mapScore2Color <- function(GenoSig, color) {
+mapScore2Color <- function(GenoSig, color, genomicScoreRange) {
   if (length(color) != length(GenoSig)) {
-    breaks <- range(GenoSig$score)
+    if(missing(genomicScoreRange)){
+      breaks <- range(GenoSig$score)
+    }else{
+      breaks <- genomicScoreRange
+    }
     if (length(color) == 1) {
       color <- c("white", color)
     }
@@ -444,11 +463,11 @@ mapScore2Color <- function(GenoSig, color) {
 }
 
 createSphereGeometry <- function(
-    GenoSig, revGenoSig,
+    GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     radius = 8, type = "sphere",
     ...) {
-  color <- mapScore2Color(GenoSig, color)
+  color <- mapScore2Color(GenoSig, color, genomicScoreRange)
   GenoSig <- getXYZmean(GenoSig)
   if (length(radius) == length(GenoSig)) {
     # pre calculated radius
@@ -490,7 +509,7 @@ createSphereGeometry <- function(
 
 
 createBoxGeometry <- function(
-    GenoSig, revGenoSig,
+    GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     width, height, depth,
     ...) {
@@ -506,7 +525,7 @@ createBoxGeometry <- function(
     }
   }
   GenoSig <- getXYZmean(GenoSig)
-  color <- mapScore2Color(GenoSig, color)
+  color <- mapScore2Color(GenoSig, color, genomicScoreRange)
   wid <- unique(width)
   hgt <- unique(height)
   dpt <- unique(depth)
@@ -554,7 +573,7 @@ createBoxGeometry <- function(
 }
 
 createCapsuleGeometry <- function(
-    GenoSig, revGenoSig,
+    GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     height, radius,
     ...) {
@@ -567,7 +586,7 @@ createCapsuleGeometry <- function(
     }
   }
   GenoSig <- getXYZmean(GenoSig)
-  color <- mapScore2Color(GenoSig, color)
+  color <- mapScore2Color(GenoSig, color, genomicScoreRange)
   hgt <- unique(height)
   r <- unique(radius)
   if (length(hgt) == 1 && length(r) == 1) {
@@ -612,7 +631,7 @@ createCapsuleGeometry <- function(
 }
 
 createCylinderGeometry <- function(
-    GenoSig, revGenoSig,
+    GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     height, radiusTop, radiusBottom,
     ...) {
@@ -628,7 +647,7 @@ createCylinderGeometry <- function(
     }
   }
   GenoSig <- getXYZmean(GenoSig)
-  color <- mapScore2Color(GenoSig, color)
+  color <- mapScore2Color(GenoSig, color, genomicScoreRange)
   hgt <- unique(height)
   rt <- unique(radiusTop)
   rb <- unique(radiusBottom)
@@ -676,7 +695,7 @@ createCylinderGeometry <- function(
 }
 
 createConeGeometry <- function(
-    GenoSig, revGenoSig,
+    GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     height, radius,
     ...) {
@@ -689,7 +708,7 @@ createConeGeometry <- function(
     }
   }
   GenoSig <- getXYZmean(GenoSig)
-  color <- mapScore2Color(GenoSig, color)
+  color <- mapScore2Color(GenoSig, color, genomicScoreRange)
   hgt <- unique(height)
   r <- unique(radius)
   if (length(hgt) == 1 && length(r) == 1) {
@@ -747,7 +766,7 @@ createTetrahedronGeometry <- function(...) {
 }
 
 createTorusGeometry <- function(
-    GenoSig, revGenoSig,
+    GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     tube, radius,
     ...) {
@@ -760,7 +779,7 @@ createTorusGeometry <- function(
     }
   }
   GenoSig <- getXYZmean(GenoSig)
-  color <- mapScore2Color(GenoSig, color)
+  color <- mapScore2Color(GenoSig, color, genomicScoreRange)
   hgt <- unique(tube)
   r <- unique(radius)
   if (length(hgt) == 1 && length(r) == 1) {
@@ -806,7 +825,7 @@ createTorusGeometry <- function(
 
 #' @importFrom rjson fromJSON
 createJsonGeometry <- function(
-    GenoSig, revGenoSig,
+    GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     path,
     ...) {
@@ -882,8 +901,12 @@ getIndices <- function(ii, jj, index){
     indicesKeep[1, , drop=TRUE]
   return(indices[, indicesKeep, drop=FALSE])
 }
-mapScore2Alpha <- function(score, default=0.1){
-  ra <- range(score, na.rm=TRUE)
+mapScore2Alpha <- function(score, default=0.1, genomicScoreRange){
+  if(missing(genomicScoreRange)){
+    ra <- range(score, na.rm=TRUE)
+  }else{
+    ra <- genomicScoreRange
+  }
   if(ra[2]==ra[1]){
     return(rep(default, length(score)))
   }
@@ -897,15 +920,17 @@ mapScore2Alpha <- function(score, default=0.1){
 }
 # for interaction data
 createPolygonGeometry <- function(
-    GenoSig, revGenoSig,
+    GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     ...) {
   genomic_signal <- data.frame(
     GenoSig$x0, GenoSig$x1, GenoSig$x1_2, GenoSig$x0_2,
     GenoSig$y0, GenoSig$y1, GenoSig$y1_2, GenoSig$y0_2,
     GenoSig$z0, GenoSig$z1, GenoSig$z1_2, GenoSig$z0_2,
-    if(length(GenoSig$color)) GenoSig$color else mapScore2Color(GenoSig, color),
-    mapScore2Alpha(GenoSig$score))
+    if(length(GenoSig$color)) GenoSig$color else{
+      mapScore2Color(GenoSig, color, genomicScoreRange)
+    },
+    mapScore2Alpha(GenoSig$score, genomicScoreRange=genomicScoreRange))
   colnames(genomic_signal) <- c("x1", "x2", "x3", "x4",
                                 "y1", "y2", "y3", "y4",
                                 "z1", "z2", "z3", "z4",

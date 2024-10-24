@@ -9,6 +9,7 @@ create3dGenomicSignals(
   targetObj,
   signalTransformFun,
   positionTransformFun,
+  genomicScoreRange,
   reverseGenomicSigs,
   type = "segment",
   tag,
@@ -33,6 +34,8 @@ or \link[InteractionSet]{GInteractions} with scores or
 The function must have input as a data.frame with colnames
  x0, y0, z0, x1, y1, and z1. And it must have
 output as same dimension data.frame.}
+
+\item{genomicScoreRange}{The genomic signals range.}
 
 \item{reverseGenomicSigs}{Plot the genomic signals in reverse values.}
 
