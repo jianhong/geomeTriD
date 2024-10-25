@@ -1123,13 +1123,15 @@ class tjViewer{
       vector.x = ( (event.clientX - this.container.offsetLeft) / this.width ) * 2 - 1;
       vector.y = - ( (event.clientY - this.container.offsetTop) / this.height ) * 2 + 1;
     }.bind(this);
-    
+
     var getIntersections = function(event, scene, camera) {
         getCurrentCursorPos(event);
         raycaster.setFromCamera(vector, camera);
         var target = scene.children;
         // remove unwanted target
         target = target.filter(v => !v.isLight && !v.isMesh && !v.isLine && v.children.length!=3);
+        // not work just because all the objects are grouped in transformed Coordinates.
+        // need to write a intersects function
         var intersects = raycaster.intersectObjects(target);
         //console.log(intersects);
         return intersects;
@@ -1219,14 +1221,20 @@ class tjViewer{
       }
     }
     
-    this.scene.add(markerA);
-    this.scene.add(markerB);
-    this.scene.add(line);
-    this.scene.add(result);
-    this.scene2.add(markerA2);
-    this.scene2.add(markerB2);
-    this.scene2.add(line2);
-    this.scene2.add(result2);
+    const markerGroup = new THREE.Group();
+    markerGroup.add(markerA);
+    markerGroup.add(markerB);
+    markerGroup.add(line);
+    markerGroup.add(result);
+    this.objects.add(markerGroup);
+    this.scene.add(markerGroup);
+    const markerGroup2 = new THREE.Group();
+    markerGroup2.add(markerA2);
+    markerGroup2.add(markerB2);
+    markerGroup2.add(line2);
+    markerGroup2.add(result2);
+    this.objects2.add(markerGroup2);
+    this.scene2.add(markerGroup2);
     var startMeasure = function(event){
       event.preventDefault();
       
@@ -1243,7 +1251,7 @@ class tjViewer{
     }.bind(this);
     
     var endMeasure = function(){
-      //document.removeEventListener("mousedown", startMeasure);
+      document.removeEventListener("mousedown", startMeasure);
       markerA.visible = false;
       markerB.visible = false;
       markerA2.visible = false;
@@ -1253,12 +1261,16 @@ class tjViewer{
     var checkGene = function(val){
       var gene_body = this.searchGeneByGeneName(val, this.scene, this.sceneBottom);
       if(gene_body.length>0){
-        var intersects = [{point:gene_body[0].position}];
+        var wpos = new THREE.Vector3();
+        gene_body[0].getWorldPosition(wpos);
+        var intersects = [{point:wpos}];
         showResults1(intersects, this.scene);
       }
       var gene_body2 = this.searchGeneByGeneName(val, this.scene2, this.sceneBottom2);
       if(gene_body2.length>0){
-        var intersects2 = [{point:gene_body2[0].position}];
+        var wpos2 = new THREE.Vector3();
+        gene_body2[0].getWorldPosition(wpos2);
+        var intersects2 = [{point:wpos2}];
         showResults2(intersects2, this.scene2);
       }
     }.bind(this);
