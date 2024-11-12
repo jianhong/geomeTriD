@@ -137,6 +137,7 @@ class tjViewer{
     this.maxRadius = 1;
     this.maxLineWidth = 50;
     this.layer = {};
+    this.symbols = [];//save all gene symbols
     
     // add GUIs
     this.setGUI();
@@ -291,18 +292,34 @@ class tjViewer{
     cameraGUI.close();
   }
   
+  setAutocompleteDatalist(){
+    if(document.getElementById('symbollist')==null){
+      var a = document.createElement('datalist');
+      a.setAttribute('id', 'symbollist');
+      for(var i=0; i<this.symbols.length; i++){
+        var b = document.createElement('option');
+        b.setAttribute('value', this.symbols[i]);
+        b.setAttribute('label', this.symbols[i]);
+        a.appendChild(b);
+      }
+      this.container.appendChild(a);
+    }
+    
+    return('symbollist');
+  }
+  
   searchGeneByGeneName(keyword, scene, sceneBottom){
     let result = [];
     scene.traverse(obj =>  {
       if(obj.isCSS2DObject === true){
-        if(obj.name==keyword){
+        if(obj.name.toUpperCase()==keyword.toUpperCase()){
           result.push(obj);
         }
       }
     });
     sceneBottom.traverse(obj =>  {
       if(obj.isCSS2DObject === true){
-        if(obj.name==keyword){
+        if(obj.name.toUpperCase()==keyword.toUpperCase()){
           result.push(obj);
         }
       }
@@ -313,14 +330,14 @@ class tjViewer{
     let gene_body = [];
     scene.traverse(obj =>  {
       if(obj.isLine2 === true){
-        if(obj.name==keyword){
+        if(obj.name.toUpperCase()==keyword.toUpperCase()){
           gene_body.push(obj);
         }
       }
     });
     sceneBottom.traverse(obj =>  {
       if(obj.isLine2 === true){
-        if(obj.name==keyword){
+        if(obj.name.toUpperCase()==keyword.toUpperCase()){
           gene_body.push(obj);
         }
       }
@@ -587,9 +604,12 @@ class tjViewer{
         }
       }.bind(this)
     }
-    searchGUI.add(searchparam, 'keyword').onChange(function(val){
+    const keyword=searchGUI.add(searchparam, 'keyword').onChange(function(val){
       searchparam.keyword = val;
     }).onFinishChange(searchparam.search);
+    keyword.$input.setAttribute("list", 'symbollist');
+    keyword.$input.setAttribute("autocomplete", 'off');
+    keyword.$input.setAttribute('size', 10);
     searchGUI.add(searchparam, 'search');
   }
   
@@ -1037,7 +1057,7 @@ class tjViewer{
       'measure by cursor': false,
       'gene 1': '',
       'gene 2': '',
-      'result' : 0,
+      'result' : "0",
       'clear' : function(){
                   markerA.visible = false;
                   markerB.visible = false;
@@ -1045,7 +1065,7 @@ class tjViewer{
                   markerB2.visible = false;
                   measureparam['gene 1'] = '';
                   measureparam['gene 2'] = '';
-                  measureparam.result = 0;
+                  measureparam.result = "0";
                   labelDiv.textContent = '';
                   labelDiv2.textContent = '';
                   setLine(line, result, new THREE.Vector3(), new THREE.Vector3());
@@ -1059,8 +1079,14 @@ class tjViewer{
         endMeasure();
       }
     });*/
-    measureGUI.add(measureparam, 'gene 1').onChange(val => {starMeasureByGene(val)});
-    measureGUI.add(measureparam, 'gene 2').onChange(val => {starMeasureByGene(val)});
+    const g1=measureGUI.add(measureparam, 'gene 1').onChange(val => {starMeasureByGene(val)});
+    const g2=measureGUI.add(measureparam, 'gene 2').onChange(val => {starMeasureByGene(val)});
+    g1.$input.setAttribute("list", 'symbollist');
+    g1.$input.setAttribute("autocomplete", 'off');
+    g1.$input.setAttribute('size', 10);
+    g2.$input.setAttribute("list", 'symbollist');
+    g2.$input.setAttribute("autocomplete", 'off');
+    g2.$input.setAttribute("size", 10);
     const distancePlace = measureGUI.add(measureparam, 'result');
     measureGUI.add(measureparam, 'clear');
     
@@ -1150,14 +1176,14 @@ class tjViewer{
         res.center.set(0.5,0.5);
     }
     
-    function showDistance(line, result, points, labelDiv){
+    function showDistance(line, result, points, labelDiv, label2=''){
       var distance = points[0].distanceTo(points[1]);
       let formattedNumber = distance.toLocaleString('en-US', {
               minimumIntegerDigits: 1,
               useGrouping: false
       })
       measureparam.result = formattedNumber;
-      distancePlace.setValue(formattedNumber);
+      distancePlace.setValue(formattedNumber+label2);
       labelDiv.textContent = formattedNumber;
       setLine(line, result, points[0], points[1]);
     }
@@ -1204,14 +1230,14 @@ class tjViewer{
           clicks2++;
           if (clicks2 > 1){
             markerB2.visible = true;
-            showDistance(line2, result2, points2, labelDiv2);
+            showDistance(line2, result2, points2, labelDiv2, '; '+distancePlace.getValue());
             clicks2 = 0;
             more2 = true;
           }else{
             if(clicks2 == 1){
               if(more){
                 swapPosition(markers2, points2);
-                showDistance(line2, result2, points2, labelDiv2);
+                showDistance(line2, result2, points2, labelDiv2, '; '+distancePlace.getValue());
               }else{
                 markerA2.visible = true;
                 markerB2.visible = false;
@@ -1546,7 +1572,7 @@ class tjViewer{
   }
   
   create_plot(x){
-    console.log(x);
+    //console.log(x);
     //const twoPi = Math.PI * 2;
     //x is a named array
     this.setBackground(x);
@@ -2356,7 +2382,10 @@ class tjViewer{
               ele.label = [ele.label];
             }
             for(var i=0; i<ele.label.length; i++){
-              labelDiv.textContent = ele.label;
+              if(this.symbols.indexOf(ele.label[i])==-1){
+                this.symbols.push(ele.label[i]);
+              }
+              labelDiv.textContent = ele.label[i];
               if(ele.colors.length==ele.positions.length){
                 labelDiv.style.color='#'+color.setRGB(
                       ele.colors[i*3],
@@ -2377,7 +2406,7 @@ class tjViewer{
                 ele.positions[i*3+2]);
               css2obj.center.set(0.5,0.5);
               css2obj.layers.set(this.getLayer(ele.tag));
-              css2obj.name = ele.label;
+              css2obj.name = ele.label[i];
               obj.add(css2obj);
             }
             obj.layers.enableAll();
@@ -2567,6 +2596,7 @@ class tjViewer{
       toggleAllArrowGUI.show();
     }
     this.gui.close();
+    this.setAutocompleteDatalist();
   }
   
   makeOrthographicCamera() {
