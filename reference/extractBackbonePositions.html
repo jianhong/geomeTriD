@@ -18,7 +18,7 @@ for function create3dGenomicSignals"><!-- mathjax --><script src="https://cdnjs.
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geomeTriD</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.1</span>
       </span>
     </div>
 
@@ -45,7 +45,7 @@ for function create3dGenomicSignals"><!-- mathjax --><script src="https://cdnjs.
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Extract the backbone coordinates from output of mdsPlot</h1>
-    <small class="dont-index">Source: <a href="https://github.com/jianhong/geomeTriD/blob/devel/R/extractBAckbonePositions.R" class="external-link"><code>R/extractBAckbonePositions.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/jianhong/geomeTriD/blob/RELEASE_3_20/R/extractBAckbonePositions.R" class="external-link"><code>R/extractBAckbonePositions.R</code></a></small>
     <div class="hidden name"><code>extractBackbonePositions.Rd</code></div>
     </div>
 
@@ -94,30 +94,30 @@ for function create3dGenomicSignals</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GRanges object with 1590 ranges and 6 metadata columns:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          seqnames            ranges strand |        x0        x1        y0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      [1]     chr6 51120000-51121332      * |  -4.69581  -4.63840 -0.591892</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      [2]     chr6 51121333-51122665      * |  -4.63840  -4.58312 -0.660904</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      [3]     chr6 51122666-51123999      * |  -4.58312  -4.52994 -0.728016</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      [4]     chr6 51124000-51125332      * |  -4.52994  -4.47881 -0.793255</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      [5]     chr6 51125333-51126665      * |  -4.47881  -4.42972 -0.856648</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [1]     chr6 51120000-51121332      * |   4.69581   4.63840  0.591892</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [2]     chr6 51121333-51122665      * |   4.63840   4.58312  0.660904</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [3]     chr6 51122666-51123999      * |   4.58312   4.52994  0.728016</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [4]     chr6 51124000-51125332      * |   4.52994   4.47881  0.793255</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [5]     chr6 51125333-51126665      * |   4.47881   4.42972  0.856648</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      ...      ...               ...    ... .       ...       ...       ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   [1586]     chr6 53233334-53234666      * |   4.42611   4.40511  -3.72116</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   [1587]     chr6 53234667-53235999      * |   4.40511   4.38384  -3.72535</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   [1588]     chr6 53236000-53237333      * |   4.38384   4.36228  -3.72884</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   [1589]     chr6 53237334-53238666      * |   4.36228   4.34045  -3.73161</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   [1590]     chr6 53238667-53240000      * |   4.34045   4.31835  -3.73364</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 y1        z0         z1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;numeric&gt; &lt;numeric&gt;  &lt;numeric&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      [1] -0.660904 -0.761382  -0.878952</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      [2] -0.728016 -0.878952  -0.991275</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      [3] -0.793255 -0.991275  -1.098445</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      [4] -0.856648 -1.098445  -1.200557</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      [5] -0.918222 -1.200557  -1.297707</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      ...       ...       ...        ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   [1586]  -3.72535 -0.334537 -0.2793011</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   [1587]  -3.72884 -0.279301 -0.2223325</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   [1588]  -3.73161 -0.222333 -0.1636144</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   [1589]  -3.73364 -0.163614 -0.1031305</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   [1590]  -3.73492 -0.103130 -0.0408642</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [1586]     chr6 53233334-53234666      * |  -4.42611  -4.40511   3.72116</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [1587]     chr6 53234667-53235999      * |  -4.40511  -4.38384   3.72535</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [1588]     chr6 53236000-53237333      * |  -4.38384  -4.36228   3.72884</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [1589]     chr6 53237334-53238666      * |  -4.36228  -4.34045   3.73161</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [1590]     chr6 53238667-53240000      * |  -4.34045  -4.31835   3.73364</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 y1        z0        z1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [1]  0.660904  0.761382  0.878952</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [2]  0.728016  0.878952  0.991275</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [3]  0.793255  0.991275  1.098445</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [4]  0.856648  1.098445  1.200557</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [5]  0.918222  1.200557  1.297707</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      ...       ...       ...       ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [1586]   3.72535  0.334537 0.2793011</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [1587]   3.72884  0.279301 0.2223325</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [1588]   3.73161  0.222333 0.1636144</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [1589]   3.73364  0.163614 0.1031305</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [1590]   3.73492  0.103130 0.0408642</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   -------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   seqinfo: 1 sequence from an unspecified genome; no seqlengths</span>
 </code></pre></div>
