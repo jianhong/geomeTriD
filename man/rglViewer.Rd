@@ -30,5 +30,8 @@ tjg <- view3dStructure(obj,
   k = 3, feature.gr = feature.gr, renderer = "none",
   length.arrow = grid::unit(0.000006, "native")
 )
-rglViewer(tjg, background = 'white')
+if(interactive()){
+  rglViewer(tjg, background = 'white')
+}
+
 }
