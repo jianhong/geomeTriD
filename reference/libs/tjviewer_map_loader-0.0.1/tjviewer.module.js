@@ -37,6 +37,7 @@ class PDFRenderer{
     this.pointLights = new THREE.Color(),
     this.color = new THREE.Color(),
     this.vector3 = new THREE.Vector3();
+    this.matrix = new THREE.Matrix4();
     this.vec1 = [];
     this.vec2 = [];
     this.vec3 = [];
@@ -129,17 +130,19 @@ class PDFRenderer{
     return component < 0 ? 0 : ( component > 1 ? 1 : component );
   }
   setColorForElement( element, material ) {
-    if ( material instanceof THREE.MeshBasicMaterial ) {
+    if ( material.isMeshBasicMaterial  ) {
       this.color.copy( material.color );
-    } else if ( material instanceof THREE.MeshLambertMaterial ) {
+    } else if ( material.isMeshLambertMaterial || material.isMeshPhongMaterial || material.isMeshStandardMaterial ) {
       var diffuse = material.color;
       var emissive = material.emissive;
+      var centroid = new THREE.Vector3();
+      centroid.copy( element.v1.positionWorld ).add( element.v2.positionWorld ).add( element.v3.positionWorld ).divideScalar( 3 );
 
-      this.color.r = ambientLight.r;
-      this.color.g = ambientLight.g;
-      this.color.b = ambientLight.b;
+      this.color.r = this.ambientLight.r;
+      this.color.g = this.ambientLight.g;
+      this.color.b = this.ambientLight.b;
 
-      this.calculateLight( lights, element.centroidWorld, element.normalWorld, this.color );
+      this.calculateLight( this.lights, centroid, element.normalModel, this.color );
 
       this.color.r = diffuse.r * this.color.r + emissive.r;
       this.color.g = diffuse.g * this.color.g + emissive.g;
@@ -147,10 +150,10 @@ class PDFRenderer{
     } else if ( material instanceof THREE.MeshDepthMaterial ) {
       var w = 1 - ( material.__2near / (material.__farPlusNear - element.z * material.__farMinusNear) );
       this.color.setRGB( w, w, w );
-    } else if ( material instanceof THREE.MeshNormalMaterial ) {
-      this.color.setRGB( this.normalToComponent( element.normalWorld.x ),
-                     this.normalToComponent( element.normalWorld.y ),
-                     this.normalToComponent( element.normalWorld.z ) );
+    } else if ( material.isMeshNormalMaterial ) {
+      this.color.setRGB( this.normalToComponent( element.normalModel.x ),
+                     this.normalToComponent( element.normalModel.y ),
+                     this.normalToComponent( element.normalModel.z ) );
 
     }
 
@@ -204,6 +207,17 @@ class PDFRenderer{
                       [1,1],
                       'S' );
   }
+  renderTriangle ( v1, v2, v3, element, material ) {
+    //this.setStyleFromMaterial( material );
+    //this.setColorForElement( element, material );
+    //console.log(material);
+    //console.log(this.pdf.getFillColor());
+    //console.log(this.pdf.getDrawColor());
+    this.pdf.triangle( v1.x, v1.y,
+                       v2.x, v2.y,
+                       v3.x, v3.y,
+                       'F' );// Stroke or Fill, FD: fill then stroke
+  }
   renderLabel(v3, label, color){
     this.pdf.setTextColor( color );
     //console.log(this.pdf.getTextColor());
@@ -211,7 +225,7 @@ class PDFRenderer{
   }
 
   render(scene, camera){
-    //console.log(scene);
+    console.log(scene);
     var renderData = this.projector.projectScene(scene, camera, this.sortObjects, this.sortElements );
     this.lights = renderData.lights;
     this.calculateLights(this.lights);
@@ -303,6 +317,58 @@ class PDFRenderer{
           }
         }
       }
+      /*if(obj.isInstancedMesh === true && obj.material.visible && camera.layers.test(obj.layers)){
+        console.log(obj);
+        var position = obj.geometry.attributes.position;
+        var normal = obj.geometry.attributes.normal;
+        console.log(position);
+        var itemSize = position.itemSize;
+        var index = obj.geometry.index;
+        console.log(index);
+        if(itemSize==3 && index){
+          for(var w=0; w<obj.count; w++){
+            const color = new THREE.Color();
+            obj.getColorAt(w, this.color);
+            if(this.color.r && this.color.g && this.color.b){
+              this.pdf.setDrawColor( this.color.r*255, this.color.g*255, this.color.b*255 );
+              this.pdf.setFillColor( this.color.r*255, this.color.g*255, this.color.b*255 );
+            }
+            obj.getMatrixAt(w, this.matrix);
+            for(var i=0; i<index.count/itemSize; i++){
+              var k=i*itemSize;
+              const vec1 = new THREE.Vector3();
+              const vec2 = new THREE.Vector3();
+              const vec3 = new THREE.Vector3();
+              vec1.x=position.array[index.array[k]];
+              vec1.y=position.array[index.array[k]+1];
+              vec1.z=position.array[index.array[k]+2];
+              vec2.x=position.array[index.array[k+1]];
+              vec2.y=position.array[index.array[k+1]+1];
+              vec2.z=position.array[index.array[k+1]+2];
+              vec3.x=position.array[index.array[k+2]];
+              vec3.y=position.array[index.array[k+2]+1];
+              vec3.z=position.array[index.array[k+2]+2];
+              vec1.applyMatrix4( obj.matrixWorld ).applyMatrix4(this.matrix);
+              vec2.applyMatrix4( obj.matrixWorld ).applyMatrix4(this.matrix);
+              vec3.applyMatrix4( obj.matrixWorld ).applyMatrix4(this.matrix);
+              vec1.project(camera);
+              vec2.project(camera);
+              vec3.project(camera);
+              this.positionScreenToPage( vec1 );
+              this.positionScreenToPage( vec2 );
+              this.positionScreenToPage( vec3 );
+  
+              this.bboxRect.setFromPoints( [new THREE.Vector2(vec1.x, vec1.y),
+                                           new THREE.Vector2(vec2.x, vec2.y),
+                                           new THREE.Vector2(vec3.x, vec3.y)] );
+              if ( !this.clipRect.intersectsBox( this.bboxRect ) ) {
+                continue;
+              }
+              this.renderTriangle(vec1, vec2, vec3, obj, obj.material);
+            }
+          }
+        }
+      }*/
     });
     //console.log(this.pdf);
   }
@@ -1027,27 +1093,37 @@ class tjViewer{
       height: this.height,
       export : function() {
         let exporter;
+        var oldWidth,oldHeight;
         switch(expparam.format){
           case 'png':
-            const oldWidth = this.width;
-            const oldHeight = this.height;
-            this.onWindowResize(expparam.width, expparam.height);
+            oldWidth = this.width;
+            oldHeight = this.height;
+            if(oldWidth!=expparam.width || oldHeight!=expparam.height){
+              this.onWindowResize(expparam.width, expparam.height);
+            }
             this.animate();
             this.renderer.domElement.toBlob(blob =>{
               saveBlob(blob, expparam.filename+'.'+expparam.format);
             });
-            this.onWindowResize(oldWidth, oldHeight);
+            if(oldWidth!=expparam.width || oldHeight!=expparam.height){
+              this.onWindowResize(oldWidth, oldHeight);
+            }
             break;
           case 'pdf':
+            oldWidth = this.width;
+            oldHeight = this.height;
+            if(oldWidth!=expparam.width || oldHeight!=expparam.height){
+                this.onWindowResize(expparam.width, expparam.height);
+            }
             if(this.sideBySide){
-              var pdfRenderer = new PDFRenderer(this.width/2, this.height, this.background);
+              var pdfRenderer = new PDFRenderer(expparam.width/2, expparam.height, this.background);
               pdfRenderer.render(this.scene, this.camera);
               pdfRenderer.pdf.save(expparam.filename+'.left.'+expparam.format);
-              var pdfRenderer2 = new PDFRenderer(this.width/2, this.height, this.background2);
+              var pdfRenderer2 = new PDFRenderer(expparam.width/2, expparam.height, this.background2);
               pdfRenderer2.render(this.scene2, this.camera2);
               pdfRenderer2.pdf.save(expparam.filename+'.right.'+expparam.format);
             }else{
-              var pdfRenderer = new PDFRenderer(this.width, this.height, this.background);
+              var pdfRenderer = new PDFRenderer(expparam.width, expparam.height, this.background);
               pdfRenderer.render(this.scene, this.camera);
               pdfRenderer.pdf.save(expparam.filename+'.'+expparam.format);
             }
@@ -1064,6 +1140,9 @@ class tjViewer{
                 pdfRenderer.render(this.sceneBottom, this.camera);
                 pdfRenderer.pdf.save(expparam.filename+'.bottom.'+expparam.format);
               }
+            }
+            if(oldWidth!=expparam.width || oldHeight!=expparam.height){
+              this.onWindowResize(oldWidth, oldHeight);
             }
             break;
           case 'drc':
@@ -1117,9 +1196,11 @@ class tjViewer{
             break;
           case 'video':
             if(this.animateparam.play){
-              const oldWidth = this.width;
-              const oldHeight = this.height;
-              this.onWindowResize(expparam.width, expparam.height);
+              oldWidth = this.width;
+              oldHeight = this.height;
+              if(oldWidth!=expparam.width || oldHeight!=expparam.height){
+                this.onWindowResize(expparam.width, expparam.height);
+              }
               const stream = this.renderer.domElement.captureStream(25);
               var recordedChunks = [];
               var options = {};
@@ -1151,7 +1232,9 @@ class tjViewer{
                 saveBlob(new Blob(recordedChunks, {
                   type: 'video/webm'
                 }), expparam.filename+'.webm');
-                this.onWindowResize(oldWidth, oldHeight);
+                if(oldWidth!=expparam.width || oldHeight!=expparam.height){
+                  this.onWindowResize(oldWidth, oldHeight);
+                }
               }.bind(this);
               mediaRecorder.onstop = animationStop;
               setTimeout(()=>{
@@ -1166,16 +1249,16 @@ class tjViewer{
         }
       }.bind(this)
     };
-    const exporterGUI = this.gui.addFolder('exporter');
-    exporterGUI.add(expparam, 'filename').onChange(
+    this.exporterGUI = this.gui.addFolder('exporter');
+    this.exporterGUI.add(expparam, 'filename').onChange(
       val => expparam.filename = val
     );
     var availableFormat = ['drc', 'gltf', 'pdf', 'ply', 'png', 'stl', 'svg', 'video'];
     var supportFormat = ['png', 'pdf', 'video'];
-    var exporterDuration = exporterGUI.add(expparam, 'duration', 0, 120, 1).onChange(
+    var exporterDuration = this.exporterGUI.add(expparam, 'duration', 0, 120, 1).onChange(
       val => expparam.duration = val
     ).hide();
-    exporterGUI.add(expparam, 'format', supportFormat).onChange(
+    this.exporterGUI.add(expparam, 'format', supportFormat).onChange(
       val => {
         expparam.format = val;
         if(val=='video'){
@@ -1185,14 +1268,18 @@ class tjViewer{
         }
       }
     );
-    exporterGUI.add(expparam, 'width', 0, 5000).onChange(
+    this.exporterGUIwidth =  this.exporterGUI.add(expparam, 'width', 0, 15000).onChange(
      val => expparam.width = val
     );
-    exporterGUI.add(expparam, 'height', 0, 5000).onChange(
+    this.exporterGUIheight = this.exporterGUI.add(expparam, 'height', 0, 15000).onChange(
      val => expparam.height = val
     );
-    const exporterBotton = exporterGUI.add(expparam, 'export');
-    exporterGUI.close();
+    const exporterBotton = this.exporterGUI.add(expparam, 'export');
+    this.exporterGUI.close();
+  }
+  setExporterGUIpara(){
+    this.exporterGUIwidth.setValue(this.width);
+    this.exporterGUIheight.setValue(this.height);
   }
   
   setBackgroundColorGUI(){
@@ -1567,14 +1654,22 @@ class tjViewer{
     markerGroup.add(markerB);
     markerGroup.add(line);
     markerGroup.add(result);
-    this.objects.add(markerGroup);
+    //this.objects.add(markerGroup);//this broken the rotation, don't know why
+    this.objects.add(markerA);
+    this.objects.add(markerB);
+    this.objects.add(line);
+    this.objects.add(result);
     this.scene.add(markerGroup);
     const markerGroup2 = new THREE.Group();
     markerGroup2.add(markerA2);
     markerGroup2.add(markerB2);
     markerGroup2.add(line2);
     markerGroup2.add(result2);
-    this.objects2.add(markerGroup2);
+    //this.objects2.add(markerGroup2);
+    this.objects2.add(markerA2);
+    this.objects2.add(markerB2);
+    this.objects2.add(line2);
+    this.objects2.add(result2);
     this.scene2.add(markerGroup2);
     var startMeasure = function(event){
       event.preventDefault();
@@ -3088,6 +3183,7 @@ class tjViewer{
     this.cameraInsert.updateProjectionMatrix();
     
     this.setResizeBlockPos();
+    this.setExporterGUIpara();
   }
   
   animate(){
