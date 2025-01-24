@@ -35,6 +35,14 @@ A htmlwidgets widget.
 threeJs Viewer
 The htmlwidgets viewer for threeJs.
 }
+\details{
+We convert data frames to JSON by getOption("shiny.json.digits", 7)
+to avoid the error 
+"Uncaught SyntaxError: Expected ',' or ']' after array element in JSON"
+for json parse process when handling big data. User can change the
+option 'shiny.json.digits' larger or smaller number to increase or decrease
+the digits when converting numbers.
+}
 \examples{
 library(GenomicRanges)
 flamingo <- system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds", package = "geomeTriD")

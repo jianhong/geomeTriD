@@ -9,6 +9,13 @@
 #' @param title the titles of the plot.
 #' @param width,height width and height of the widgets.
 #' @return A htmlwidgets widget.
+#' @details
+#' We convert data frames to JSON by getOption("shiny.json.digits", 7)
+#' to avoid the error 
+#' "Uncaught SyntaxError: Expected ',' or ']' after array element in JSON"
+#' for json parse process when handling big data. User can change the
+#' option 'shiny.json.digits' larger or smaller number to increase or decrease
+#' the digits when converting numbers.
 #' @examples
 #' library(GenomicRanges)
 #' flamingo <- system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds", package = "geomeTriD")
@@ -171,6 +178,10 @@ threeJsViewer <- function(...,
       )
     })
   )
+  # customize toJSON() argument values to avoid the error 
+  # Uncaught SyntaxError: Expected ',' or ']' after array element in JSON at 
+  # position 10000000 (line 1 column 10000001)
+  attr(x, 'TOJSON_ARGS') <- list(digits = getOption("shiny.json.digits", 7))
   # create the widget
   htmlwidgets::createWidget(
     "threeJsViewer", x,
