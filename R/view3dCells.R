@@ -6,7 +6,7 @@
 #' @param color,shape,radius The column names for color, shape, radius or the
 #' value(length=1) of them.
 #' @param colorFun The function to map values into colors.
-#' @param tag The tag for controler.
+#' @param tag The tag for controller.
 #' @param renderer The renderer of the 3D plots. Could be rgl or threejs.
 #' The threejs will create a htmlwidgets. If 'none' is set, a list of object
 #' will be returned.

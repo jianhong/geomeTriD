@@ -35,7 +35,7 @@ value(length=1) of them.}
 
 \item{colorFun}{The function to map values into colors.}
 
-\item{tag}{The tag for controler.}
+\item{tag}{The tag for controller.}
 
 \item{renderer}{The renderer of the 3D plots. Could be rgl or threejs.
 The threejs will create a htmlwidgets. If 'none' is set, a list of object

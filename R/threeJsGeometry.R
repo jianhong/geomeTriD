@@ -195,7 +195,7 @@ setClass("threeJsGeometry",
 )
 #' Available Geometries
 #' @description
-#' The Geometries suported by \link{threeJsGeometry} class
+#' The Geometries supported by \link{threeJsGeometry} class
 #' @export
 #' @examples
 #' availableGeometries

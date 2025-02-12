@@ -1,40 +1,77 @@
 Changes in version 1.1.8
+-------------------------
+
+BUG FIXES
+
+    o Fix multiple typos.
+    
+Changes in version 1.1.8
+-------------------------
+
+BUG FIXES
 
     o Fix the issues "Uncaught SyntaxError: Expected ',' or ']' after array element in JSON" if data.frame is too big.
     
 Changes in version 1.1.7
+-------------------------
+
+BUG FIXES
 
     o Fix the issues of measurment marker do not rotate and unexpected resize window when export.
     
 Changes in version 1.1.6
+-------------------------
+
+BUG FIXES
 
     o Export pdf with visible layers only.
     
 Changes in version 1.1.5
+-------------------------
+
+NEW FEATURES
 
     o Add pdf exporter.
     
 Changes in version 1.1.4
+-------------------------
+
+BUG FIXES
 
     o Fix the input check issue in kabsch.
     
 Changes in version 1.1.3
+-------------------------
+
+BUG FIXES
 
     o Update email address.
     
 Changes in version 1.1.2
+-------------------------
+
+NEW FEATURES
 
     o Add resolution for view3dStructure.
     
 Changes in version 1.1.1
+-------------------------
+
+NEW FEATURES
 
     o Add autocomplete input for search key words.
     
 Changes in version 0.99.18
+-------------------------
+
+BUG FIXES
 
     o Fix the issue for measurements in threeJsViewer when the world matrix updated.
     
 Changes in version 0.99.17
+-------------------------
+
+NEW FEATURES
 
     o Add parameter genomicScoreRange parameter for create3dGenomicSignals.
     
@@ -43,169 +80,286 @@ Changes in version 0.99.16
     o Fix the error in mdsPlot: 'dims' must contain all (i,j) pairs
 
 Changes in version 0.99.15
+-------------------------
+
+BUG FIXES
 
     o Change the background color set.
     o Remove local version of CSS2DRenderer.
 
 Changes in version 0.99.14
+-------------------------
+
+NEW FEATURES
 
     o add measurement for threeJsViewer.
     
 Changes in version 0.99.13
+-------------------------
+
+NEW FEATURES
 
     o add switch for orthographic and perspective projection to camera.
-    o add flip controler.
+    o add flip controller.
 
 Changes in version 0.99.12
+-------------------------
+
+NEW FEATURES
 
     o change OrbitControls to ArcballControls.
 
 Changes in version 0.99.11
+-------------------------
+
+BUG FIXES
 
     o Handle the error if NA values is in the GenoSig of create3dGenomicSignals.
     
 Changes in version 0.99.10
+-------------------------
+
+NEW FEATURES
 
     o Add title and subregion for threeJsViewer.
 
 Changes in version 0.99.9
+-------------------------
+
+NEW FEATURES
 
     o Add possible to export the GRanges object for mdsPlot.
     
 Changes in version 0.99.8
+-------------------------
+
+BUG FIXES
 
     o Fix the warning 'rgl.init' failed, running with 'rgl.useNULL = TRUE'.
     
 Changes in version 0.99.7
+-------------------------
+
+NEW FEATURES
 
     o Add `saveWidget` sample code to vignettes.
     
 Changes in version 0.99.6
+-------------------------
+
+NEW FEATURES
 
     o Add LICENSE items for threejs.
     o Add help page for the package itself.
     
 Changes in version 0.99.5
+-------------------------
+
+BUG FIXES
 
     o Fix the warning message in create3dGenomicSignals when calling mapply.
     
 Changes in version 0.99.4
+-------------------------
+
+NEW FEATURES
 
     o Add type 'polygon' to threeJsGeometry.
     
 Changes in version 0.99.3
+-------------------------
+
+NEW FEATURES
 
     o Add rotation slot to threeJsGeometry.
     
 Changes in version 0.99.2
+-------------------------
+
+NEW FEATURES
 
     o Fix a bug that color info is missing when create 3d geometries.
     o Update the documentation.
     
 Changes in version 0.99.0
+-------------------------
+
+NEW FEATURES
 
     o Prepare to submittion.
     
 Changes in version 0.0.25
+-------------------------
+
+BUG FIXES
 
     o simplify the documentation.
     
 Changes in version 0.0.24
+-------------------------
+
+NEW FEATURES
 
     o add more geometries for rglViewer.
     
 Changes in version 0.0.23
+-------------------------
+
+BUG FIXES
 
     o Fix multiple bugs.
     o Add multiple unit test.
     o Rewrite the plotInteractionData vignette.
 
 Changes in version 0.0.22
+-------------------------
+
+NEW FEATURES
 
     o Fix the code style.
     o Add multiple unit test.
     o export the create3dGenomicSignals function.
     
 Changes in version 0.0.21
+-------------------------
+
+NEW FEATURES
 
     o Add resize block for threeJsViewer.
     
 Changes in version 0.0.20
+-------------------------
+
+NEW FEATURES
 
     o Add unit test.
     
 Changes in version 0.0.19
+-------------------------
 
-    o Add group adjust controler for threeJsViewer.
-    o Add background color controler for threeJsViewer.
-    o Make the controler dragable for threeJsViewer.
+NEW FEATURES
+
+    o Add group adjust controller for threeJsViewer.
+    o Add background color controller for threeJsViewer.
+    o Make the controller dragable for threeJsViewer.
     o Add signalTransformFun for view3dStructure.
     
 Changes in version 0.0.18
+-------------------------
+
+NEW FEATURES
 
     o Add search by coordinates for threeJsViewer.
     
 Changes in version 0.0.17
+-------------------------
+
+NEW FEATURES
 
     o Add key control and linked OribitControl for threeJsViewer.
     
 Changes in version 0.0.16
+-------------------------
+
+NEW FEATURES
 
     o Add side by side comparison for threeJsViewer.
     
 Changes in version 0.0.15
+-------------------------
+
+NEW FEATURES
 
     o Add search box for threeJsViewer.
     
 Changes in version 0.0.14
+-------------------------
+
+BUG FIXES
 
     o Center the 3d plots.
     
 Changes in version 0.0.13
+-------------------------
+
+NEW FEATURES
 
     o update ATAC-seq signals to Genomic signals.
     
 Changes in version 0.0.12
+-------------------------
+
+NEW FEATURES
 
     o add plotScCells vignettes.
 
 Changes in version 0.0.11
+-------------------------
+
+BUG FIXES
 
     o fix the license issue.
     
 Changes in version 0.0.9
+-------------------------
+
+NEW FEATURES
 
     o add video exporter for tjviewer.
     
 Changes in version 0.0.8
+-------------------------
+
+NEW FEATURES
 
     o add view 3d cells.
     
 Changes in version 0.0.7
+-------------------------
+
+BUG FIXES
 
     o Change atacSig to segments for tjviewer.
     
 Changes in version 0.0.6
+-------------------------
+
+BUG FIXES
 
     o Fix the arrow direction for tjviewer.
     
 Changes in version 0.0.5
+-------------------------
+
+BUG FIXES
 
     o Rename the package.
     
 Changes in version 0.0.4
+-------------------------
+
+NEW FEATURES
 
     o Add a vignettes.
     
 Changes in version 0.0.3
+-------------------------
+
+NEW FEATURES
 
     o Add label geometry.
     
 Changes in version 0.0.2
+-------------------------
+
+NEW FEATURES
 
     o Add text geometry.
     
 Changes in version 0.0.1
+-------------------------
+
+NEW FEATURES
 
     o Init.
     o Create the htmlwidgets.

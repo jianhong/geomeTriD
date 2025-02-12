@@ -11,7 +11,7 @@ An object of class \code{character} of length 18.
 availableGeometries
 }
 \description{
-The Geometries suported by \link{threeJsGeometry} class
+The Geometries supported by \link{threeJsGeometry} class
 }
 \examples{
 availableGeometries
