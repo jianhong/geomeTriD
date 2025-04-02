@@ -261,7 +261,9 @@ rglViewer <- function(..., background = "gray") {
         spheres3d(.ele$x, .ele$y, .ele$z,
           radius = .ele$properties$radius,
           tag = .ele$tag,
-          col = .ele$colors
+          col = .ele$colors,
+          alpha = ifelse(length(.ele$properties$alpha) == 1,
+                         .ele$properties$alpha, 1)
         )
       },
       tetrahedron = {

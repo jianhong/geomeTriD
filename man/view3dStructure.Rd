@@ -31,6 +31,7 @@ view3dStructure(
   length.arrow = unit(abs(diff(obj$x))/20, "native"),
   safe_text_force = 3,
   square = TRUE,
+  cluster3Dpoints = FALSE,
   ...
 )
 }
@@ -75,6 +76,9 @@ to turn it off. The default value 1e5 means show coordinates every 0.1M bp.}
 \item{safe_text_force}{The loops to avoid the text overlapping.}
 
 \item{square}{A logical value that controls whether control points for the curve are created city-block fashion or obliquely. See \link[grid]{grid.curve}.}
+
+\item{cluster3Dpoints}{A logical value that controls whether cluster the points
+in 3D. It will be ignored when k=2.}
 
 \item{...}{Parameters for \link{create3dGenomicSignals}.}
 }

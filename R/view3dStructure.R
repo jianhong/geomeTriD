@@ -24,6 +24,8 @@
 #' @param length.arrow Length of the edges of the arrow head (in inches).
 #' @param safe_text_force The loops to avoid the text overlapping.
 #' @param square A logical value that controls whether control points for the curve are created city-block fashion or obliquely. See \link[grid]{grid.curve}.
+#' @param cluster3Dpoints A logical value that controls whether cluster the points
+#' in 3D. It will be ignored when k=2. 
 #' @param ... Parameters for \link{create3dGenomicSignals}.
 #' @return Coordinates for 2d or a list of threeJsGeometry objects or a
 #' htmlwidget.
@@ -71,6 +73,7 @@ view3dStructure <- function(obj, feature.gr,
                             length.arrow = unit(abs(diff(obj$x)) / 20, "native"),
                             safe_text_force = 3,
                             square = TRUE,
+                            cluster3Dpoints = FALSE,
                             ...) {
   stopifnot(is(obj, "GRanges"))
   if(!missing(region)){
@@ -89,6 +92,8 @@ view3dStructure <- function(obj, feature.gr,
     stopifnot("z" %in% colnames(mcols(obj)))
   }
   renderer <- match.arg(renderer)
+  stopifnot(is.logical(cluster3Dpoints))
+  stopifnot(length(cluster3Dpoints)==1)
   seqn <- as.character(seqnames(obj)[1])
   feature.gr <- parseFeature(
     feature.gr = feature.gr,
@@ -232,8 +237,16 @@ view3dStructure <- function(obj, feature.gr,
     obj$x <- obj$x * mf
     obj$y <- obj$y * mf
     obj$z <- obj$z * mf
-    ## spline smooth for each bin with 30 points
+    
     dots <- list(...)
+    ## add point cluster annotation
+    if(cluster3Dpoints){
+      eps <- ifelse("eps" %in% names(dots), dots$eps, 'auto')
+      clusters <- pointCluster(obj, eps = eps)
+      pc <- clusterAnno(obj, clusters)
+      pc_geometries <- createPointClusterGeometries(pc, obj)
+    }
+    ## spline smooth for each bin with 30 points
     if('resolution' %in% names(dots)){
       obj <- smooth3dPoints(obj, dots$resolution)
     }else{
@@ -535,6 +548,12 @@ view3dStructure <- function(obj, feature.gr,
           lengths(feature_geometries) > 0
         ])
       )
+    }
+    ## add point clusters
+    if(cluster3Dpoints){
+      if(length(pc_geometries)>0){
+        geometries <- c(geometries, pc_geometries)
+      } 
     }
     
     geometries <- geometries[lengths(geometries) > 0]

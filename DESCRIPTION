@@ -2,7 +2,7 @@ Package: geomeTriD
 Type: Package
 Title: A R/Bioconductor package for interactive 3D plot of epigenetic data or
   single cell data
-Version: 1.1.9
+Version: 1.1.10
 Authors@R: c(person(given="Jianhong", family="Ou", email="jou@morgridge.org", 
         role=c("aut", "cre"), comment=c(ORCID="0000-0002-8652-2488")))
 Description: geomeTriD (Three Dimensional Geometry Package) 
@@ -19,6 +19,7 @@ License: MIT + file LICENSE
 Depends: R (>= 4.4.0)
 Imports:
   BiocGenerics,
+  dbscan,
   GenomeInfoDb,
   GenomicRanges,
   graphics,
@@ -32,6 +33,7 @@ Imports:
   Matrix,
   methods,
   plotrix,
+  RANN,
   rgl,
   rjson,
   S4Vectors,
