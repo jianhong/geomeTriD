@@ -1372,7 +1372,9 @@ class tjViewer{
   setLightGUI(){
     //soft white light
     const ambientLight = new THREE.AmbientLight( 0x404040, 2);
+    const ambientLight2 = new THREE.AmbientLight( 0x404040, 2);
     this.scene.add( ambientLight );
+    this.scene2.add( ambientLight2 );
     const ambientparams = {
       AmbientColor: ambientLight.color.getHex(),
       AmbientIntensity: ambientLight.intensity
@@ -1386,6 +1388,13 @@ class tjViewer{
     directionalLight2.position.set( -2.5, 25, 5 );
     this.scene.add( directionalLight1 );
     this.scene.add( directionalLight2 );
+    let directionalLight3,directionalLight4; 
+    directionalLight3 = new THREE.DirectionalLight( 0xffffff, 5 );
+    directionalLight3.position.set( 2.5, 5, -25 );
+    directionalLight4 = new THREE.DirectionalLight( 0x606060, 2 );
+    directionalLight4.position.set( -2.5, 25, 5 );
+    this.scene2.add( directionalLight3 );
+    this.scene2.add( directionalLight4 );
     
     const lightparams = {
       color: directionalLight1.color.getHex(),
@@ -1401,8 +1410,10 @@ class tjViewer{
       setPosition: function(main){
         if(main){
           directionalLight1.position.set(lightparams.x, lightparams.y, lightparams.z);
+          directionalLight3.position.set(lightparams.x, lightparams.y, lightparams.z);
         }else{
           directionalLight2.position.set(lightparams['auxiliary x'], lightparams['auxiliary y'], lightparams['auxiliary z']);
+          directionalLight4.position.set(lightparams['auxiliary x'], lightparams['auxiliary y'], lightparams['auxiliary z']);
         }
       }
     };
@@ -1410,15 +1421,19 @@ class tjViewer{
     
     spotlightGUI.addColor( ambientparams, 'AmbientColor' ).onChange( function ( val ) {
       ambientLight.color.setHex( val );
+      ambientLight2.color.setHex( val );
     } );
     spotlightGUI.add( ambientparams, 'AmbientIntensity', 0, 10 ).onChange( function ( val ) {
       ambientLight.intensity = val;
+      ambientLight2.intensity = val;
     } );
     spotlightGUI.addColor( lightparams, 'color' ).onChange( function ( val ) {
       directionalLight1.color.setHex( val );
+      directionalLight3.color.setHex( val );
     } );
     spotlightGUI.add( lightparams, 'intensity', 0, 100 ).onChange( function ( val ) {
       directionalLight1.intensity = val;
+      directionalLight3.intensity = val;
     } );
     spotlightGUI.add( lightparams, 'x', -50, 50 ).onChange( function ( val ) {
       lightparams.x = val;
@@ -1434,9 +1449,11 @@ class tjViewer{
     } );
     spotlightGUI.addColor( lightparams, 'auxiliary color' ).onChange( function ( val ) {
       directionalLight2.color.setHex( val );
+      directionalLight4.color.setHex( val );
     } );
     spotlightGUI.add( lightparams, 'auxiliary intensity', 0, 50 ).onChange( function ( val ) {
       directionalLight2.intensity = val;
+      directionalLight4.intensity = val;
     } );
     spotlightGUI.add( lightparams, 'auxiliary x', -50, 50 ).onChange( function ( val ) {
       lightparams['auxiliary x'] = val;
@@ -2553,6 +2570,10 @@ class tjViewer{
             break;
           case 'sphere':
             param.radius = ele.radius;
+            if(ele.alpha != null){
+              param.opacity = ele.alpha;
+              material.opacity = ele.alpha;
+            }
             const spheredata = {
               radius: ele.radius,
               widthSegments: 32, //3-64

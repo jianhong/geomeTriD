@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geomeTriD</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.10</span>
       </span>
     </div>
 
@@ -80,6 +80,7 @@
 <span>  length.arrow <span class="op">=</span> <span class="fu">unit</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="va">obj</span><span class="op">$</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="fl">20</span>, <span class="st">"native"</span><span class="op">)</span>,</span>
 <span>  safe_text_force <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  square <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  cluster3Dpoints <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -163,6 +164,11 @@ to turn it off. The default value 1e5 means show coordinates every 0.1M bp.</p><
 
 <dt id="arg-square">square<a class="anchor" aria-label="anchor" href="#arg-square"></a></dt>
 <dd><p>A logical value that controls whether control points for the curve are created city-block fashion or obliquely. See <a href="https://rdrr.io/r/grid/grid.curve.html" class="external-link">grid.curve</a>.</p></dd>
+
+
+<dt id="arg-cluster-dpoints">cluster3Dpoints<a class="anchor" aria-label="anchor" href="#arg-cluster-dpoints"></a></dt>
+<dd><p>A logical value that controls whether cluster the points
+in 3D. It will be ignored when k=2.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
