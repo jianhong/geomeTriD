@@ -1,3 +1,10 @@
+Changes in version 1.1.11
+-------------------------
+
+NEW FEATURES
+
+    o Add createTADGeometries function.
+
 Changes in version 1.1.10
 -------------------------
 

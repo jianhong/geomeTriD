@@ -3,6 +3,7 @@
 export(alignCoor)
 export(availableGeometries)
 export(create3dGenomicSignals)
+export(createTADGeometries)
 export(extractBackbonePositions)
 export(loopBouquetPlot)
 export(mdsPlot)
