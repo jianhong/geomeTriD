@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geomeTriD</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.0</span>
       </span>
     </div>
 
@@ -64,14 +64,14 @@
 
       </header><link href="geomeTriD_files/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
 <script src="geomeTriD_files/htmlwidgets-1.6.4/htmlwidgets.js"></script><script src="geomeTriD_files/tjviewer_map_loader-0.0.1/tjviewer.map.js"></script><script type="importmap">{"imports": {"three": "https://cdn.jsdelivr.net/npm/three@0.166.1/build/three.module.js","three/addons/": "https://cdn.jsdelivr.net/npm/three@0.166.1/examples/jsm/","jspdf": "https://cdn.jsdelivr.net/npm/jspdf@2.0.0/dist/jspdf.es.js","tjviewer/":"https://cdn.jsdelivr.net/gh/jianhong/geometrid@devel/inst/htmlwidgets/lib/tjviewer/"}}</script><link href="geomeTriD_files/tjviewer-0.0.1/tjviewer.module.css" rel="stylesheet">
-<script src="geomeTriD_files/tjviewer-0.0.1/tjviewer.module.js" type="module"></script><script src="geomeTriD_files/threeJsViewer-binding-1.1.11/threeJsViewer.js"></script><div class="row">
+<script src="geomeTriD_files/tjviewer-0.0.1/tjviewer.module.js" type="module"></script><script src="geomeTriD_files/threeJsViewer-binding-1.3.0/threeJsViewer.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>geomeTriD Vignette: Plot data in 3D</h1>
                         <h4 data-toc-skip class="author">Jianhong
 Ou</h4>
             
-            <h4 data-toc-skip class="date">10 April 2025</h4>
+            <h4 data-toc-skip class="date">24 April 2025</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/jianhong/geomeTriD/blob/devel/vignettes/geomeTriD.Rmd" class="external-link"><code>vignettes/geomeTriD.Rmd</code></a></small>
       <div class="hidden name"><code>geomeTriD.Rmd</code></div>
@@ -731,8 +731,8 @@ the backbone.</p>
 </h2>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>R Under development (unstable) (2025-03-08 r87910) Platform:
-x86_64-pc-linux-gnu Running under: Ubuntu 24.04.1 LTS</p>
+<p>R version 4.5.0 (2025-04-11) Platform: x86_64-pc-linux-gnu Running
+under: Ubuntu 24.04.2 LTS</p>
 <p>Matrix products: default BLAS:
 /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 LAPACK:
 /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;
@@ -746,67 +746,67 @@ LAPACK version 3.12.0</p>
 <p>time zone: Etc/UTC tzcode source: system (glibc)</p>
 <p>attached base packages: [1] grid stats4 stats graphics grDevices
 utils datasets [8] methods base</p>
-<p>other attached packages: [1] trackViewer_1.43.7<br>
+<p>other attached packages: [1] trackViewer_1.45.0<br>
 [2] rgl_1.3.18<br>
-[3] InteractionSet_1.35.0<br>
-[4] SummarizedExperiment_1.37.0<br>
-[5] MatrixGenerics_1.19.1<br>
+[3] InteractionSet_1.37.0<br>
+[4] SummarizedExperiment_1.39.0<br>
+[5] MatrixGenerics_1.21.0<br>
 [6] matrixStats_1.5.0<br>
 [7] org.Hs.eg.db_3.21.0<br>
 [8] TxDb.Hsapiens.UCSC.hg19.knownGene_3.2.2 [9]
-GenomicFeatures_1.59.1<br>
-[10] AnnotationDbi_1.69.1<br>
-[11] Biobase_2.67.0<br>
-[12] GenomicRanges_1.59.1<br>
-[13] GenomeInfoDb_1.43.4<br>
-[14] IRanges_2.41.3<br>
-[15] S4Vectors_0.45.4<br>
-[16] BiocGenerics_0.53.6<br>
+GenomicFeatures_1.61.0<br>
+[10] AnnotationDbi_1.71.0<br>
+[11] Biobase_2.69.0<br>
+[12] GenomicRanges_1.61.0<br>
+[13] GenomeInfoDb_1.45.0<br>
+[14] IRanges_2.43.0<br>
+[15] S4Vectors_0.47.0<br>
+[16] BiocGenerics_0.55.0<br>
 [17] generics_0.1.3<br>
-[18] geomeTriD_1.1.11</p>
+[18] geomeTriD_1.3.0</p>
 <p>loaded via a namespace (and not attached): [1] strawr_0.0.92
 RColorBrewer_1.1-3 rstudioapi_0.17.1<br>
 [4] jsonlite_2.0.0 magrittr_2.0.3 rmarkdown_2.29<br>
-[7] fs_1.6.5 BiocIO_1.17.2 ragg_1.3.3<br>
-[10] vctrs_0.6.5 memoise_2.0.1 Rsamtools_2.23.1<br>
+[7] fs_1.6.6 BiocIO_1.19.0 ragg_1.4.0<br>
+[10] vctrs_0.6.5 memoise_2.0.1 Rsamtools_2.25.0<br>
 [13] RCurl_1.98-1.17 base64enc_0.1-3 htmltools_0.5.8.1<br>
-[16] S4Arrays_1.7.3 progress_1.2.3 plotrix_3.8-4<br>
-[19] curl_6.2.2 Rhdf5lib_1.29.2 rhdf5_2.51.2<br>
-[22] SparseArray_1.7.7 Formula_1.2-5 sass_0.4.9<br>
+[16] S4Arrays_1.9.0 progress_1.2.3 plotrix_3.8-4<br>
+[19] curl_6.2.2 Rhdf5lib_1.31.0 rhdf5_2.53.0<br>
+[22] SparseArray_1.9.0 Formula_1.2-5 sass_0.4.10<br>
 [25] bslib_0.9.0 htmlwidgets_1.6.4 desc_1.4.3<br>
-[28] Gviz_1.51.0 httr2_1.1.2 cachem_1.1.0<br>
-[31] GenomicAlignments_1.43.0 igraph_2.1.4 lifecycle_1.0.4<br>
+[28] Gviz_1.53.0 httr2_1.1.2 cachem_1.1.0<br>
+[31] GenomicAlignments_1.45.0 igraph_2.1.4 lifecycle_1.0.4<br>
 [34] pkgconfig_2.0.3 Matrix_1.7-3 R6_2.6.1<br>
 [37] fastmap_1.2.0 GenomeInfoDbData_1.2.14 digest_0.6.37<br>
 [40] colorspace_2.1-1 textshaping_1.0.0 Hmisc_5.2-3<br>
 [43] RSQLite_2.3.9 filelock_1.0.3 httr_1.4.7<br>
 [46] abind_1.4-8 compiler_4.5.0 bit64_4.6.0-1<br>
-[49] htmlTable_2.4.3 backports_1.5.0 BiocParallel_1.41.5<br>
-[52] DBI_1.2.3 biomaRt_2.63.3 MASS_7.3-65<br>
-[55] rappdirs_0.3.3 DelayedArray_0.33.6 rjson_0.2.23<br>
+[49] htmlTable_2.4.3 backports_1.5.0 BiocParallel_1.43.0<br>
+[52] DBI_1.2.3 biomaRt_2.65.0 MASS_7.3-65<br>
+[55] rappdirs_0.3.3 DelayedArray_0.35.1 rjson_0.2.23<br>
 [58] tools_4.5.0 foreign_0.8-90 nnet_7.3-20<br>
 [61] glue_1.8.0 restfulr_0.0.15 dbscan_1.2.2<br>
-[64] rhdf5filters_1.19.2 checkmate_2.3.2 cluster_2.1.8.1<br>
-[67] gtable_0.3.6 BSgenome_1.75.1 ensembldb_2.31.0<br>
+[64] rhdf5filters_1.21.0 checkmate_2.3.2 cluster_2.1.8.1<br>
+[67] gtable_0.3.6 BSgenome_1.77.0 ensembldb_2.33.0<br>
 [70] data.table_1.17.0 hms_1.1.3 xml2_1.3.8<br>
-[73] XVector_0.47.2 RANN_2.6.2 pillar_1.10.2<br>
-[76] stringr_1.5.1 dplyr_1.1.4 BiocFileCache_2.15.1<br>
-[79] lattice_0.22-7 deldir_2.0-4 rtracklayer_1.67.1<br>
-[82] bit_4.6.0 biovizBase_1.55.0 tidyselect_1.2.1<br>
-[85] Biostrings_2.75.4 knitr_1.50 gridExtra_2.3<br>
-[88] ProtGenerics_1.39.2 xfun_0.52 stringi_1.8.7<br>
-[91] UCSC.utils_1.3.1 lazyeval_0.2.2 yaml_2.3.10<br>
+[73] XVector_0.49.0 RANN_2.6.2 pillar_1.10.2<br>
+[76] stringr_1.5.1 dplyr_1.1.4 BiocFileCache_2.99.0<br>
+[79] lattice_0.22-7 deldir_2.0-4 rtracklayer_1.69.0<br>
+[82] bit_4.6.0 biovizBase_1.57.0 tidyselect_1.2.1<br>
+[85] Biostrings_2.77.0 knitr_1.50 gridExtra_2.3<br>
+[88] ProtGenerics_1.41.0 xfun_0.52 stringi_1.8.7<br>
+[91] UCSC.utils_1.5.0 lazyeval_0.2.2 yaml_2.3.10<br>
 [94] evaluate_1.0.3 codetools_0.2-20 interp_1.1-6<br>
-[97] tibble_3.2.1 BiocManager_1.30.25 cli_3.6.4<br>
+[97] tibble_3.2.1 BiocManager_1.30.25 cli_3.6.5<br>
 [100] rpart_4.1.24 systemfonts_1.2.2 munsell_0.5.1<br>
 [103] jquerylib_0.1.4 dichromat_2.0-0.1 Rcpp_1.0.14<br>
 [106] grImport_0.9-7 dbplyr_2.5.0 png_0.1-8<br>
 [109] XML_3.99-0.18 parallel_4.5.0 pkgdown_2.1.1<br>
 [112] ggplot2_3.5.2 blob_1.2.4 prettyunits_1.2.0<br>
-[115] jpeg_0.1-11 latticeExtra_0.6-30 AnnotationFilter_1.31.0 [118]
-bitops_1.0-9 txdbmaker_1.3.1 VariantAnnotation_1.53.1 [121] scales_1.3.0
-crayon_1.5.3 BiocStyle_2.35.0<br>
-[124] rlang_1.1.5 KEGGREST_1.47.1</p>
+[115] jpeg_0.1-11 latticeExtra_0.6-30 AnnotationFilter_1.33.0 [118]
+bitops_1.0-9 txdbmaker_1.5.0 VariantAnnotation_1.55.0 [121] scales_1.3.0
+crayon_1.5.3 BiocStyle_2.37.0<br>
+[124] rlang_1.1.6 KEGGREST_1.49.0</p>
 </div>
   </div>
 
