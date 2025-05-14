@@ -28,19 +28,25 @@ smooth3dPoints <- function(obj, resolution = 30, ...) {
   t <- seq_along(obj)
   resolution <- safe_resolution(obj, n = resolution)
   tt <- seq(1, length(obj), len = sum(resolution) + 1)
-  sdata <- lapply(colnames(mcols(obj)), function(j) {
+  sdata <- lapply(c("x", "y", "z"), function(j) {
     splinefun(t, mcols(obj)[, j, drop = TRUE], ...)(tt)
   })
   sdata <- do.call(cbind, sdata)
   sdata <- data.frame(sdata)
-  colnames(sdata) <- colnames(mcols(obj))
-  obj <- tile(obj, n = resolution)
-  obj <- unlist(obj)
+  colnames(sdata) <- c("x", "y", "z")
+  obj1 <- tile(obj, n = resolution)
+  md <- mcols(obj)[rep(seq_along(obj), lengths(obj1)),
+                   !colnames(mcols(obj)) %in% c('x', 'y', 'z',
+                                                'x0', 'y0', 'z0',
+                                                'x1', 'y1', 'z1'),
+                   drop=FALSE]
+  obj <- unlist(obj1)
+  rm(obj1)
   stopifnot("Unexpected happend." = length(obj) + 1 == nrow(sdata))
   sdata0 <- sdata[-nrow(sdata), , drop = FALSE]
   sdata1 <- sdata[-1, , drop = FALSE]
   colnames(sdata0) <- paste0(colnames(sdata), "0")
   colnames(sdata1) <- paste0(colnames(sdata), "1")
-  mcols(obj) <- cbind(sdata0, sdata1)
+  mcols(obj) <- cbind(sdata0, sdata1, md)
   obj
 }

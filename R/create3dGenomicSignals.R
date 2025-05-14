@@ -265,6 +265,7 @@ createSegmentGeometry <- function(
     GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     lwd.maxGenomicSigs = 8, alpha = 1, length.out,
+    resizeFactor = 1,
     ...) {
   if(lwd.maxGenomicSigs[1]<2){
     warning('Small lwd.maxGenomicSigs will lead to some errors when plot it.')
@@ -343,7 +344,8 @@ createSegmentGeometry <- function(
         rotation = rotation,
         properties = list(
           size = lwd,
-          alpha = alpha
+          alpha = alpha,
+          resizeFactor = resizeFactor
         )
       )
     })
@@ -379,6 +381,7 @@ createCircleGeometry <- function(
     GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     radius = 8, maxVal = 1, thetaStart = 0,
+    resizeFactor = 1,
     ...) {
   GenoSig$score <- 2 * pi * GenoSig$score / maxVal[1]
   if (revGenoSig) GenoSig$score <- 2 * pi - GenoSig$score
@@ -403,7 +406,8 @@ createCircleGeometry <- function(
           properties = list(
             radius = r,
             thetaStart = ts,
-            thetaLength = pct
+            thetaLength = pct,
+            resizeFactor = resizeFactor
           )
         )
       }, SIMPLIFY = FALSE
@@ -424,7 +428,8 @@ createCircleGeometry <- function(
           properties = list(
             radius = r,
             thetaStart = ts,
-            thetaLength = GenoSig$score[idx]
+            thetaLength = GenoSig$score[idx],
+            resizeFactor = resizeFactor
           )
         )
       }, SIMPLIFY = FALSE
@@ -466,6 +471,7 @@ createSphereGeometry <- function(
     GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     radius = 8, type = "sphere",
+    resizeFactor = 1,
     ...) {
   color <- mapScore2Color(GenoSig, color, genomicScoreRange)
   GenoSig <- getXYZmean(GenoSig)
@@ -481,7 +487,8 @@ createSphereGeometry <- function(
         tag = tag,
         rotation = rotation,
         properties = list(
-          radius = .radius
+          radius = .radius,
+          resizeFactor = resizeFactor
         )
       )
     }, seq_along(GenoSig), radius, color)
@@ -497,7 +504,8 @@ createSphereGeometry <- function(
       tag = tag,
       rotation = rotation,
       properties = list(
-        radius = radius[1]
+        radius = radius[1],
+        resizeFactor = resizeFactor
       )
     )
     genomic_signal <- list(genomic_signal)
@@ -512,6 +520,7 @@ createBoxGeometry <- function(
     GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     width, height, depth,
+    resizeFactor = 1,
     ...) {
   if (missing(width) || missing(height) || missing(depth)) {
     if (missing(width)) {
@@ -544,7 +553,8 @@ createBoxGeometry <- function(
         properties = list(
           width = wid,
           height = hgt,
-          depth = dpt
+          depth = dpt,
+          resizeFactor = resizeFactor
         )
       )
     )
@@ -562,7 +572,8 @@ createBoxGeometry <- function(
         properties = list(
           width = w,
           height = h,
-          depth = d
+          depth = d,
+          resizeFactor = resizeFactor
         )
       )
     }, seq_along(GenoSig), width, height, depth, color)
@@ -576,6 +587,7 @@ createCapsuleGeometry <- function(
     GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     height, radius,
+    resizeFactor = 1,
     ...) {
   if (missing(height) || missing(radius)) {
     if (missing(height)) {
@@ -603,7 +615,8 @@ createCapsuleGeometry <- function(
         rotation = rotation,
         properties = list(
           height = hgt,
-          radius = r
+          radius = r,
+          resizeFactor = resizeFactor
         )
       )
     )
@@ -620,7 +633,8 @@ createCapsuleGeometry <- function(
         rotation = rotation,
         properties = list(
           height = h,
-          radius = d
+          radius = d,
+          resizeFactor = resizeFactor
         )
       )
     }, seq_along(GenoSig), height, radius, color)
@@ -634,6 +648,7 @@ createCylinderGeometry <- function(
     GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     height, radiusTop, radiusBottom,
+    resizeFactor = 1,
     ...) {
   if (missing(height) || missing(radiusTop) || missing(radiusBottom)) {
     if (missing(height)) {
@@ -666,7 +681,8 @@ createCylinderGeometry <- function(
         properties = list(
           height = hgt,
           radiusTop = rt,
-          radiusBottom = rb
+          radiusBottom = rb,
+          resizeFactor = resizeFactor
         )
       )
     )
@@ -684,7 +700,8 @@ createCylinderGeometry <- function(
         properties = list(
           height = h,
           radiusTop = rt,
-          radiusBottom = rb
+          radiusBottom = rb,
+          resizeFactor = resizeFactor
         )
       )
     }, seq_along(GenoSig), height, radiusTop, radiusBottom, color)
@@ -698,6 +715,7 @@ createConeGeometry <- function(
     GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     height, radius,
+    resizeFactor = 1,
     ...) {
   if (missing(height) || missing(radius)) {
     if (missing(height)) {
@@ -725,7 +743,8 @@ createConeGeometry <- function(
         rotation = rotation,
         properties = list(
           height = hgt,
-          radius = r
+          radius = r,
+          resizeFactor = resizeFactor
         )
       )
     )
@@ -742,7 +761,8 @@ createConeGeometry <- function(
         rotation = rotation,
         properties = list(
           height = h,
-          radius = d
+          radius = d,
+          resizeFactor = resizeFactor
         )
       )
     }, seq_along(GenoSig), height, radius, color)
@@ -769,6 +789,7 @@ createTorusGeometry <- function(
     GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
     tube, radius,
+    resizeFactor = 1,
     ...) {
   if (missing(tube) || missing(radius)) {
     if (missing(tube)) {
@@ -796,7 +817,8 @@ createTorusGeometry <- function(
         rotation = rotation,
         properties = list(
           tube = hgt,
-          radius = r
+          radius = r,
+          resizeFactor = resizeFactor
         )
       )
     )
@@ -813,7 +835,8 @@ createTorusGeometry <- function(
         rotation = rotation,
         properties = list(
           tube = h,
-          radius = d
+          radius = d,
+          resizeFactor = resizeFactor
         )
       )
     }, seq_along(GenoSig), tube, radius, color)
@@ -827,7 +850,7 @@ createTorusGeometry <- function(
 createJsonGeometry <- function(
     GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
-    path,
+    path, resizeFactor = 1,
     ...) {
   json <- fromJSON(file = path)
   stopifnot(
@@ -846,7 +869,8 @@ createJsonGeometry <- function(
       tag = tag,
       rotation = rotation,
       properties = list(
-        json = json
+        json = json,
+        resizeFactor = resizeFactor
       )
     )
   )
@@ -922,6 +946,7 @@ mapScore2Alpha <- function(score, default=0.1, genomicScoreRange){
 createPolygonGeometry <- function(
     GenoSig, genomicScoreRange, revGenoSig,
     name, color, tag, rotation,
+    resizeFactor = 1,
     ...) {
   genomic_signal <- data.frame(
     GenoSig$x0, GenoSig$x1, GenoSig$x1_2, GenoSig$x0_2,
@@ -975,7 +1000,8 @@ createPolygonGeometry <- function(
     rotation = rotation,
     properties = list(
       alpha=rep(genomic_signal$alpha, ncol(x))[idJ],
-      indices=as.integer(indices)-1
+      indices=as.integer(indices)-1,
+      resizeFactor = resizeFactor
     )
   ))
   names(geo) <- name

@@ -121,6 +121,23 @@ threeJsViewer <- function(...,
   tags <- unname(vapply(geos, function(.geo) {
     .geo$tag[1]
   }, FUN.VALUE = character(1L)))
+  ## resizeFactor
+  resizeFactor <- list(left = 1, right = 1)
+  resizeFactorSide <- vapply(geos, function(.ele) .ele$side, character(1L))
+  if(length(unique(resizeFactorSide))>1){
+    resizeFactors <- vapply(geos, function(.ele) {
+      ifelse("resizeFactor" %in% names(.ele$properties),
+             .ele$properties$resizeFactor, NA)
+    }, numeric(1L))
+    resizeFactors <- split(resizeFactors, resizeFactorSide)
+    resizeFactors <- lapply(resizeFactors, unique)
+    resizeFactors <- lapply(resizeFactors, function(.ele) .ele[!is.na(.ele)])
+    if(all(lengths(resizeFactors)>0)){
+      resizeFactors <- vapply(resizeFactors, function(.ele) .ele[1], numeric(1L))
+      resizeFactor <- as.list(mean(resizeFactors)/resizeFactors)
+    }
+  }
+  
   x <- list(
     background = list(
       r = unname(background["red", , drop = TRUE]),
@@ -137,7 +154,8 @@ threeJsViewer <- function(...,
       .geo$layer[1] == "bottom"
     }, FUN.VALUE = logical(1L))),
     taglayers = unique(tags),
-    tagWithChild = unique(tags[duplicated(tags)])
+    tagWithChild = unique(tags[duplicated(tags)]),
+    resizeFactor = resizeFactor
   )
   if(!missing(title)){
     x$title <- c(title, '')[c(1, 2)]

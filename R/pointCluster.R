@@ -75,7 +75,7 @@ clusterAnno <- function(gr, clusters){
   return(tads)
 }
 
-createPointClusterGeometries <- function(pc, obj){
+createPointClusterGeometries <- function(pc, obj, ...){
   stopifnot(is(pc, 'GRanges'))
   stopifnot(all(c('label', 'col', 'cluster') %in% colnames(mcols(pc))))
   stopifnot(is(obj, 'GRanges'))
@@ -104,7 +104,8 @@ createPointClusterGeometries <- function(pc, obj){
       properties = list(
         label = unname(pc$label[match(names(coor)[idx], pc$cluster)]),
         radius = unname(coor.radius[names(coor)[idx]]),
-        alpha = 0.2
+        alpha = 0.2,
+        ...
       )
     )
   })

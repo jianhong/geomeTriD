@@ -74,7 +74,10 @@ createTADGeometries <- function(tad, targetObj,
     targetObj$x <- (targetObj$x0 + targetObj$x1)/2
     targetObj$y <- (targetObj$y0 + targetObj$y1)/2
     targetObj$z <- (targetObj$z0 + targetObj$z1)/2
-    ol <- findOverlaps(targetObj, tad, type='within')
+    ol <- findOverlaps(targetObj, tad, minoverlap=2L)
+    if(length(ol)==0){
+      stop('Can not locate the tad in targetObj.')
+    }
     coor <- split(as.data.frame(
       mcols(targetObj[queryHits(ol)])[, c('x', 'y', 'z')]),
       tad[subjectHits(ol)]$label)

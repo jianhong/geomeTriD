@@ -227,31 +227,39 @@ view3dStructure <- function(obj, feature.gr,
   } else {
     ## plot 3D
     # recenter the x,y,z
-    xcenter <- mean(xlim)
-    ycenter <- mean(ylim)
-    zcenter <- mean(zlim)
+    xcenter <- mean(xlim, na.rm=TRUE)
+    ycenter <- mean(ylim, na.rm=TRUE)
+    zcenter <- mean(zlim, na.rm=TRUE)
     obj$x <- obj$x - xcenter
     obj$y <- obj$y - ycenter
     obj$z <- obj$z - zcenter
-    mf <- 5 / max(abs(obj$x), abs(obj$y), abs(obj$z)) ## change to around -5:5
-    obj$x <- obj$x * mf
-    obj$y <- obj$y * mf
-    obj$z <- obj$z * mf
+    resizeFactor <- 5 / max(abs(obj$x), abs(obj$y), abs(obj$z), na.rm = TRUE) ## change to around -5:5
+    obj$x <- obj$x * resizeFactor
+    obj$y <- obj$y * resizeFactor
+    obj$z <- obj$z * resizeFactor
     
     dots <- list(...)
     ## add point cluster annotation
     if(cluster3Dpoints){
       eps <- ifelse("eps" %in% names(dots), dots$eps, 'auto')
-      clusters <- pointCluster(obj, eps = eps)
+      obj.cp <- obj
+      mcols(obj.cp) <- mcols(obj)[, c('x', 'y', 'z')]
+      clusters <- pointCluster(obj.cp, eps = eps)
+      rm(obj.cp)
       pc <- clusterAnno(obj, clusters)
-      pc_geometries <- createPointClusterGeometries(pc, obj)
+      pc_geometries <-
+        createPointClusterGeometries(pc, obj, resizeFactor = resizeFactor)
     }
     ## spline smooth for each bin with 30 points
-    if('resolution' %in% names(dots)){
-      obj <- smooth3dPoints(obj, dots$resolution)
-    }else{
-      obj <- smooth3dPoints(obj, 30)
-    }
+    tryCatch({
+      if('resolution' %in% names(dots)){
+        obj <- smooth3dPoints(obj, dots$resolution)
+      }else{
+        obj <- smooth3dPoints(obj, 30)
+      }
+    }, error=function(e){
+      stop('Can not smooth the 3D model. Please try to add parameter resolution=1')
+    })
     
     ## obj is the GRanges with p0 and p1 (x,y,z) coordinates
 
@@ -266,7 +274,8 @@ view3dStructure <- function(obj, feature.gr,
       properties = list(
         size = lwd.backbone,
         target = unname(as.character(ranges(obj))),
-        seqn = seqn
+        seqn = seqn,
+        resizeFactor = resizeFactor
       )
     )
 
@@ -317,6 +326,7 @@ view3dStructure <- function(obj, feature.gr,
         color = col.backbone_background,
         lwd.maxGenomicSigs = lwd.maxGenomicSigs,
         alpha = alpha.backbone_background,
+        resizeFactor = resizeFactor,
         ...,
         SIMPLIFY = FALSE
       )
@@ -346,7 +356,7 @@ view3dStructure <- function(obj, feature.gr,
         type = "segment",
         colors = col.tension_line,
         tag = "tick_minor",
-        properties = list(size = lwd.tension_line)
+        properties = list(size = lwd.tension_line, resizeFactor = resizeFactor)
       )
 
       if (coor_mark_interval) {
@@ -362,7 +372,8 @@ view3dStructure <- function(obj, feature.gr,
             type = "segment",
             colors = col.tension_line,
             tag = "tick_major",
-            properties = list(size = lwd.tension_line)
+            properties = list(size = lwd.tension_line,
+                              resizeFactor = resizeFactor)
           )
           coor_text <- prettyMark(
             start(feature.tick.mark),
@@ -380,7 +391,8 @@ view3dStructure <- function(obj, feature.gr,
                 label = coor_text[idx],
                 size = .1,
                 depth = .02,
-                pos = 3
+                pos = 3,
+                resizeFactor = resizeFactor
               )
             )
           })
@@ -413,7 +425,8 @@ view3dStructure <- function(obj, feature.gr,
               tag = feature_tag,
               properties = list(
                 size = lwd.gene,
-                target = unname(genePos$fgf$label[idx])
+                target = unname(genePos$fgf$label[idx]),
+                resizeFactor = resizeFactor
               )
             )
           })
@@ -431,7 +444,8 @@ view3dStructure <- function(obj, feature.gr,
               type = "segment",
               tag = "tss_labels",
               properties = list(
-                size = lwd.gene / 2
+                size = lwd.gene / 2,
+                resizeFactor = resizeFactor
               )
             )
             isGene <- tolower(genePos$fgf$type) %in% "gene" &
@@ -450,7 +464,8 @@ view3dStructure <- function(obj, feature.gr,
                     headLength = as.numeric(arrowLen) * .2,
                     headWidth = as.numeric(arrowLen) * .2,
                     size = lwd.gene / 2,
-                    target = unname(genePos$fgf$label[idx])
+                    target = unname(genePos$fgf$label[idx]),
+                    resizeFactor = resizeFactor
                   )
                 )
               })
@@ -488,7 +503,8 @@ view3dStructure <- function(obj, feature.gr,
                   colors = genePos$fgf$col[notGene],
                   tag = feature_tag,
                   properties = list(
-                    radius = notGeneRadius[1]
+                    radius = notGeneRadius[1],
+                    resizeFactor = resizeFactor
                   )
                 )
               } else {
@@ -503,7 +519,8 @@ view3dStructure <- function(obj, feature.gr,
                     colors = genePos$fgf$col[notGene][idx],
                     tag = feature_tag,
                     properties = list(
-                      radius = .r
+                      radius = .r,
+                      resizeFactor = resizeFactor
                     )
                   )
                 })
@@ -528,7 +545,8 @@ view3dStructure <- function(obj, feature.gr,
                     label = unname(genePos$fgf$label[idx]),
                     size = 0.1,
                     depth = 0.02,
-                    pos = 4
+                    pos = 4,
+                    resizeFactor = resizeFactor
                   )
                 )
               }
