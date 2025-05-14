@@ -492,6 +492,8 @@ class tjViewer{
     this.layer = {};
     this.symbols = [];//save all gene symbols
     
+    this.resizeFactor = {left: 1, right: 1};
+    
     // add GUIs
     this.setGUI();
   }
@@ -1474,6 +1476,7 @@ class tjViewer{
     const measureGUI = this.gui.addFolder('measure TSS distance');
     const measureparam = {
       'measure by cursor': false,
+      'normalized': true,
       'gene 1': '',
       'gene 2': '',
       'result' : "0",
@@ -1498,6 +1501,7 @@ class tjViewer{
         endMeasure();
       }
     });*/
+    //const normalized = measureGUI.add(measureparam, 'normalized');
     const g1=measureGUI.add(measureparam, 'gene 1').onChange(val => {starMeasureByGene(val)});
     const g2=measureGUI.add(measureparam, 'gene 2').onChange(val => {starMeasureByGene(val)});
     g1.$input.setAttribute("list", 'symbollist');
@@ -1595,8 +1599,9 @@ class tjViewer{
         res.center.set(0.5,0.5);
     }
     
-    function showDistance(line, result, points, labelDiv, label2=''){
+    function showDistance(line, result, points, labelDiv, label2='', resizeFactor=1){
       var distance = points[0].distanceTo(points[1]);
+      if(!measureparam.normalized) distance = distance * resizeFactor;
       let formattedNumber = distance.toLocaleString('en-US', {
               minimumIntegerDigits: 1,
               useGrouping: false
@@ -1616,7 +1621,7 @@ class tjViewer{
     }
     
     var more = false;
-    function showResults1(collection, scene){
+    function showResults1(collection, scene, resizeFactor){
       if (collection.length > 0) {
           points[clicks].copy(collection[0].point);
           markers[clicks].position.copy(collection[0].point);
@@ -1624,14 +1629,14 @@ class tjViewer{
           clicks++;
           if (clicks > 1){
             markerB.visible = true;
-            showDistance(line, result, points, labelDiv);
+            showDistance(line, result, points, labelDiv, '', resizeFactor);
             clicks = 0;
             more = true;
           }else{
             if(clicks == 1){
               if(more){
                 swapPosition(markers, points);
-                showDistance(line, result, points, labelDiv);
+                showDistance(line, result, points, labelDiv, '', resizeFactor);
               }else{
                 markerA.visible = true;
                 markerB.visible = false;
@@ -1641,7 +1646,7 @@ class tjViewer{
       }
     }
     var more2 = false;
-    function showResults2(collection, scene){
+    function showResults2(collection, scene, resizeFactor){
       if (collection.length > 0) {
           points2[clicks2].copy(collection[0].point);
           markers2[clicks2].position.copy(collection[0].point);
@@ -1649,14 +1654,14 @@ class tjViewer{
           clicks2++;
           if (clicks2 > 1){
             markerB2.visible = true;
-            showDistance(line2, result2, points2, labelDiv2, '; '+distancePlace.getValue());
+            showDistance(line2, result2, points2, labelDiv2, '; '+distancePlace.getValue(), resizeFactor);
             clicks2 = 0;
             more2 = true;
           }else{
             if(clicks2 == 1){
               if(more){
                 swapPosition(markers2, points2);
-                showDistance(line2, result2, points2, labelDiv2, '; '+distancePlace.getValue());
+                showDistance(line2, result2, points2, labelDiv2, '; '+distancePlace.getValue(), resizeFactor);
               }else{
                 markerA2.visible = true;
                 markerB2.visible = false;
@@ -1693,12 +1698,12 @@ class tjViewer{
       
       var intersects = getIntersections(event, this.scene, this.camera);
       if(intersects.length>0){
-        showResults1(intersects, this.scene);
+        showResults1(intersects, this.scene, this.resizeFactor.left);
       }
       if(this.sideBySide){
         var intersects2 = getIntersections(event, this.scene2, this.camera2);
         if(intersects2.length>0){
-          showResults2(intersects2, this.scene2);
+          showResults2(intersects2, this.scene2, this.resizeFactor.right);
         }
       }
     }.bind(this);
@@ -1717,14 +1722,14 @@ class tjViewer{
         var wpos = new THREE.Vector3();
         gene_body[0].getWorldPosition(wpos);
         var intersects = [{point:wpos}];
-        showResults1(intersects, this.scene);
+        showResults1(intersects, this.scene, this.resizeFactor.left);
       }
       var gene_body2 = this.searchGeneByGeneName(val, this.scene2, this.sceneBottom2);
       if(gene_body2.length>0){
         var wpos2 = new THREE.Vector3();
         gene_body2[0].getWorldPosition(wpos2);
         var intersects2 = [{point:wpos2}];
-        showResults2(intersects2, this.scene2);
+        showResults2(intersects2, this.scene2, this.resizeFactor.right);
       }
     }.bind(this);
     
@@ -1998,6 +2003,12 @@ class tjViewer{
     }
   }
   
+  setResizeFactor(x){
+    if('resizeFactor' in x){
+      this.resizeFactor = x.resizeFactor;
+    }
+  }
+  
   create_plot(x){
     //console.log(x);
     //const twoPi = Math.PI * 2;
@@ -2007,6 +2018,7 @@ class tjViewer{
     this.setMainTitle(x);
     this.setSideBySide(x);
     this.setOverlay(x);
+    this.setResizeFactor(x);
     
     const arrowLayer = [];
     const groupFolder = this.gui.addFolder('Group setting');
@@ -2090,8 +2102,17 @@ class tjViewer{
          k!='maxLineWidth' && k!='taglayers' &&
          k!='tagWithChild' &&
          k!='overlay' && k!='sideBySide' &&
+         k!='resizeFactor' &&
          k!='title'){
         let ele = x[k];
+        let material = new THREE.MeshStandardMaterial( {
+              color: 0xffffff,
+              opacity: 1,
+              transparent: true,
+              metalness: 0,
+              roughness: 0
+            } );
+        let oldvalues = {transparent: true, opacity: 1, show:true};
         const param = {
           'size': 0.08,
           'radius': 0.08,
@@ -2108,7 +2129,20 @@ class tjViewer{
                 ele.colors[1],
                 ele.colors[2]),
           'thetaStart': 0,
-          'thetaLength': 2*Math.PI
+          'thetaLength': 2*Math.PI,
+          'show/hide' : function(){
+            if(oldvalues.show){
+              oldvalues.show = false;
+              oldvalues.transparent = material.transparent;
+              oldvalues.opacity = material.opacity;
+              material.transparent = true;
+              material.opacity = 0;
+            }else{
+              oldvalues.show = true;
+              material.transparent = oldvalues.transparent;
+              material.opacity = oldvalues.opacity;
+            }
+          }
         };
         const len = ele.positions.length/3;
         if(typeof groupFolderObj[ele.tag] == 'undefined'){
@@ -2446,13 +2480,6 @@ class tjViewer{
         var folder = groupFolderObj[ele.tag].addFolder(ele.type+' '+k);
         let geometry = new THREE.BufferGeometry();
         let obj = new THREE.InstancedMesh();
-        let material = new THREE.MeshStandardMaterial( {
-              color: 0xffffff,
-              opacity: 1,
-              transparent: true,
-              metalness: 0,
-              roughness: 0
-            } );
         // get the center of the object
         let center = new THREE.Vector3(0, 0, 0);
         for ( let i =0; i<len; i++){
@@ -2980,6 +3007,7 @@ class tjViewer{
         folder.add(param, 'transparent').onChange( function( val ){
           material.transparent = val;
         });
+        folder.add(param, 'show/hide');
         folder.close();
         // add obj to a parent container
         let objContainer = new THREE.Group();
