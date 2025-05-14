@@ -2112,7 +2112,6 @@ class tjViewer{
               metalness: 0,
               roughness: 0
             } );
-        let oldvalues = {transparent: true, opacity: 1, show:true};
         const param = {
           'size': 0.08,
           'radius': 0.08,
@@ -2130,19 +2129,7 @@ class tjViewer{
                 ele.colors[2]),
           'thetaStart': 0,
           'thetaLength': 2*Math.PI,
-          'show/hide' : function(){
-            if(oldvalues.show){
-              oldvalues.show = false;
-              oldvalues.transparent = material.transparent;
-              oldvalues.opacity = material.opacity;
-              material.transparent = true;
-              material.opacity = 0;
-            }else{
-              oldvalues.show = true;
-              material.transparent = oldvalues.transparent;
-              material.opacity = oldvalues.opacity;
-            }
-          }
+          'show' : true
         };
         const len = ele.positions.length/3;
         if(typeof groupFolderObj[ele.tag] == 'undefined'){
@@ -2461,6 +2448,26 @@ class tjViewer{
                             if(obj.isMesh){
                               if(obj.layers.mask==Math.pow(2, this.getLayer(ele.tag))){
                                 obj.material.transparent = val;
+                              }
+                            }
+                          }.bind(this);
+                          this.objects.traverse(traverseFun);
+                          this.objectsBottom.traverse(traverseFun);
+                          if(this.sideBySide){
+                            this.objects2.traverse(traverseFun);
+                            this.objectsBottom2.traverse(traverseFun);
+                          }
+                        });
+                      break;
+                    case 'show':
+                      groupFolderObj[ele.tag].add(
+                        groupParamObj[ele.tag], key)
+                        .onChange(val=>{
+                          groupParamObj[ele.tag] = val;
+                          var traverseFun = function(obj){
+                            if(obj.isMesh){
+                              if(obj.layers.mask==Math.pow(2, this.getLayer(ele.tag))){
+                                obj.visible = val;
                               }
                             }
                           }.bind(this);
@@ -3007,7 +3014,9 @@ class tjViewer{
         folder.add(param, 'transparent').onChange( function( val ){
           material.transparent = val;
         });
-        folder.add(param, 'show/hide');
+        folder.add(param, 'show').onChange( function(val){
+            obj.visible = val;
+        });
         folder.close();
         // add obj to a parent container
         let objContainer = new THREE.Group();
