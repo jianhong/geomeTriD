@@ -1474,25 +1474,29 @@ class tjViewer{
   
   setMeasureGUI(){
     const measureGUI = this.gui.addFolder('measure TSS distance');
+    function clearAll(){
+       markerA.visible = false;
+       markerB.visible = false;
+       markerA2.visible = false;
+       markerB2.visible = false;
+       measureparam['gene 1'] = '';
+       measureparam['gene 2'] = '';
+       measureparam.result = "0";
+       labelDiv.textContent = '';
+       labelDiv2.textContent = '';
+       setLine(line, result, new THREE.Vector3(), new THREE.Vector3());
+       setLine(line2, result2, new THREE.Vector3(), new THREE.Vector3());
+       g1.setValue('');
+       g2.setValue('');
+       distancePlace.setValue('');
+    }
     const measureparam = {
       'measure by cursor': false,
       'normalized': true,
       'gene 1': '',
       'gene 2': '',
       'result' : "0",
-      'clear' : function(){
-                  markerA.visible = false;
-                  markerB.visible = false;
-                  markerA2.visible = false;
-                  markerB2.visible = false;
-                  measureparam['gene 1'] = '';
-                  measureparam['gene 2'] = '';
-                  measureparam.result = "0";
-                  labelDiv.textContent = '';
-                  labelDiv2.textContent = '';
-                  setLine(line, result, new THREE.Vector3(), new THREE.Vector3());
-                  setLine(line2, result2, new THREE.Vector3(), new THREE.Vector3());
-                }
+      'clear' : clearAll
     };
     /*measureGUI.add(measureparam, 'measure by cursor').onChange((val)=>{
       if(val){
@@ -1501,7 +1505,6 @@ class tjViewer{
         endMeasure();
       }
     });*/
-    //const normalized = measureGUI.add(measureparam, 'normalized');
     const g1=measureGUI.add(measureparam, 'gene 1').onChange(val => {starMeasureByGene(val)});
     const g2=measureGUI.add(measureparam, 'gene 2').onChange(val => {starMeasureByGene(val)});
     g1.$input.setAttribute("list", 'symbollist');
@@ -1511,6 +1514,9 @@ class tjViewer{
     g2.$input.setAttribute("autocomplete", 'off');
     g2.$input.setAttribute("size", 10);
     const distancePlace = measureGUI.add(measureparam, 'result');
+    const normalized = measureGUI.add(measureparam, 'normalized').onChange(val=>{
+       clearAll();
+    });
     measureGUI.add(measureparam, 'clear');
     
     var points = [
