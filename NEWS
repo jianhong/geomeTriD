@@ -1,3 +1,10 @@
+Changes in version 1.13.2
+-------------------------
+
+BUG FIXES
+
+    o Move all geos into a sub properties in tjviewer.
+    
 Changes in version 1.13.1
 -------------------------
 

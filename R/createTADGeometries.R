@@ -10,6 +10,7 @@
 #' @param name The prefix for the name of the geometries.
 #' @param alpha alpha value. default is 0.2
 #' @param lwd line width for segment.
+#' @param ... other properties.
 #' @return \link{threeJsGeometry} objects
 #' @export
 #' @examples
@@ -30,7 +31,8 @@ createTADGeometries <- function(tad, targetObj,
                                 name = 'TAD_',
                                 tag="TAD",
                                 alpha = 0.2,
-                                lwd = 3){
+                                lwd = 3,
+                                ...){
   stopifnot(is.numeric(alpha))
   stopifnot(alpha>=0)
   stopifnot(alpha<=1)
@@ -97,7 +99,8 @@ createTADGeometries <- function(tad, targetObj,
         properties = list(
           label = idx,
           radius = unname(coor.radius[idx]),
-          alpha = alpha
+          alpha = alpha,
+          ...
         )
       )
     })
@@ -129,7 +132,8 @@ createTADGeometries <- function(tad, targetObj,
         tag = tag,
         properties = list(
           size = tad$lwd[score],
-          alpha = alpha
+          alpha = alpha,
+          ...
         )
       )
     })

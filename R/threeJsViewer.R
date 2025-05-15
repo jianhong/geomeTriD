@@ -162,7 +162,7 @@ threeJsViewer <- function(...,
   }
   x <- c(
     x,
-    lapply(geos, function(.geo) {
+    geos=list(lapply(geos, function(.geo) {
       # convert x, y, z to numeric point(x, y, z), point2(x, y, z)
       positions <- data.frame(.geo$x, .geo$y, .geo$z)
       positions <- as.numeric(t(positions))
@@ -194,7 +194,7 @@ threeJsViewer <- function(...,
         ),
         .geo$properties
       )
-    })
+    }))
   )
   # customize toJSON() argument values to avoid the error 
   # Uncaught SyntaxError: Expected ',' or ']' after array element in JSON at 

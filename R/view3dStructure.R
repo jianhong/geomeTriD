@@ -247,8 +247,6 @@ view3dStructure <- function(obj, feature.gr,
       clusters <- pointCluster(obj.cp, eps = eps)
       rm(obj.cp)
       pc <- clusterAnno(obj, clusters)
-      pc_geometries <-
-        createPointClusterGeometries(pc, obj, resizeFactor = resizeFactor)
     }
     ## spline smooth for each bin with 30 points
     tryCatch({
@@ -262,7 +260,15 @@ view3dStructure <- function(obj, feature.gr,
     })
     
     ## obj is the GRanges with p0 and p1 (x,y,z) coordinates
-
+    if(cluster3Dpoints){
+      type <- ifelse('clusterType' %in% names(dots),
+                     ifelse(dots$clusterType %in% c('sphere', 'segment'), 
+                            dots$clusterType, 'sphere'), 'sphere')
+      pc_geometries <-
+        createPointClusterGeometries(pc, obj,
+                                     resizeFactor = resizeFactor, type=type)
+    }
+    
     geometries <- list() ## list to save all geometries to plot
     geometries$backbone <- threeJsGeometry(
       x = c(obj$x0, obj$x1[length(obj)]),

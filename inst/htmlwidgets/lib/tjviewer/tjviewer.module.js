@@ -2016,7 +2016,7 @@ class tjViewer{
   }
   
   create_plot(x){
-    //console.log(x);
+    console.log(x);
     //const twoPi = Math.PI * 2;
     //x is a named array
     this.setBackground(x);
@@ -2102,15 +2102,16 @@ class tjViewer{
           });
           return(typeof id == 'undefined');
     }
-    // each element 
-    for(var k in x){
+    // each element
+    var xgeos = x.hasOwnProperty('geos') ? x.geos : x;
+    for(var k in xgeos){
       if(k!='background' && k!='maxRadius' &&
          k!='maxLineWidth' && k!='taglayers' &&
          k!='tagWithChild' &&
          k!='overlay' && k!='sideBySide' &&
          k!='resizeFactor' &&
-         k!='title'){
-        let ele = x[k];
+         k!='title' && xgeos[k].hasOwnProperty('colors')){
+        let ele = xgeos[k];
         let material = new THREE.MeshStandardMaterial( {
               color: 0xffffff,
               opacity: 1,

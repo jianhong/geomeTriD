@@ -74,42 +74,25 @@ clusterAnno <- function(gr, clusters){
   tads$col <- clusters$colors[tads$cluster] 
   return(tads)
 }
-
-createPointClusterGeometries <- function(pc, obj, ...){
+##  summarize the clusters
+summarizeClusters <- function(pc){
   stopifnot(is(pc, 'GRanges'))
   stopifnot(all(c('label', 'col', 'cluster') %in% colnames(mcols(pc))))
-  stopifnot(is(obj, 'GRanges'))
-  stopifnot(all(c('x', 'y', 'z') %in% colnames(mcols(obj))))
   pc.s <- pc[pc$cluster!="0"]
   pc.s <- split(pc.s, pc.s$cluster)
   pc.s <- unlist(range(GRangesList(pc.s)))
   pc.s$cluster <- names(pc.s)
   pc.s$col <- pc$col[match(pc.s$cluster, pc$cluster)]
-  ol <- findOverlaps(obj, pc.s, type='within')
-  coor <- split(as.data.frame(mcols(obj[queryHits(ol)])[, c('x', 'y', 'z')]),
-                pc.s$cluster[subjectHits(ol)])
-  coor.center <- lapply(coor, colMeans)
-  coor.radius <- mapply(function(.data, .center){
-    max(sqrt(colSums((t(.data) - .center)^2)))
-  }, coor, coor.center)
-  coor.center <- do.call(rbind, coor.center)
-  pc_geometries <- lapply(seq.int(nrow(coor.center)), function(idx) {
-    threeJsGeometry(
-      x = coor.center[idx, 'x'],
-      y = coor.center[idx, 'y'],
-      z = coor.center[idx, 'z'],
-      type = "sphere",
-      colors = pc$col[match(names(coor)[idx], pc$cluster)],
-      tag = "pointCluter",
-      properties = list(
-        label = unname(pc$label[match(names(coor)[idx], pc$cluster)]),
-        radius = unname(coor.radius[names(coor)[idx]]),
-        alpha = 0.2,
-        ...
-      )
-    )
-  })
-  names(pc_geometries) <- 
-    paste0("pointCluter_", names(coor))
+  pc.s$label <- pc$label[match(pc.s$cluster, pc$cluster)]
+  return(pc.s)
+}
+
+createPointClusterGeometries <- function(pc, obj, type="sphere", ...){
+  pc.s <- summarizeClusters(pc)
+  pc_geometries <- createTADGeometries(pc.s, obj,
+                      type = type,
+                      name = 'pointCluter_',
+                      tag="pointCluter",
+                      ...)
   return(pc_geometries)
 }

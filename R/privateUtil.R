@@ -187,10 +187,14 @@ checkGI <- function(gi, fixedBin = FALSE) {
   return(gi)
 }
 
-checkSmoothedGR <- function(obj) {
+checkSmoothedGR <- function(obj, smoothed=TRUE) {
   stopifnot(is(obj, "GRanges"))
-  stopifnot(all(c("x0", "y0", "z0", "x1", "y1", "z1") %in%
-    colnames(mcols(obj))))
+  if(smoothed){
+    stopifnot(all(c("x0", "y0", "z0", "x1", "y1", "z1") %in%
+      colnames(mcols(obj))))
+  }else{
+    stopifnot(all(c('x', 'y', 'z') %in% colnames(mcols(obj))))
+  }
 }
 parseFeature <- function(feature.gr, seqn) {
   if (!missing(feature.gr)) {

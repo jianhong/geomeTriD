@@ -11,7 +11,8 @@ createTADGeometries(
   name = "TAD_",
   tag = "TAD",
   alpha = 0.2,
-  lwd = 3
+  lwd = 3,
+  ...
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ sphere or segment.}
 \item{alpha}{alpha value. default is 0.2}
 
 \item{lwd}{line width for segment.}
+
+\item{...}{other properties.}
 }
 \value{
 \link{threeJsGeometry} objects
