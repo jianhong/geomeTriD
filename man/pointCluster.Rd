@@ -4,12 +4,14 @@
 \alias{pointCluster}
 \title{Perform DBSCAN clustering}
 \usage{
-pointCluster(xyz, eps = "auto", ...)
+pointCluster(xyz, eps = "auto", quite = FALSE, ...)
 }
 \arguments{
 \item{xyz}{A data.frame with x, y, z coordinates}
 
 \item{eps}{The size (radius) of the epsilon neighborhood. Default 'auto'.}
+
+\item{quite}{Print message or not.}
 
 \item{...}{other parameters could be used by dbscan function except x and eps.}
 }

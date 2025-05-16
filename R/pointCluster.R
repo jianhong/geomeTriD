@@ -3,6 +3,7 @@
 #' Perform DBSCAN clustering for given 3D coordinates.
 #' @param xyz A data.frame with x, y, z coordinates
 #' @param eps The size (radius) of the epsilon neighborhood. Default 'auto'.
+#' @param quite Print message or not.
 #' @param ... other parameters could be used by dbscan function except x and eps.
 #' @return A an object of class dbscan_fast.
 #' @importFrom RANN nn2
@@ -12,12 +13,22 @@
 #' xyz <- readRDS(system.file('extdata', '4DNFI1UEG1HD.chr21.FLAMINGO.res.rds',
 #'  package='geomeTriD'))
 #' pc <- pointCluster(xyz)
-pointCluster <- function(xyz, eps = 'auto', ...){
+pointCluster <- function(xyz, eps = 'auto', quite=FALSE, ...){
   if(is(xyz, 'GRanges')) xyz <- as.data.frame(mcols(xyz))
-  stopifnot(ncol(xyz)==3)
+  stopifnot(ncol(xyz) %% 3 == 0)
   stopifnot(is.data.frame(xyz) || is.matrix(xyz))
   # Find the nearest neighbor (k = 2 means itself + 1 nearest neighbor)
-  nn_result <- RANN::nn2(xyz, k=2)
+  nn_result <- NULL
+  tryCatch(
+    nn_result <- RANN::nn2(xyz, k=2), error=function(.e){
+    if(!quite) message(.e)
+  })
+  if(is.null(nn_result)){
+    return(structure(list(cluster = rep(0, nrow(xyz)),
+                          eps = eps,
+                          colors=rep('#CCCCCC', nrow(xyz))),
+                     class = c("dbscan_fast", "dbscan")))
+  }
   # Extract distances (column 2 gives nearest neighbor distance)
   euclidean_distances <- nn_result$nn.dists[, 2]  # Ignore first column (self-distance)
   if(eps=='auto'){
@@ -34,7 +45,7 @@ pointCluster <- function(xyz, eps = 'auto', ...){
     ## find the one with the maximal clusters
     l <- vapply(dbscan_result, function(.e) length(unique(.e$cluster)), integer(1L))
     dbscan_result <- dbscan_result[[which.max(l)]]
-    message('eps is set to ', dbscan_result$eps)
+    if(!quite) message('eps is set to ', dbscan_result$eps)
   }else{
     stopifnot(is.numeric(eps))
     dbscan_result <- dbscan(x=xyz, eps = eps, ...)
@@ -56,8 +67,12 @@ askNamespace <- function(...) {
 #' @importFrom grDevices rainbow
 addColor2Cluster <- function(cluster){
   N <- max(cluster)
-  colors <- c('#CCCCCC', sample(rainbow(N), N, replace = TRUE))
-  names(colors) <- c(0, seq.int(N))
+  if(N==0){
+    colors <- c('0'='#CCCCCC')
+  }else{
+    colors <- c('#CCCCCC', sample(rainbow(N), N, replace = TRUE))
+    names(colors) <- c(0, seq.int(N))
+  }
   return(colors)
 }
 
