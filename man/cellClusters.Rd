@@ -4,7 +4,7 @@
 \alias{cellClusters}
 \title{cluster single cell by 3D structure}
 \usage{
-cellClusters(xyzs, TADs, N = 100, eps = "auto", ...)
+cellClusters(xyzs, TADs, method = "ward.D2", ...)
 }
 \arguments{
 \item{xyzs}{A data.frame with x, y, z coordinates.}
@@ -14,14 +14,13 @@ For example, if the first TAD spans the 2nd to 4th coordinates and the
  second spans the 8th to 10th coordinates, the list would be:
   list(c(2, 3, 4), c(8, 9, 10)).}
 
-\item{N}{Use top N most variable point clusters (or TADs). Default is 100.}
-
-\item{eps}{The size (radius) of the epsilon neighborhood. Default is 'auto'.}
+\item{method}{The agglomeration method to be used for \link{hclust}.
+Default is 'ward.D2'.}
 
 \item{...}{not used.}
 }
 \value{
-A an object of class dbscan_fast.
+A an object of class hclust.
 }
 \description{
 Perform DBSCAN clustering for given 3D structure.
@@ -32,5 +31,6 @@ xyzs <- lapply(seq.int(20), function(i){
   matrix(sample.int(100, 60, replace = TRUE),
    nrow=20, dimnames=list(NULL, c('x', 'y', 'z')))
 })
-cc <- cellClusters(xyzs, N=10)
+cc <- cellClusters(xyzs)
+cutree(cc, k=3)
 }

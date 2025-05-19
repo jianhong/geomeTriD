@@ -32,6 +32,6 @@ test_that("fill_NA works not correct", {
 })
 
 test_that('cellClusters works not correct', {
-  cc <- cellClusters(xyzs, N=10)
-  expect_equal(length(cc$cluster), nrow(xyzs[[1]]))
+  cc <- cellClusters(xyzs)
+  expect_equal(length(cc$order), length(xyzs))
 })

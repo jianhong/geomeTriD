@@ -6,22 +6,23 @@
 #'  For example, if the first TAD spans the 2nd to 4th coordinates and the
 #'   second spans the 8th to 10th coordinates, the list would be:
 #'    list(c(2, 3, 4), c(8, 9, 10)).
-#' @param N Use top N most variable point clusters (or TADs). Default is 100.
-#' @param eps The size (radius) of the epsilon neighborhood. Default is 'auto'.
+#' @param method The agglomeration method to be used for \link{hclust}.
+#'  Default is 'ward.D2'.
 #' @param ... not used.
-#' @return A an object of class dbscan_fast.
+#' @return A an object of class hclust.
 #' @export
-#' @importFrom stats var
+#' @importFrom stats var cutree hclust
 #' @examples
 #' set.seed(1)
 #' xyzs <- lapply(seq.int(20), function(i){
 #'   matrix(sample.int(100, 60, replace = TRUE),
 #'    nrow=20, dimnames=list(NULL, c('x', 'y', 'z')))
 #' })
-#' cc <- cellClusters(xyzs, N=10)
-cellClusters <- function(xyzs, TADs, N=100, eps='auto', ...){
+#' cc <- cellClusters(xyzs)
+#' cutree(cc, k=3)
+cellClusters <- function(xyzs, TADs, method='ward.D2', ...){
   checkXYZdim(xyzs)
-  k <- nrow(xyzs[[1]])
+  n_points <- nrow(xyzs[[1]])
   if(!missing(TADs)){
     stopifnot(is.list(TADs))
     uTADs <- unlist(TADs)
@@ -31,8 +32,8 @@ cellClusters <- function(xyzs, TADs, N=100, eps='auto', ...){
     if(min(uTADs)<1){
       stop('All elements in TADs list should not smaller than 1')
     }
-    if(max(uTADs)>k){
-      stop('All elements in TADs list should not larger than ', k)
+    if(max(uTADs)>n_points){
+      stop('All elements in TADs list should not larger than ', n_points)
     }
   }
   ## find the center of xyzs
@@ -40,45 +41,35 @@ cellClusters <- function(xyzs, TADs, N=100, eps='auto', ...){
   xyzs <- rescalePointClouds(xyzs)
   ## fill the NA with nearby points
   xyzs <- lapply(xyzs, fill_NA)
+  ## summarize the signals for each TAD by their centers
   if(!missing(TADs)){
-    pcs <- TADs
-  }else{
-    if(N>k){
-      N <- k
-      pcs <- split(seq.int(k), seq.int(k))
-    }else{
-      ## find the point clusters with fixed eps
-      pcs <- lapply(xyzs, pointCluster, eps=eps, quite = TRUE)
-      pcs_num <- vapply(pcs, function(.ele) length(unique(.ele$cluster)),
-                        numeric(1L))
-      if(all(pcs_num==1)){
-        ## split the xyzs into equal N spices
-        pcs <-cut(seq.int(k), breaks = N, labels = FALSE, include.lowest = TRUE)
-        pcs <- split(seq.int(k), pcs)
-      }else{
-        ## get all clusters
-        pcs <- getClusters(pcs, N=N)
-      }
-    }
+    xyzs <- lapply(xyzs, function(xyz){
+      do.call(rbind, lapply(TADs, function(idx){
+        colMeans(xyz[idx, , drop=FALSE])
+      }))
+    })
   }
-  ## summarize the signals for the clusters
-  xyzs <- lapply(xyzs, function(xyz){
-    do.call(rbind, lapply(pcs, function(idx){
-      colMeans(xyz[idx, , drop=FALSE])
-    }))
+  ## calculate dist
+  M <- length(xyzs)
+  index <- expand.grid(seq.int(M), seq.int(M))
+  values <- apply(index, 1, function(i){
+    sum(sqrt(rowSums((xyzs[[i[1]]] - xyzs[[i[2]]])^2, na.rm = TRUE)),
+        na.rm = TRUE)
   })
-  
-  xyzs <- findVariablePoints(xyzs, N=N) # N x 3 x M
-  ## step4, Build Feature Matrix [M cells x 3N features]
-  xyzs <- N3M2M3N(xyzs)
-  ## step5, fill NA with 0
-  xyzs[is.na(xyzs)] <- 0
-  ## step5, do cluster
-  dbscan_result <- pointCluster(xyzs, eps=eps)
+  dst <- matrix(values, nrow=M, ncol=M)
+  ## cluster
+  hc <- hclust(as.dist(dst), method = method)
 }
 
+checkXYZ <- function(xyz){
+  stopifnot(is.matrix(xyz) || is.data.frame(xyz))
+  colnames(xyz) <- tolower(colnames(xyz))
+  stopifnot(all(c('x', 'y', 'z') %in% colnames(xyz)))
+  return(xyz)
+}
 checkXYZdim <- function(xyzs){
   stopifnot(is.list(xyzs))
+  stopifnot(length(xyzs)>2)
   d <- vapply(xyzs, dim, integer(2L))
   d <- unique(t(d))
   if(nrow(d)!=1){
@@ -88,9 +79,7 @@ checkXYZdim <- function(xyzs){
 rescalePointClouds <- function(xyzs){
   stopifnot(is.list(xyzs))
   lapply(xyzs, function(xyz){
-    stopifnot(is.matrix(xyz) || is.data.frame(xyz))
-    colnames(xyz) <- tolower(colnames(xyz))
-    stopifnot(all(c('x', 'y', 'z') %in% colnames(xyz)))
+    xyz <- checkXYZ(xyz)
     xyz <- xyz[, c('x', 'y', 'z'), drop=FALSE]
     center <- colMeans(xyz, na.rm = TRUE)
     centered <- sweep(xyz, 2, center, '-')
@@ -100,8 +89,21 @@ rescalePointClouds <- function(xyzs){
   })
 }
 
-fill_NA <- function(xyz, old_count=-1){
+#' fill NA values by upstream and downstream points
+#' @description
+#' Fill NA values by previous and next points coordinates.
+#' @param xyz A matrix or data.frame with columns 'x', 'y', 'z'
+#' @return A matrix or data.frame.
+#' @export
+#' @examples
+#' xyz <- matrix(seq.int(21), ncol=3, dimnames=list(NULL, c('x', 'y', 'z')))
+#' xyz[c(1, 5, 7), ] <- NA
+#' fill_NA(xyz)
+#' 
+fill_NA <- function(xyz){
+  xyz <- checkXYZ(xyz)
   id <- which(is.na(xyz[, 'x']))
+  old_count <- length(id)
   if(length(id)){
     ## fill both ends has values
     id0 <- id-1
@@ -119,8 +121,8 @@ fill_NA <- function(xyz, old_count=-1){
       res0[is.na(res[, 'x']) & is.na(res1[, 'x']), ]
     xyz[id, ] <- res
     id <- which(is.na(xyz[, 'x']))
-    if(length(id)!=old_count){
-      return(fill_NA(xyz=xyz, old_count=length(id)))
+    if(length(id)<old_count){
+      return(fill_NA(xyz=xyz))
     }
   }
   return(xyz)
@@ -170,6 +172,7 @@ findVariablePoints <- function(xyzs, N=2000){
   return(xyzs)
 }
 
+# Build Feature Matrix from [N, 3, M] to [M cells x 3N features]
 N3M2M3N <- function(xyzs){
   # Step 1: Permute axes to [M x N x 3]
   xyzs <- aperm(xyzs, c(3, 1, 2)) # now [M x N x 3]
