@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geomeTriD</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.5</span>
       </span>
     </div>
 
@@ -64,14 +64,14 @@
 
       </header><link href="geomeTriD_files/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
 <script src="geomeTriD_files/htmlwidgets-1.6.4/htmlwidgets.js"></script><script src="geomeTriD_files/tjviewer_map_loader-0.0.1/tjviewer.map.js"></script><script type="importmap">{"imports": {"three": "https://cdn.jsdelivr.net/npm/three@0.166.1/build/three.module.js","three/addons/": "https://cdn.jsdelivr.net/npm/three@0.166.1/examples/jsm/","jspdf": "https://cdn.jsdelivr.net/npm/jspdf@2.0.0/dist/jspdf.es.js","tjviewer/":"https://cdn.jsdelivr.net/gh/jianhong/geometrid@devel/inst/htmlwidgets/lib/tjviewer/"}}</script><link href="geomeTriD_files/tjviewer-0.0.1/tjviewer.module.css" rel="stylesheet">
-<script src="geomeTriD_files/tjviewer-0.0.1/tjviewer.module.js" type="module"></script><script src="geomeTriD_files/threeJsViewer-binding-1.3.4/threeJsViewer.js"></script><div class="row">
+<script src="geomeTriD_files/tjviewer-0.0.1/tjviewer.module.js" type="module"></script><script src="geomeTriD_files/threeJsViewer-binding-1.3.5/threeJsViewer.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>geomeTriD Vignette: Plot data in 3D</h1>
                         <h4 data-toc-skip class="author">Jianhong
 Ou</h4>
             
-            <h4 data-toc-skip class="date">19 May 2025</h4>
+            <h4 data-toc-skip class="date">20 May 2025</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/jianhong/geomeTriD/blob/devel/vignettes/geomeTriD.Rmd" class="external-link"><code>vignettes/geomeTriD.Rmd</code></a></small>
       <div class="hidden name"><code>geomeTriD.Rmd</code></div>
@@ -763,7 +763,7 @@ GenomicFeatures_1.61.2<br>
 [15] S4Vectors_0.47.0<br>
 [16] BiocGenerics_0.55.0<br>
 [17] generics_0.1.4<br>
-[18] geomeTriD_1.3.4</p>
+[18] geomeTriD_1.3.5</p>
 <p>loaded via a namespace (and not attached): [1] strawr_0.0.92
 RColorBrewer_1.1-3 rstudioapi_0.17.1<br>
 [4] jsonlite_2.0.0 magrittr_2.0.3 farver_2.1.2<br>
@@ -773,40 +773,42 @@ RColorBrewer_1.1-3 rstudioapi_0.17.1<br>
 [16] htmltools_0.5.8.1 S4Arrays_1.9.0 progress_1.2.3<br>
 [19] plotrix_3.8-4 curl_6.2.2 Rhdf5lib_1.31.0<br>
 [22] rhdf5_2.53.0 SparseArray_1.9.0 Formula_1.2-5<br>
-[25] sass_0.4.10 bslib_0.9.0 htmlwidgets_1.6.4<br>
-[28] desc_1.4.3 Gviz_1.53.0 httr2_1.1.2<br>
-[31] cachem_1.1.0 GenomicAlignments_1.45.0 igraph_2.1.4<br>
-[34] lifecycle_1.0.4 pkgconfig_2.0.3 Matrix_1.7-3<br>
-[37] R6_2.6.1 fastmap_1.2.0 digest_0.6.37<br>
-[40] colorspace_2.1-1 textshaping_1.0.1 Hmisc_5.2-3<br>
-[43] RSQLite_2.3.11 filelock_1.0.3 httr_1.4.7<br>
-[46] abind_1.4-8 compiler_4.5.0 bit64_4.6.0-1<br>
-[49] htmlTable_2.4.3 backports_1.5.0 BiocParallel_1.43.0<br>
-[52] DBI_1.2.3 biomaRt_2.65.0 MASS_7.3-65<br>
-[55] rappdirs_0.3.3 DelayedArray_0.35.1 rjson_0.2.23<br>
-[58] tools_4.5.0 foreign_0.8-90 nnet_7.3-20<br>
-[61] glue_1.8.0 restfulr_0.0.15 dbscan_1.2.2<br>
-[64] rhdf5filters_1.21.0 checkmate_2.3.2 cluster_2.1.8.1<br>
-[67] gtable_0.3.6 BSgenome_1.77.0 ensembldb_2.33.0<br>
-[70] data.table_1.17.2 hms_1.1.3 xml2_1.3.8<br>
-[73] XVector_0.49.0 RANN_2.6.2 pillar_1.10.2<br>
-[76] stringr_1.5.1 dplyr_1.1.4 BiocFileCache_2.99.4<br>
-[79] lattice_0.22-7 deldir_2.0-4 rtracklayer_1.69.0<br>
-[82] bit_4.6.0 biovizBase_1.57.0 tidyselect_1.2.1<br>
-[85] Biostrings_2.77.1 knitr_1.50 gridExtra_2.3<br>
-[88] ProtGenerics_1.41.0 xfun_0.52 stringi_1.8.7<br>
-[91] UCSC.utils_1.5.0 lazyeval_0.2.2 yaml_2.3.10<br>
-[94] evaluate_1.0.3 codetools_0.2-20 interp_1.1-6<br>
-[97] tibble_3.2.1 BiocManager_1.30.25 cli_3.6.5<br>
-[100] rpart_4.1.24 systemfonts_1.2.3 jquerylib_0.1.4<br>
-[103] dichromat_2.0-0.1 Rcpp_1.0.14 grImport_0.9-7<br>
-[106] dbplyr_2.5.0 png_0.1-8 XML_3.99-0.18<br>
-[109] parallel_4.5.0 pkgdown_2.1.2 ggplot2_3.5.2<br>
-[112] blob_1.2.4 prettyunits_1.2.0 jpeg_0.1-11<br>
-[115] latticeExtra_0.6-30 AnnotationFilter_1.33.0 bitops_1.0-9<br>
-[118] txdbmaker_1.5.3 VariantAnnotation_1.55.0 scales_1.4.0<br>
-[121] crayon_1.5.3 BiocStyle_2.37.0 rlang_1.1.6<br>
-[124] KEGGREST_1.49.0</p>
+[25] sass_0.4.10 parallelly_1.44.0 bslib_0.9.0<br>
+[28] htmlwidgets_1.6.4 desc_1.4.3 Gviz_1.53.0<br>
+[31] httr2_1.1.2 cachem_1.1.0 GenomicAlignments_1.45.0 [34] igraph_2.1.4
+lifecycle_1.0.4 pkgconfig_2.0.3<br>
+[37] Matrix_1.7-3 R6_2.6.1 fastmap_1.2.0<br>
+[40] future_1.49.0 digest_0.6.37 colorspace_2.1-1<br>
+[43] textshaping_1.0.1 Hmisc_5.2-3 RSQLite_2.3.11<br>
+[46] filelock_1.0.3 progressr_0.15.1 httr_1.4.7<br>
+[49] abind_1.4-8 compiler_4.5.0 bit64_4.6.0-1<br>
+[52] backports_1.5.0 htmlTable_2.4.3 BiocParallel_1.43.2<br>
+[55] DBI_1.2.3 biomaRt_2.65.0 MASS_7.3-65<br>
+[58] rappdirs_0.3.3 DelayedArray_0.35.1 rjson_0.2.23<br>
+[61] tools_4.5.0 foreign_0.8-90 future.apply_1.11.3<br>
+[64] nnet_7.3-20 glue_1.8.0 restfulr_0.0.15<br>
+[67] dbscan_1.2.2 rhdf5filters_1.21.0 checkmate_2.3.2<br>
+[70] cluster_2.1.8.1 gtable_0.3.6 BSgenome_1.77.0<br>
+[73] ensembldb_2.33.0 data.table_1.17.2 hms_1.1.3<br>
+[76] xml2_1.3.8 XVector_0.49.0 RANN_2.6.2<br>
+[79] pillar_1.10.2 stringr_1.5.1 dplyr_1.1.4<br>
+[82] BiocFileCache_2.99.5 lattice_0.22-7 deldir_2.0-4<br>
+[85] rtracklayer_1.69.0 bit_4.6.0 biovizBase_1.57.0<br>
+[88] tidyselect_1.2.1 Biostrings_2.77.1 knitr_1.50<br>
+[91] gridExtra_2.3 ProtGenerics_1.41.0 xfun_0.52<br>
+[94] stringi_1.8.7 UCSC.utils_1.5.0 lazyeval_0.2.2<br>
+[97] yaml_2.3.10 evaluate_1.0.3 codetools_0.2-20<br>
+[100] interp_1.1-6 tibble_3.2.1 BiocManager_1.30.25<br>
+[103] cli_3.6.5 rpart_4.1.24 systemfonts_1.2.3<br>
+[106] jquerylib_0.1.4 dichromat_2.0-0.1 Rcpp_1.0.14<br>
+[109] globals_0.18.0 grImport_0.9-7 dbplyr_2.5.0<br>
+[112] png_0.1-8 XML_3.99-0.18 parallel_4.5.0<br>
+[115] pkgdown_2.1.2 ggplot2_3.5.2 blob_1.2.4<br>
+[118] prettyunits_1.2.0 jpeg_0.1-11 latticeExtra_0.6-30<br>
+[121] AnnotationFilter_1.33.0 bitops_1.0-9 txdbmaker_1.5.3<br>
+[124] listenv_0.9.1 VariantAnnotation_1.55.0 scales_1.4.0<br>
+[127] crayon_1.5.3 BiocStyle_2.37.0 rlang_1.1.6<br>
+[130] KEGGREST_1.49.0</p>
 </div>
   </div>
 
