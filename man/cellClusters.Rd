@@ -4,7 +4,14 @@
 \alias{cellClusters}
 \title{cluster single cell by 3D structure}
 \usage{
-cellClusters(xyzs, TADs, method = "ward.D2", ...)
+cellClusters(
+  xyzs,
+  TADs,
+  method = "ward.D2",
+  quite = FALSE,
+  parallel = TRUE,
+  ...
+)
 }
 \arguments{
 \item{xyzs}{A data.frame with x, y, z coordinates.}
@@ -16,6 +23,10 @@ For example, if the first TAD spans the 2nd to 4th coordinates and the
 
 \item{method}{The agglomeration method to be used for \link{hclust}.
 Default is 'ward.D2'.}
+
+\item{quite}{Print the message or not.}
+
+\item{parallel}{Run parallel by future or not.}
 
 \item{...}{not used.}
 }
@@ -31,6 +42,6 @@ xyzs <- lapply(seq.int(20), function(i){
   matrix(sample.int(100, 60, replace = TRUE),
    nrow=20, dimnames=list(NULL, c('x', 'y', 'z')))
 })
-cc <- cellClusters(xyzs)
+cc <- cellClusters(xyzs, parallel=FALSE)
 cutree(cc, k=3)
 }

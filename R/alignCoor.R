@@ -18,8 +18,21 @@
 #' })
 #' threeJsViewer(c(A, B))
 alignCoor <- function(query, subject) {
-  stopifnot(all(colnames(mcols(query)) %in% colnames(mcols(subject))))
-  m <- mcols(query)
+  if (is(query, "GRanges")) {
+    if(is(subject, "GRanges")){
+      stopifnot(all(colnames(mcols(query)) %in% colnames(mcols(subject))))
+    }else{
+      stopifnot(all(colnames(mcols(query)) %in% colnames(subject)))
+    }
+    m <- mcols(query)
+  }else{
+    if(is(subject, "GRanges")){
+      stopifnot(all(colnames(query) %in% colnames(mcols(subject))))
+    }else{
+      stopifnot(all(colnames(query) %in% colnames(subject)))
+    }
+    m <- query
+  }
   null <- mapply(function(.d, .n) {
     if (!is.numeric(.d)) {
       stop("metadata column", .n, "is not a numeric vector")

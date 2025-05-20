@@ -8,20 +8,30 @@
 #'    list(c(2, 3, 4), c(8, 9, 10)).
 #' @param method The agglomeration method to be used for \link{hclust}.
 #'  Default is 'ward.D2'.
+#' @param quite Print the message or not.
+#' @param parallel Run parallel by future or not.
 #' @param ... not used.
 #' @return A an object of class hclust.
 #' @export
 #' @importFrom stats var cutree hclust
+#' @importFrom future.apply future_mapply
+#' @importFrom progressr with_progress progressor
 #' @examples
 #' set.seed(1)
 #' xyzs <- lapply(seq.int(20), function(i){
 #'   matrix(sample.int(100, 60, replace = TRUE),
 #'    nrow=20, dimnames=list(NULL, c('x', 'y', 'z')))
 #' })
-#' cc <- cellClusters(xyzs)
+#' cc <- cellClusters(xyzs, parallel=FALSE)
 #' cutree(cc, k=3)
-cellClusters <- function(xyzs, TADs, method='ward.D2', ...){
+cellClusters <- function(xyzs, TADs, method='ward.D2', quite=FALSE,
+                         parallel=TRUE,...){
   checkXYZdim(xyzs)
+  if(parallel){
+    applyFUN <- future_mapply
+  }else{
+    applyFUN <- mapply
+  }
   n_points <- nrow(xyzs[[1]])
   if(!missing(TADs)){
     stopifnot(is.list(TADs))
@@ -51,14 +61,30 @@ cellClusters <- function(xyzs, TADs, method='ward.D2', ...){
   }
   ## calculate dist
   M <- length(xyzs)
-  index <- expand.grid(seq.int(M), seq.int(M))
-  values <- apply(index, 1, function(i){
-    sum(sqrt(rowSums((xyzs[[i[1]]] - xyzs[[i[2]]])^2, na.rm = TRUE)),
-        na.rm = TRUE)
+  index <- expand.grid(i=seq.int(M), j=seq.int(M))
+  upper_idx <- index$i >= index$j
+  values <- rep(NA, nrow(index))
+  with_progress({
+    if(!quite){
+      pb <- progressor(steps = nrow(index))
+    }
+    values0 <- applyFUN(FUN=function(a, b){
+      if(!quite) pb()
+      sum(sqrt(rowSums((a - b)^2, na.rm = TRUE)),
+          na.rm = TRUE)
+    }, xyzs[index[upper_idx, 1]], xyzs[index[upper_idx, 2]], SIMPLIFY = TRUE)
+    ## after alignment
+    values1 <- applyFUN(FUN=function(a, b){
+      if(!quite) pb()
+      a <- alignCoor(a, b)
+      sum(sqrt(rowSums((a - b)^2, na.rm = TRUE)),
+          na.rm = TRUE)
+    }, xyzs[index[upper_idx, 1]], xyzs[index[upper_idx, 2]], SIMPLIFY = TRUE)
+    values[upper_idx] <- ifelse(values1<values0, values1, values0)
   })
   dst <- matrix(values, nrow=M, ncol=M)
   ## cluster
-  hc <- hclust(as.dist(dst), method = method)
+  hc <- hclust(as.dist(dst, diag = TRUE), method = method)
 }
 
 checkXYZ <- function(xyz){
