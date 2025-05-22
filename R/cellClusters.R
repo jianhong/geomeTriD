@@ -22,10 +22,10 @@
 #'   matrix(sample.int(100, 60, replace = TRUE),
 #'    nrow=20, dimnames=list(NULL, c('x', 'y', 'z')))
 #' })
-#' cc <- cellClusters(xyzs, parallel=FALSE)
+#' cc <- cellClusters(xyzs)
 #' cutree(cc, k=3)
 cellClusters <- function(xyzs, TADs, method='ward.D2', quite=FALSE,
-                         parallel=TRUE,...){
+                         parallel=FALSE,...){
   checkXYZdim(xyzs)
   if(parallel){
     applyFUN <- future_mapply
