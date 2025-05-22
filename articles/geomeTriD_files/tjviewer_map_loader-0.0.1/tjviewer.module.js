@@ -2117,7 +2117,8 @@ class tjViewer{
               opacity: 1,
               transparent: true,
               metalness: 0,
-              roughness: 0
+              roughness: 0,
+              depthWrite: false
             } );
         const param = {
           'size': 0.08,
