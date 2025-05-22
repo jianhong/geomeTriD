@@ -65,22 +65,28 @@ cellClusters <- function(xyzs, TADs, method='ward.D2', quite=FALSE,
   upper_idx <- index$i >= index$j
   values <- rep(NA, nrow(index))
   with_progress({
+    total_steps <- sum(upper_idx)
+    verbose <- rep(FALSE, total_steps)
     if(!quite){
-      pb <- progressor(steps = nrow(index))
+      pb <- progressor(steps = min(100, total_steps))
+      if(total_steps>100){
+        verbose[round(seq(1, total_steps, length=100))] <- TRUE
+      }else{
+        verbose <- rep(TRUE, total_steps)
+      }
     }
-    values0 <- applyFUN(FUN=function(a, b){
-      if(!quite) pb()
-      sum(sqrt(rowSums((a - b)^2, na.rm = TRUE)),
-          na.rm = TRUE)
-    }, xyzs[index[upper_idx, 1]], xyzs[index[upper_idx, 2]], SIMPLIFY = TRUE)
-    ## after alignment
-    values1 <- applyFUN(FUN=function(a, b){
-      if(!quite) pb()
+    values[upper_idx] <- applyFUN(FUN=function(a, b, v){
+      if(v) pb()
+      v0 <- sum(sqrt(rowSums((a - b)^2, na.rm = TRUE)),
+                na.rm = TRUE)
+      ## after alignment
       a <- alignCoor(a, b)
-      sum(sqrt(rowSums((a - b)^2, na.rm = TRUE)),
-          na.rm = TRUE)
-    }, xyzs[index[upper_idx, 1]], xyzs[index[upper_idx, 2]], SIMPLIFY = TRUE)
-    values[upper_idx] <- ifelse(values1<values0, values1, values0)
+      v1 <- sum(sqrt(rowSums((a - b)^2, na.rm = TRUE)),
+                na.rm = TRUE)
+      ifelse(v1<v0, v1, v0)
+    }, xyzs[index[upper_idx, 1]], xyzs[index[upper_idx, 2]],
+    verbose,
+    SIMPLIFY = TRUE)
   })
   dst <- matrix(values, nrow=M, ncol=M)
   ## cluster
