@@ -9,7 +9,7 @@ cellClusters(
   TADs,
   method = "ward.D2",
   quite = FALSE,
-  parallel = TRUE,
+  parallel = FALSE,
   ...
 )
 }
@@ -42,6 +42,6 @@ xyzs <- lapply(seq.int(20), function(i){
   matrix(sample.int(100, 60, replace = TRUE),
    nrow=20, dimnames=list(NULL, c('x', 'y', 'z')))
 })
-cc <- cellClusters(xyzs, parallel=FALSE)
+cc <- cellClusters(xyzs)
 cutree(cc, k=3)
 }

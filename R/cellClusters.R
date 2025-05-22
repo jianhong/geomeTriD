@@ -9,7 +9,7 @@
 #' @param method The agglomeration method to be used for \link{hclust}.
 #'  Default is 'ward.D2'.
 #' @param quite Print the message or not.
-#' @param parallel Run parallel by future or not.
+#' @param parallel Run parallel by future or not. 
 #' @param ... not used.
 #' @return A an object of class hclust.
 #' @export
@@ -29,6 +29,11 @@ cellClusters <- function(xyzs, TADs, method='ward.D2', quite=FALSE,
   checkXYZdim(xyzs)
   if(parallel){
     applyFUN <- future_mapply
+    on.exit({
+      message('After the parallel computing, please try to release the memory ',
+              'by restarting clean workers: ',
+              'plan(sequential); and then plan(multisession).')
+    })
   }else{
     applyFUN <- mapply
   }
