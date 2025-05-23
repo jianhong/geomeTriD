@@ -3,6 +3,7 @@
 export(alignCoor)
 export(availableGeometries)
 export(cellClusters)
+export(cellDistance)
 export(create3dGenomicSignals)
 export(createTADGeometries)
 export(extractBackbonePositions)

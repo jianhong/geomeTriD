@@ -2,7 +2,8 @@
 % Please edit documentation in R/cellClusters.R
 \name{cellClusters}
 \alias{cellClusters}
-\title{cluster single cell by 3D structure}
+\alias{cellDistance}
+\title{cluster single cell 3D structures}
 \usage{
 cellClusters(
   xyzs,
@@ -12,9 +13,11 @@ cellClusters(
   parallel = FALSE,
   ...
 )
+
+cellDistance(xyzs, TADs, quite = FALSE, parallel = FALSE, ...)
 }
 \arguments{
-\item{xyzs}{A data.frame with x, y, z coordinates.}
+\item{xyzs}{A data.frame with x, y, z coordinates or output of cellDistance.}
 
 \item{TADs}{A list of index vectors, where each vector represents a TAD.
 For example, if the first TAD spans the 2nd to 4th coordinates and the
@@ -31,10 +34,14 @@ Default is 'ward.D2'.}
 \item{...}{not used.}
 }
 \value{
-A an object of class hclust.
+cellClusters return an object of class hclust.
+
+cellDistance return distance matrix as an object of 'dist'
 }
 \description{
-Perform DBSCAN clustering for given 3D structure.
+Perform Hierarchical clustering for given 3D structures.
+
+Calculate euclidean distance for each pair of cells after alignment.
 }
 \examples{
 set.seed(1)
@@ -42,6 +49,8 @@ xyzs <- lapply(seq.int(20), function(i){
   matrix(sample.int(100, 60, replace = TRUE),
    nrow=20, dimnames=list(NULL, c('x', 'y', 'z')))
 })
-cc <- cellClusters(xyzs)
+cd <- cellDistance(xyzs)
+cc <- cellClusters(cd)
+# plot(cc)
 cutree(cc, k=3)
 }

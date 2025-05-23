@@ -1,7 +1,7 @@
-#' cluster single cell by 3D structure
+#' cluster single cell 3D structures
 #' @description
-#' Perform DBSCAN clustering for given 3D structure.
-#' @param xyzs A data.frame with x, y, z coordinates.
+#' Perform Hierarchical clustering for given 3D structures.
+#' @param xyzs A data.frame with x, y, z coordinates or output of cellDistance.
 #' @param TADs A list of index vectors, where each vector represents a TAD.
 #'  For example, if the first TAD spans the 2nd to 4th coordinates and the
 #'   second spans the 8th to 10th coordinates, the list would be:
@@ -11,7 +11,7 @@
 #' @param quite Print the message or not.
 #' @param parallel Run parallel by future or not. 
 #' @param ... not used.
-#' @return A an object of class hclust.
+#' @return cellClusters return an object of class hclust.
 #' @export
 #' @importFrom stats var cutree hclust
 #' @importFrom future.apply future_mapply
@@ -22,10 +22,35 @@
 #'   matrix(sample.int(100, 60, replace = TRUE),
 #'    nrow=20, dimnames=list(NULL, c('x', 'y', 'z')))
 #' })
-#' cc <- cellClusters(xyzs)
+#' cd <- cellDistance(xyzs)
+#' cc <- cellClusters(cd)
+#' # plot(cc)
 #' cutree(cc, k=3)
 cellClusters <- function(xyzs, TADs, method='ward.D2', quite=FALSE,
                          parallel=FALSE,...){
+  method <- match.arg(method,
+                      choices = c("ward.D", "ward.D2", "single",
+                                  "complete", "average", "mcquitty",
+                                  "median", "centroid"))
+  ## calculate distances among cells
+  if(is(xyzs, 'dist')){
+    dst <- xyzs
+  }else{
+    dst <- cellDistance(xyzs=xyzs, TADs = TADs,
+                        quite = quite, parallel = parallel,
+                        ...)
+  }
+  ## cluster
+  hc <- hclust(dst, method = method)
+}
+
+#' cellDistance calculate distance matrix 
+#' @description
+#' Calculate euclidean distance for each pair of cells after alignment.
+#' @export
+#' @return cellDistance return distance matrix as an object of 'dist'
+#' @rdname cellClusters
+cellDistance <- function(xyzs, TADs, quite=FALSE, parallel=FALSE, ...){
   checkXYZdim(xyzs)
   if(parallel){
     applyFUN <- future_mapply
@@ -82,6 +107,15 @@ cellClusters <- function(xyzs, TADs, method='ward.D2', quite=FALSE,
     }
     values[upper_idx] <- applyFUN(FUN=function(a, b, v){
       if(v) pb()
+      ## why use both before alignment and after alignment?
+      ## the alignment has limitations:
+      ## Only rigid: it can not model scaling or non-rigid deformation
+      ## Sensitive to Outliers: One or two bad correspondences can distort the result.
+      ##                        No built-in outlier rejection or robust loss.
+      ## Does not handle partial overlaps: works best when both sets fully match
+      ##                      That means too much NA values will affect the results.
+      ## No Uncertainty Estimation: No confidence intervals, posterior distribution
+      ##                            or measure of certainty.
       v0 <- sum(sqrt(rowSums((a - b)^2, na.rm = TRUE)),
                 na.rm = TRUE)
       ## after alignment
@@ -94,8 +128,7 @@ cellClusters <- function(xyzs, TADs, method='ward.D2', quite=FALSE,
     SIMPLIFY = TRUE)
   })
   dst <- matrix(values, nrow=M, ncol=M)
-  ## cluster
-  hc <- hclust(as.dist(dst, diag = TRUE), method = method)
+  return(as.dist(dst, diag = TRUE))
 }
 
 checkXYZ <- function(xyz){

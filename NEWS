@@ -1,6 +1,13 @@
 Changes in version 1.13.5
 -------------------------
 
+NEW FEATURES
+
+    o Export the function cellDistance.
+    
+Changes in version 1.13.5
+-------------------------
+
 IMPROVEMENT
 
     o Multiprocess for cellClusters.
