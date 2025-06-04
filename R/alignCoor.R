@@ -35,7 +35,7 @@ alignCoor <- function(query, subject) {
   }
   null <- mapply(function(.d, .n) {
     if (!is.numeric(.d)) {
-      stop("metadata column", .n, "is not a numeric vector")
+      stop("metadata column ", .n, " is not a numeric vector")
     }
   }, m, colnames(m))
   kabsch(query, subject)
