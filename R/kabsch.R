@@ -64,6 +64,7 @@ kabsch <- function(query, subject) {
     query <- query0
   } else {
     query <- sweep(t(tcrossprod(R, query)), 2, -attr(subject, "scaled:center"))
+    colnames(query) <- colnames(query0)
   }
   query
 }
