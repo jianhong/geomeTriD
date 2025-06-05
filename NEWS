@@ -1,4 +1,11 @@
-Changes in version 1.13.5
+Changes in version 1.13.7
+-------------------------
+
+IMPROVEMENT
+
+    o Change the default value of normalized for TSS measurement to false.
+    
+Changes in version 1.13.6
 -------------------------
 
 NEW FEATURES
