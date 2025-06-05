@@ -1492,7 +1492,7 @@ class tjViewer{
     }
     const measureparam = {
       'measure by cursor': false,
-      'normalized': true,
+      'normalized': false,
       'gene 1': '',
       'gene 2': '',
       'result' : "0",
