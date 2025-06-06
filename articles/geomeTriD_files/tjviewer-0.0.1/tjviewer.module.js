@@ -2137,7 +2137,8 @@ class tjViewer{
                 ele.colors[2]),
           'thetaStart': 0,
           'thetaLength': 2*Math.PI,
-          'show' : true
+          'show' : true,
+          'filterByR': 11
         };
         const len = ele.positions.length/3;
         if(typeof groupFolderObj[ele.tag] == 'undefined'){
@@ -2150,6 +2151,7 @@ class tjViewer{
                 groupParamObj[ele.tag][key] = 0;
                 switch(key){
                   case 'size':
+                    if(ele.type=="label") break;
                     groupFolderObj[ele.tag].add(
                       groupParamObj[ele.tag], key, -10, 10, .5)
                       .onFinishChange((val) => {
@@ -2370,6 +2372,7 @@ class tjViewer{
                       }).name('increase height by:');
                       break;
                     case 'depth':
+                      if(ele.type=="label") break;
                       groupFolderObj[ele.tag].add(
                       groupParamObj[ele.tag], key, -10, 10, .5)
                       .onFinishChange(val => {
@@ -2428,6 +2431,7 @@ class tjViewer{
               }else{
                 switch(key){
                     case 'opacity':
+                      if(ele.type=="label") break;
                       groupFolderObj[ele.tag].add(
                         groupParamObj[ele.tag], key, 0, 1)
                         .onChange(val=>{
@@ -2448,6 +2452,7 @@ class tjViewer{
                         });
                       break;
                     case 'transparent':
+                      if(ele.type=="label") break;
                       groupFolderObj[ele.tag].add(
                         groupParamObj[ele.tag], key)
                         .onChange(val=>{
@@ -2468,6 +2473,7 @@ class tjViewer{
                         });
                       break;
                     case 'show':
+                      if(ele.type=="label") break;
                       groupFolderObj[ele.tag].add(
                         groupParamObj[ele.tag], key)
                         .onChange(val=>{
@@ -2476,6 +2482,31 @@ class tjViewer{
                             if(obj.isMesh){
                               if(obj.layers.mask==Math.pow(2, this.getLayer(ele.tag))){
                                 obj.visible = val;
+                              }
+                            }
+                          }.bind(this);
+                          this.objects.traverse(traverseFun);
+                          this.objectsBottom.traverse(traverseFun);
+                          if(this.sideBySide){
+                            this.objects2.traverse(traverseFun);
+                            this.objectsBottom2.traverse(traverseFun);
+                          }
+                        });
+                      break;
+                    case 'filterByR':
+                      if(ele.type!="sphere") break;
+                      groupFolderObj[ele.tag].add(
+                        groupParamObj[ele.tag], key, 0, 12)
+                        .onChange(val=>{
+                          groupParamObj[ele.tag] = val;
+                          var traverseFun = function(obj){
+                            if(obj.isMesh){
+                              if(obj.layers.mask==Math.pow(2, this.getLayer(ele.tag))){
+                                if(obj.geometry.parameters.radius > val){
+                                  obj.visible = false;
+                                }else{
+                                  obj.visible = true;
+                                }
                               }
                             }
                           }.bind(this);
