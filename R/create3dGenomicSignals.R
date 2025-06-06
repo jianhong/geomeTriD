@@ -258,6 +258,9 @@ getPosByTargetForPairs <- function(queryObj, targetObj,
   if(length(mcols(queryObj)$color)){
     res$color <- mcols(queryObj)$color[res$index]
   }
+  if(length(mcols(queryObj)$lwd)){
+    res$lwd <- mcols(queryObj)$lwd[res$index]
+  }
   return(res)
 }
 # map score to segments lwd
@@ -325,35 +328,48 @@ createSegmentGeometry <- function(
       )
     }
     names(color) <- genomicSigLwd
-    genomic_signal <- lapply(genomicSigLwd, function(lwd) {
-      idx <- which(GenoSig$lwd == lwd)
-      threeJsGeometry(
-        x = as.numeric(t(as.matrix(mcols(GenoSig)[idx, c("x0", "x1"),
-          drop = FALSE
-        ]))),
-        y = as.numeric(t(as.matrix(mcols(GenoSig)[idx, c("y0", "y1"),
-          drop = FALSE
-        ]))),
-        z = as.numeric(t(as.matrix(mcols(GenoSig)[idx, c("z0", "z1"),
-          drop = FALSE
-        ]))),
-        type = "segment",
-        colors = if(length(GenoSig$color)) GenoSig$color[idx] else
-          color[as.character(lwd)],
-        tag = tag,
-        rotation = rotation,
-        properties = list(
-          size = lwd,
-          alpha = alpha,
-          resizeFactor = resizeFactor
-        )
-      )
-    })
-    names(genomic_signal) <- paste0(name, "_lwd_", genomicSigLwd)
-    genomic_signal
   } else {
-    NULL
+    if(length(GenoSig$lwd)==length(GenoSig)){
+      genomicSigLwd <- unique(GenoSig$lwd)
+    }else{
+      genomicSigLwd <- lwd.maxGenomicSigs
+      GenoSig$lwd <- genomicSigLwd
+    }
+    if(length(genomicSigLwd)<=length(color)){
+      if(length(genomicSigLwd)<length(color)) {
+        color <- color[-seq.int(length(color)-length(genomicSigLwd))]
+      }
+      names(color) <- genomicSigLwd
+    }else{
+      stop('The input color length is smaller than the number of distinct line width.')
+    }
   }
+  genomic_signal <- lapply(genomicSigLwd, function(lwd) {
+    idx <- which(GenoSig$lwd == lwd)
+    threeJsGeometry(
+      x = as.numeric(t(as.matrix(mcols(GenoSig)[idx, c("x0", "x1"),
+                                                drop = FALSE
+      ]))),
+      y = as.numeric(t(as.matrix(mcols(GenoSig)[idx, c("y0", "y1"),
+                                                drop = FALSE
+      ]))),
+      z = as.numeric(t(as.matrix(mcols(GenoSig)[idx, c("z0", "z1"),
+                                                drop = FALSE
+      ]))),
+      type = "segment",
+      colors = if(length(GenoSig$color)) GenoSig$color[idx] else
+        color[as.character(lwd)],
+      tag = tag,
+      rotation = rotation,
+      properties = list(
+        size = lwd,
+        alpha = alpha,
+        resizeFactor = resizeFactor
+      )
+    )
+  })
+  names(genomic_signal) <- paste0(name, "_lwd_", genomicSigLwd)
+  genomic_signal
 }
 
 getXYZmean <- function(GenoSig) {
