@@ -8,13 +8,25 @@
 cellClusters(
   xyzs,
   TADs,
-  method = "ward.D2",
+  distance_method = "NID",
+  cluster_method = "ward.D2",
+  rescale = TRUE,
   quite = FALSE,
   parallel = FALSE,
   ...
 )
 
-cellDistance(xyzs, TADs, quite = FALSE, parallel = FALSE, ...)
+cellDistance(
+  xyzs,
+  TADs,
+  distance_method = c("NID", "RMSD", "SRD", "NMI", "ARI", "AMI"),
+  eps,
+  k,
+  rescale = TRUE,
+  quite = FALSE,
+  parallel = FALSE,
+  ...
+)
 }
 \arguments{
 \item{xyzs}{A data.frame with x, y, z coordinates or output of cellDistance.}
@@ -24,14 +36,31 @@ For example, if the first TAD spans the 2nd to 4th coordinates and the
  second spans the 8th to 10th coordinates, the list would be:
   list(c(2, 3, 4), c(8, 9, 10)).}
 
-\item{method}{The agglomeration method to be used for \link{hclust}.
+\item{distance_method}{'SRD', 'RMSD', 'NMI', 'ARI', 'NID', or 'AMI'.
+SRD method will first perform DBSCAN clustering and then calculate the 
+Sequence Relabeling Distance \link{SRD}.
+RMSD method will first do alignment for
+each cell x, y, z coordinates and the calculate Root Mean Square Deviation
+(RMSD, the square root of the mean of squared 
+Euclidean distance between corresponding points).
+ARI, NID, NMI, and AMI method will first perform DBSCAN clustering and then
+calculate the Adjusted Rand Index (ARI), Normalized information distance (NID),
+Normalized Mutal Information (NMI), Adjusted Mutual Information (AMI).}
+
+\item{cluster_method}{The agglomeration method to be used for \link{hclust}.
 Default is 'ward.D2'.}
+
+\item{rescale}{Re-scale the object to similar size.}
 
 \item{quite}{Print the message or not.}
 
 \item{parallel}{Run parallel by future or not.}
 
 \item{...}{not used.}
+
+\item{eps}{numeric. The size (radius) of the epsilon neighborhood.}
+
+\item{k}{numeric. The number of groups.}
 }
 \value{
 cellClusters return an object of class hclust.
@@ -41,7 +70,7 @@ cellDistance return distance matrix as an object of 'dist'
 \description{
 Perform Hierarchical clustering for given 3D structures.
 
-Calculate euclidean distance for each pair of cells after alignment.
+Calculate distance for each pair of cells after alignment.
 }
 \examples{
 set.seed(1)
@@ -49,8 +78,9 @@ xyzs <- lapply(seq.int(20), function(i){
   matrix(sample.int(100, 60, replace = TRUE),
    nrow=20, dimnames=list(NULL, c('x', 'y', 'z')))
 })
-cd <- cellDistance(xyzs)
+cd <- cellDistance(xyzs, distance_method='RMSD')
 cc <- cellClusters(cd)
 # plot(cc)
 cutree(cc, k=3)
+cd2 <- cellDistance(xyzs, distance_method='SRD', eps=40)
 }

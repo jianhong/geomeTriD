@@ -6,8 +6,19 @@
 #'  For example, if the first TAD spans the 2nd to 4th coordinates and the
 #'   second spans the 8th to 10th coordinates, the list would be:
 #'    list(c(2, 3, 4), c(8, 9, 10)).
-#' @param method The agglomeration method to be used for \link{hclust}.
+#' @param distance_method 'SRD', 'RMSD', 'NMI', 'ARI', 'NID', or 'AMI'.
+#' SRD method will first perform DBSCAN clustering and then calculate the 
+#' Sequence Relabeling Distance \link{SRD}.
+#' RMSD method will first do alignment for
+#' each cell x, y, z coordinates and the calculate Root Mean Square Deviation
+#' (RMSD, the square root of the mean of squared 
+#' Euclidean distance between corresponding points).
+#' ARI, NID, NMI, and AMI method will first perform DBSCAN clustering and then
+#' calculate the Adjusted Rand Index (ARI), Normalized information distance (NID),
+#' Normalized Mutal Information (NMI), Adjusted Mutual Information (AMI).
+#' @param cluster_method The agglomeration method to be used for \link{hclust}.
 #'  Default is 'ward.D2'.
+#' @param rescale Re-scale the object to similar size.
 #' @param quite Print the message or not.
 #' @param parallel Run parallel by future or not. 
 #' @param ... not used.
@@ -22,13 +33,18 @@
 #'   matrix(sample.int(100, 60, replace = TRUE),
 #'    nrow=20, dimnames=list(NULL, c('x', 'y', 'z')))
 #' })
-#' cd <- cellDistance(xyzs)
+#' cd <- cellDistance(xyzs, distance_method='RMSD')
 #' cc <- cellClusters(cd)
 #' # plot(cc)
 #' cutree(cc, k=3)
-cellClusters <- function(xyzs, TADs, method='ward.D2', quite=FALSE,
+#' cd2 <- cellDistance(xyzs, distance_method='SRD', eps=40)
+cellClusters <- function(xyzs, TADs,
+                         distance_method='NID',
+                         cluster_method='ward.D2', 
+                         rescale = TRUE,
+                         quite=FALSE,
                          parallel=FALSE,...){
-  method <- match.arg(method,
+  cluster_method <- match.arg(cluster_method,
                       choices = c("ward.D", "ward.D2", "single",
                                   "complete", "average", "mcquitty",
                                   "median", "centroid"))
@@ -37,21 +53,40 @@ cellClusters <- function(xyzs, TADs, method='ward.D2', quite=FALSE,
     dst <- xyzs
   }else{
     dst <- cellDistance(xyzs=xyzs, TADs = TADs,
+                        distance_method = distance_method,
+                        rescale = rescale,
                         quite = quite, parallel = parallel,
                         ...)
   }
   ## cluster
-  hc <- hclust(dst, method = method)
+  hc <- hclust(dst, method = cluster_method)
 }
 
 #' cellDistance calculate distance matrix 
 #' @description
-#' Calculate euclidean distance for each pair of cells after alignment.
+#' Calculate distance for each pair of cells after alignment.
+#' @param eps numeric. The size (radius) of the epsilon neighborhood.
+#' @param k numeric. The number of groups.
 #' @export
 #' @return cellDistance return distance matrix as an object of 'dist'
+#' @importFrom aricode NMI ARI NID AMI
+#' @importFrom stats dist hclust
 #' @rdname cellClusters
-cellDistance <- function(xyzs, TADs, quite=FALSE, parallel=FALSE, ...){
+cellDistance <- function(xyzs, TADs, 
+                         distance_method=c('NID', 'RMSD', 'SRD',
+                                           'NMI', 'ARI', 'AMI'),
+                         eps, k,
+                         rescale=TRUE, quite=FALSE, parallel=FALSE, ...){
   checkXYZdim(xyzs)
+  distance_method <- match.arg(distance_method)
+  if(distance_method %in% c('SRD', 'NMI', 'ARI', 'NID', 'AMI')){
+    if(missing(eps) && missing(k)){
+      stop('eps or k is required.')
+    }
+    if(!missing(eps)) stopifnot(is.numeric(eps)||eps=='auto')
+    if(!missing(k)) stopifnot(is.numeric(k))
+  }
+  stopifnot(is.logical(rescale))
   if(parallel){
     applyFUN <- future_mapply
     on.exit({
@@ -78,14 +113,17 @@ cellDistance <- function(xyzs, TADs, quite=FALSE, parallel=FALSE, ...){
   }
   ## find the center of xyzs
   ## rescale the xyzs to same size
-  xyzs <- rescalePointClouds(xyzs)
+  if(distance_method=='RMSD'){
+    if(rescale) xyzs <- rescalePointClouds(xyzs)
+  }
+  
   ## fill the NA with nearby points
   xyzs <- lapply(xyzs, fill_NA)
   ## summarize the signals for each TAD by their centers
   if(!missing(TADs)){
     xyzs <- lapply(xyzs, function(xyz){
       do.call(rbind, lapply(TADs, function(idx){
-        colMeans(xyz[idx, , drop=FALSE])
+        colMeans(xyz[idx, , drop=FALSE], na.rm = TRUE)
       }))
     })
   }
@@ -98,37 +136,147 @@ cellDistance <- function(xyzs, TADs, quite=FALSE, parallel=FALSE, ...){
     total_steps <- sum(upper_idx)
     verbose <- rep(FALSE, total_steps)
     if(!quite){
-      pb <- progressor(steps = min(100, total_steps))
       if(total_steps>100){
         verbose[round(seq(1, total_steps, length=100))] <- TRUE
       }else{
         verbose <- rep(TRUE, total_steps)
       }
     }
-    values[upper_idx] <- applyFUN(FUN=function(a, b, v){
-      if(v) pb()
-      ## why use both before alignment and after alignment?
-      ## the alignment has limitations:
-      ## Only rigid: it can not model scaling or non-rigid deformation
-      ## Sensitive to Outliers: One or two bad correspondences can distort the result.
-      ##                        No built-in outlier rejection or robust loss.
-      ## Does not handle partial overlaps: works best when both sets fully match
-      ##                      That means too much NA values will affect the results.
-      ## No Uncertainty Estimation: No confidence intervals, posterior distribution
-      ##                            or measure of certainty.
-      v0 <- sum(sqrt(rowSums((a - b)^2, na.rm = TRUE)),
-                na.rm = TRUE)
-      ## after alignment
-      a <- alignCoor(a, b)
-      v1 <- sum(sqrt(rowSums((a - b)^2, na.rm = TRUE)),
-                na.rm = TRUE)
-      ifelse(v1<v0, v1, v0)
-    }, xyzs[index[upper_idx, 1]], xyzs[index[upper_idx, 2]],
-    verbose,
-    SIMPLIFY = TRUE)
+    if(distance_method=='RMSD'){
+      if(!quite) pb <- progressor(steps = min(100, total_steps))
+      values[upper_idx] <- applyFUN(FUN=function(a, b, v){
+        if(v) pb()
+        ## why use both before alignment and after alignment?
+        ## the alignment has limitations:
+        ## Only rigid: it can not model scaling or non-rigid deformation
+        ## Sensitive to Outliers: One or two bad correspondences can distort the result.
+        ##                        No built-in outlier rejection or robust loss.
+        ## Does not handle partial overlaps: works best when both sets fully match
+        ##                      That means too much NA values will affect the results.
+        ## No Uncertainty Estimation: No confidence intervals, posterior distribution
+        ##                            or measure of certainty.
+        rmsd <- function(a, b){
+          sqrt(mean(rowSums((a - b)^2, na.rm = TRUE),
+                    na.rm = TRUE))
+        }
+        v0 <- rmsd(a, b)
+        ## after alignment
+        a <- alignCoor(a, b)
+        v1 <- rmsd(a, b)
+        ifelse(v1<v0, v1, v0)
+      }, xyzs[index[upper_idx, 1]], xyzs[index[upper_idx, 2]],
+      verbose,
+      SIMPLIFY = TRUE)
+    }else{
+      ## get the point clusters
+      if(!missing(eps)){
+        pcs <- lapply(xyzs, pointCluster, eps=eps, quite=TRUE)
+        ## relabel noise 0 into others
+        if(distance_method %in% c("NMI", 'NID')){
+          pcs <- lapply(pcs, function(.ele){
+            label <- .ele$cluster
+            r <- rle(label)
+            r$values <- seq_along(r$values)
+            .ele$cluster <- inverse.rle(r)
+            .ele
+          })
+        }else{
+          if(distance_method %in% c('ARI', 'AMI')){
+            pcs <- lapply(pcs, function(.ele){
+              label <- .ele$cluster
+              label[label==0] <- -1
+              .ele$cluster <- label
+              .ele
+            })
+          }else{
+            pcs <- lapply(pcs, function(.ele){
+              label <- .ele$cluster
+              r <- rle(label)
+              r$values[r$values!=0] <- seq_along(r$values[r$values!=0])
+              .ele$cluster <- inverse.rle(r)
+              .ele
+            })
+          }
+        }
+      }else{
+        pcs <- lapply(xyzs, function(.ele){
+          d <- dist(.ele, method = 'euclidean')
+          hc <- hclust(d, method = 'complete')
+          list(cluster=cutree(hc, k=k))
+        })
+      } 
+      if(!quite) pb <- progressor(steps = min(100, total_steps))
+      dFUN <- switch(distance_method,
+                     NMI=function(...){
+                       1 - NMI(..., variant = 'sqrt')
+                     }, 
+                     ARI=function(...){
+                       1 - ARI(...)
+                     },
+                     NID=NID,
+                     AMI=function(...){
+                       1 - AMI(...)
+                     },
+                     SRD=SRD)
+      values[upper_idx] <- applyFUN(FUN=function(a, b, v){
+        if(v) pb()
+        v <- dFUN(a$cluster, b$cluster)
+        ifelse(is.na(v), 1, v)
+      }, pcs[index[upper_idx, 1]], pcs[index[upper_idx, 2]],
+      verbose, SIMPLIFY = TRUE)
+    }
   })
   dst <- matrix(values, nrow=M, ncol=M)
   return(as.dist(dst, diag = TRUE))
+}
+
+#' Sequence Relabeling Distance
+#' @description Compares two cluster sequences after best label alignment.
+#' @param c1,c2 The cluster sequence 1 and 2.
+#' @param noise The noise cluster name. Default is 0.
+#' @return The mean value of hamming distance after label alignment.
+#' @importFrom clue solve_LSAP
+#' @importFrom stats setNames
+#' @export
+#' @examples
+#' c1 <- c(-1, 0, 1, 1, -1, 3, 3, 5, 5, 5)   # `-1` is noise
+#' c2 <- c(-1, 4, 4, 4, -1, 2, 2, 2, 2, 2)   # `-1` is noise
+#' SRD(c1, c2, noise=-1)
+#' 
+SRD <- function(c1, c2, noise=0) {
+  # Check input
+  if (length(c1) != length(c2)) stop("Both cluster vectors must have the same length.")
+  c1.copy <- as.character(c1)
+  c2.copy <- as.character(c2)
+  c1[c1==noise] <- NA
+  c2[c2==noise] <- NA
+  # Convert to factors to handle non-consecutive labels
+  c1_fac <- as.factor(c1)
+  c2_fac <- as.factor(c2)
+  if(length(levels(c1_fac)) && length(levels(c2_fac))){
+    # Contingency table
+    if(length(levels(c1_fac))>length(levels(c2_fac))){
+      contingency <- table(c2_fac, c1_fac)
+    }else{
+      contingency <- table(c1_fac, c2_fac)
+    }
+    # Hungarian algorithm to find best label alignment
+    perm <- solve_LSAP(contingency, maximum = TRUE)
+    # Create a mapping from c2 labels to c1-aligned labels
+    df <- data.frame(c(dimnames(contingency)[[1]][seq_along(perm)],
+                       dimnames(contingency)[[1]],
+                       noise),
+                     c(dimnames(contingency)[[2]][perm],
+                       dimnames(contingency)[[1]],
+                       noise))
+    colnames(df) <- names(dimnames(contingency))
+    df <- df[!duplicated(df[, 1]), ]
+    df_map <- setNames(df$c1_fac, df$c2_fac)
+    c2.copy <- df_map[c2.copy]
+  }
+  # Compute Hamming distance
+  hamming_dist <- mean(c1.copy != c2.copy, na.rm=TRUE)
+  return(hamming_dist)
 }
 
 checkXYZ <- function(xyz){

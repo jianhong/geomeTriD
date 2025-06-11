@@ -99,10 +99,10 @@ view3dStructure <- function(obj, feature.gr,
     feature.gr = feature.gr,
     seqn = seqn
   )
-  xlim <- range(obj$x)
-  ylim <- range(obj$y)
+  xlim <- range(obj$x, na.rm = TRUE)
+  ylim <- range(obj$y, na.rm = TRUE)
   if (length(obj$z) > 0) {
-    zlim <- range(obj$z)
+    zlim <- range(obj$z, na.rm = TRUE)
   } else {
     zlim <- c(-1, 1) ## will not use
   }
@@ -242,9 +242,11 @@ view3dStructure <- function(obj, feature.gr,
     ## add point cluster annotation
     if(cluster3Dpoints){
       eps <- ifelse("eps" %in% names(dots), dots$eps, 'auto')
+      quite <- ifelse('quite' %in% names(dots), dots$quite, TRUE)
+      if(eps!='auto') eps <- eps * resizeFactor
       obj.cp <- obj
       mcols(obj.cp) <- mcols(obj)[, c('x', 'y', 'z')]
-      clusters <- pointCluster(obj.cp, eps = eps)
+      clusters <- pointCluster(obj.cp, eps = eps, resizeFactor=resizeFactor, quite = quite)
       rm(obj.cp)
       pc <- clusterAnno(obj, clusters)
     }

@@ -17,6 +17,13 @@ pointCluster <- function(xyz, eps = 'auto', quite=FALSE, ...){
   if(is(xyz, 'GRanges')) xyz <- as.data.frame(mcols(xyz))
   stopifnot(ncol(xyz) %% 3 == 0)
   stopifnot(is.data.frame(xyz) || is.matrix(xyz))
+  dots <- list(x=xyz, ...)
+  if('resizeFactor' %in% names(dots)){
+    resizeFactor <- dots$resizeFactor
+    dots$resizeFactor <- NULL
+  }else{
+    resizeFactor <- 1
+  }
   # Find the nearest neighbor (k = 2 means itself + 1 nearest neighbor)
   nn_result <- NULL
   tryCatch(
@@ -36,22 +43,55 @@ pointCluster <- function(xyz, eps = 'auto', quite=FALSE, ...){
     eps_seq <- quantile(euclidean_distances, probs=seq(0, 1, 0.01))
     ## do dbscan
     dbscan_result <- lapply(eps_seq, function(.e){
+      dots$eps <- .e
       tryCatch(
-        dbscan::dbscan(x=xyz, eps = .e, ...),
+        do.call(dbscan::dbscan, dots),
         error = function(e){
-          list(cluster=-1)
+          list(cluster=-1, eps=.e)
         })
     })
     ## find the one with the maximal clusters
     l <- vapply(dbscan_result, function(.e) length(unique(.e$cluster)), integer(1L))
     dbscan_result <- dbscan_result[[which.max(l)]]
-    if(!quite) message('eps is set to ', dbscan_result$eps)
+    if(!quite) {
+      this_eps <- dbscan_result$eps / resizeFactor
+      message('eps is set to ', this_eps)
+    }
   }else{
     stopifnot(is.numeric(eps))
-    dbscan_result <- dbscan(x=xyz, eps = eps, ...)
+    dots$eps <- eps
+    dbscan_result <- do.call(dbscan, dots)
   }
+  ## merge clusters
+  dbscan_result$cluster <- simplifyCluster(dbscan_result$cluster)
   dbscan_result$colors <- addColor2Cluster(dbscan_result$cluster)
   return(dbscan_result)
+}
+
+#' @importFrom IRanges IRanges
+simplifyCluster <- function(label){
+  ## make all continuous cluster as 1 cluster even there is some noise
+  ## if 2 clusters missed with each other, merge it into one
+  ## merge the labels not continue
+  for(i in seq.int(2)){
+    if(any(duplicated(label))){
+      dup <- unique(label[duplicated(label)])
+      dup <- dup[dup!=0]
+      for(d in dup){
+        id <- which(label==d)
+        if(length(id)>1){
+          id_in_range <- unique(label[seq(id[1], id[length(id)])])
+          if(any(id_in_range==0)){
+            label[label==0 & 
+                    seq_along(label) %in% seq(id[1], id[length(id)])] <- d
+            id_in_range <- id_in_range[id_in_range!=0]
+          }
+          label[label %in% id_in_range] <- d
+        }
+      }
+    }
+  }
+  return(label)
 }
 
 askNamespace <- function(...) {

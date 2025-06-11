@@ -32,6 +32,17 @@ test_that("fill_NA works not correct", {
 })
 
 test_that('cellClusters works not correct', {
-  cc <- cellClusters(xyzs)
+  cc <- cellClusters(xyzs, distance_method = 'RMSD')
   expect_equal(length(cc$order), length(xyzs))
+})
+
+test_that("cellDistance works not correct", {
+  res <- cellDistance(xyzs, distance_method = 'RMSD', quite=TRUE)
+  res.UMI <- cellDistance(xyzs, distance_method = 'NMI',
+                          eps = 'auto', quite = TRUE)
+  expect_is(res, 'dist')
+  ids <- c(1, 11, 3, 13, 5, 15, 7, 17, 9, 19)
+  res.sub <- cellDistance(xyzs[ids], distance_method = 'RMSD', quite = TRUE)
+  expect_equal(unname(as.matrix(res)[ids, ids]), 
+               unname(as.matrix(res.sub)))
 })
