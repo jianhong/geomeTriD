@@ -869,6 +869,7 @@ class PDFRenderer{
     this.widthHalf = width/2;
     this.heightHalf = height/2;
     this.pdf = new jsPDF( (width > height ? 'landscape' : 'portrait'), 'pt', [width, height] );
+    this.gstate = {gs1:new this.pdf.GState({ opacity: 1 })};
     this.pdf.setFillColor(backgroundColor.r*255, backgroundColor.g*255, backgroundColor.b*255);
     this.pdf.rect(0, 0, width, height, "F");
     this.projector = new Projector();
@@ -980,6 +981,12 @@ class PDFRenderer{
                      this.normalToComponent( element.normalModel.z ) );
 
     }
+    if( material.opacity !== undefined ){
+      if( !this.gstate.hasOwnProperty('gs'+ material.opacity) ){
+        this.gstate['gs'+material.opacity] = new this.pdf.GState({opacity: material.opacity});
+      }
+      this.pdf.setGState(this.gstate['gs'+material.opacity]);
+    }
 
     this.pdf.setDrawColor( this.color.r*255, this.color.g*255, this.color.b*255 );
     this.pdf.setFillColor( this.color.r*255, this.color.g*255, this.color.b*255 );
@@ -1008,6 +1015,7 @@ class PDFRenderer{
                     v1.positionScreen.x, v1.positionScreen.y,
                     [1,1],
                     'S' );
+    this.pdf.setGState(this.gstate.gs1);
   }
   renderFace3 ( v1, v2, v3, element, material, scene ) {
     //console.log('renderFace3');
@@ -1022,6 +1030,7 @@ class PDFRenderer{
                        v2.positionScreen.x, v2.positionScreen.y,
                        v3.positionScreen.x, v3.positionScreen.y,
                        material.wireframe ? 'S' : 'F' );// Stroke or Fill, FD: fill then stroke
+    this.pdf.setGState(this.gstate.gs1);
   }
   renderLine2(v1, v2, material){
       this.setStyleFromMaterial( material );
