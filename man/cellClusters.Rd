@@ -19,7 +19,7 @@ cellClusters(
 cellDistance(
   xyzs,
   TADs,
-  distance_method = c("NID", "RMSD", "SRD", "NMI", "ARI", "AMI"),
+  distance_method = c("NID", "RMSD", "SRD", "DSDC", "NMI", "ARI", "AMI"),
   eps,
   k,
   rescale = TRUE,
@@ -29,16 +29,17 @@ cellDistance(
 )
 }
 \arguments{
-\item{xyzs}{A data.frame with x, y, z coordinates or output of cellDistance.}
+\item{xyzs}{A list of data.frame with x, y, z coordinates or output of cellDistance.}
 
 \item{TADs}{A list of index vectors, where each vector represents a TAD.
 For example, if the first TAD spans the 2nd to 4th coordinates and the
  second spans the 8th to 10th coordinates, the list would be:
   list(c(2, 3, 4), c(8, 9, 10)).}
 
-\item{distance_method}{'SRD', 'RMSD', 'NMI', 'ARI', 'NID', or 'AMI'.
+\item{distance_method}{'SRD', 'DSDC', 'RMSD', 'NMI', 'ARI', 'NID', or 'AMI'.
 SRD method will first perform DBSCAN clustering and then calculate the 
 Sequence Relabeling Distance \link{SRD}.
+DSDC method will calculate the Euclidean distance of \link{SDC}.
 RMSD method will first do alignment for
 each cell x, y, z coordinates and the calculate Root Mean Square Deviation
 (RMSD, the square root of the mean of squared 

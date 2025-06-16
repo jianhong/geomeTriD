@@ -1,14 +1,15 @@
 #' cluster single cell 3D structures
 #' @description
 #' Perform Hierarchical clustering for given 3D structures.
-#' @param xyzs A data.frame with x, y, z coordinates or output of cellDistance.
+#' @param xyzs A list of data.frame with x, y, z coordinates or output of cellDistance.
 #' @param TADs A list of index vectors, where each vector represents a TAD.
 #'  For example, if the first TAD spans the 2nd to 4th coordinates and the
 #'   second spans the 8th to 10th coordinates, the list would be:
 #'    list(c(2, 3, 4), c(8, 9, 10)).
-#' @param distance_method 'SRD', 'RMSD', 'NMI', 'ARI', 'NID', or 'AMI'.
+#' @param distance_method 'SRD', 'DSDC', 'RMSD', 'NMI', 'ARI', 'NID', or 'AMI'.
 #' SRD method will first perform DBSCAN clustering and then calculate the 
 #' Sequence Relabeling Distance \link{SRD}.
+#' DSDC method will calculate the Euclidean distance of \link{SDC}.
 #' RMSD method will first do alignment for
 #' each cell x, y, z coordinates and the calculate Root Mean Square Deviation
 #' (RMSD, the square root of the mean of squared 
@@ -73,7 +74,7 @@ cellClusters <- function(xyzs, TADs,
 #' @importFrom stats dist hclust
 #' @rdname cellClusters
 cellDistance <- function(xyzs, TADs, 
-                         distance_method=c('NID', 'RMSD', 'SRD',
+                         distance_method=c('NID', 'RMSD', 'SRD', 'DSDC',
                                            'NMI', 'ARI', 'AMI'),
                          eps, k,
                          rescale=TRUE, quite=FALSE, parallel=FALSE, ...){
@@ -126,6 +127,10 @@ cellDistance <- function(xyzs, TADs,
         colMeans(xyz[idx, , drop=FALSE], na.rm = TRUE)
       }))
     })
+  }
+  if(distance_method=='DSDC'){
+    return(dist(vapply(xyzs, SDC, FUN.VALUE = numeric(1L)),
+                method = 'euclidean'))
   }
   ## calculate dist
   M <- length(xyzs)
@@ -277,6 +282,21 @@ SRD <- function(c1, c2, noise=0) {
   # Compute Hamming distance
   hamming_dist <- mean(c1.copy != c2.copy, na.rm=TRUE)
   return(hamming_dist)
+}
+
+#' Distance to centroid
+#' @description
+#' Calculates the mean of distance from each point to the geometric center (centroid)
+#' @param xyz A data.frame with x, y, z coordinates.
+#' @return The mean of squared Euclidean distance to the centroid.
+#' @export
+#' @examples
+#' xyz <- matrix(seq.int(12), ncol = 3, dimnames=list(NULL, c('x', 'y', 'z')))
+#' SDC(xyz)
+SDC <- function(xyz){
+  xyz <- checkXYZ(xyz)
+  centroid <- colMeans(xyz, na.rm = TRUE)
+  mean(colSums((t(xyz) - centroid)^2), na.rm = TRUE)
 }
 
 checkXYZ <- function(xyz){

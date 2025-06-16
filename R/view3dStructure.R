@@ -432,7 +432,7 @@ view3dStructure <- function(obj, feature.gr,
               type = "line",
               tag = feature_tag,
               properties = list(
-                size = lwd.gene,
+                size = ifelse(is.numeric(genePos$fgf$lwd[idx]), genePos$fgf$lwd[idx], lwd.gene),
                 target = unname(genePos$fgf$label[idx]),
                 resizeFactor = resizeFactor
               )

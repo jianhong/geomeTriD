@@ -1,3 +1,10 @@
+Changes in version 1.13.11
+-------------------------
+
+NEW FEATURES
+
+    o Add DSDC distance method for cellDistance.
+    
 Changes in version 1.13.10
 -------------------------
 
