@@ -210,7 +210,7 @@ cellDistance <- function(xyzs, TADs,
         pcs <- lapply(xyzs, function(.ele){
           if(!quite) pb()
           d <- spatialDistanceMatrix(.ele)
-          d <- gaussian_blur(d)
+          d <- gaussianBlur(d)
           tad <- hierarchicalClusteringTAD(
             d, bin_size = 2, k=k, window = max(ceiling(nrow(.ele)/100), 3))
           cluster <- rep(seq.int(nrow(tad)), tad$second-tad$first+1)
