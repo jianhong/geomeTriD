@@ -18,7 +18,7 @@ Calculate distance for each pair of cells after alignment."><!-- mathjax --><scr
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geomeTriD</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.12</span>
       </span>
     </div>
 
@@ -96,14 +96,14 @@ For example, if the first TAD spans the 2nd to 4th coordinates and the
 
 <dt id="arg-distance-method">distance_method<a class="anchor" aria-label="anchor" href="#arg-distance-method"></a></dt>
 <dd><p>'SRD', 'DSDC', 'RMSD', 'NMI', 'ARI', 'NID', or 'AMI'.
-SRD method will first perform DBSCAN clustering and then calculate the
+SRD method will first perform clustering and then calculate the
 Sequence Relabeling Distance <a href="SRD.html">SRD</a>.
 DSDC method will calculate the Euclidean distance of <a href="SDC.html">SDC</a>.
 RMSD method will first do alignment for
 each cell x, y, z coordinates and the calculate Root Mean Square Deviation
 (RMSD, the square root of the mean of squared
 Euclidean distance between corresponding points).
-ARI, NID, NMI, and AMI method will first perform DBSCAN clustering and then
+ARI, NID, NMI, and AMI method will first perform clustering and then
 calculate the Adjusted Rand Index (ARI), Normalized information distance (NID),
 Normalized Mutal Information (NMI), Adjusted Mutual Information (AMI).</p></dd>
 
@@ -130,11 +130,13 @@ Default is 'ward.D2'.</p></dd>
 
 
 <dt id="arg-eps">eps<a class="anchor" aria-label="anchor" href="#arg-eps"></a></dt>
-<dd><p>numeric. The size (radius) of the epsilon neighborhood.</p></dd>
+<dd><p>numeric or 'auto'. The size (radius) of the epsilon neighborhood.
+If eps is set, use DBSCAN to cluster the points for each cell.</p></dd>
 
 
 <dt id="arg-k">k<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>
-<dd><p>numeric. The number of groups.</p></dd>
+<dd><p>numeric or 'auto'. The number of groups. If k is set, use hclust to cluster
+the points for each cell.</p></dd>
 
 </dl></div>
     <div id="value">

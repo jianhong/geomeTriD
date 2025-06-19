@@ -9,12 +9,14 @@
 <url><loc>https://jianhong.github.io/geometrid/reference/SDC.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/SRD.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/alignCoor.html</loc></url>
+<url><loc>https://jianhong.github.io/geometrid/reference/autoK.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/availableGeometries.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/cellClusters.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/create3dGenomicSignals.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/createTADGeometries.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/extractBackbonePositions.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/fill_NA.html</loc></url>
+<url><loc>https://jianhong.github.io/geometrid/reference/gaussianBlur.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/geomeTriD-package.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/index.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/loopBouquetPlot.html</loc></url>
@@ -22,6 +24,7 @@
 <url><loc>https://jianhong.github.io/geometrid/reference/pointCluster.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/rglViewer.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/smooth3dPoints.html</loc></url>
+<url><loc>https://jianhong.github.io/geometrid/reference/spatialDistanceMatrix.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/threeJsGeometry-class.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/threeJsViewer-shiny.html</loc></url>
 <url><loc>https://jianhong.github.io/geometrid/reference/threeJsViewer.html</loc></url>
