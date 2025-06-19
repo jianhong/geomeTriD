@@ -246,6 +246,7 @@ view3dStructure <- function(obj, feature.gr,
       if(eps!='auto') eps <- eps * resizeFactor
       obj.cp <- obj
       mcols(obj.cp) <- mcols(obj)[, c('x', 'y', 'z')]
+      obj.cp <- fill_NA(obj.cp)
       clusters <- pointCluster(obj.cp, eps = eps, resizeFactor=resizeFactor, quite = quite)
       rm(obj.cp)
       pc <- clusterAnno(obj, clusters)

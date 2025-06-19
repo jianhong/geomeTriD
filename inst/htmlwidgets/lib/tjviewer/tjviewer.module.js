@@ -535,7 +535,7 @@ class Projector {
 					}
 
 				} else if ( object.isLine || object.isLine2 || object.isLineSegments2) {
-
+					
 					_modelViewProjectionMatrix.multiplyMatrices( _viewProjectionMatrix, _modelMatrix );
 
 					const attributes = geometry.attributes;
@@ -1007,9 +1007,6 @@ class PDFRenderer{
   }
   renderLine ( v1, v2, element, material, scene ) {
     this.setStyleFromMaterial( material );
-    if ( material.isLineMaterial) {
-      this.setStyleFromMaterial( material );
-    }
     this.pdf.lines( [[v2.positionScreen.x-v1.positionScreen.x,
                       v2.positionScreen.y-v1.positionScreen.y]],
                     v1.positionScreen.x, v1.positionScreen.y,

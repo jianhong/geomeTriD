@@ -37,14 +37,14 @@ For example, if the first TAD spans the 2nd to 4th coordinates and the
   list(c(2, 3, 4), c(8, 9, 10)).}
 
 \item{distance_method}{'SRD', 'DSDC', 'RMSD', 'NMI', 'ARI', 'NID', or 'AMI'.
-SRD method will first perform DBSCAN clustering and then calculate the 
+SRD method will first perform clustering and then calculate the 
 Sequence Relabeling Distance \link{SRD}.
 DSDC method will calculate the Euclidean distance of \link{SDC}.
 RMSD method will first do alignment for
 each cell x, y, z coordinates and the calculate Root Mean Square Deviation
 (RMSD, the square root of the mean of squared 
 Euclidean distance between corresponding points).
-ARI, NID, NMI, and AMI method will first perform DBSCAN clustering and then
+ARI, NID, NMI, and AMI method will first perform clustering and then
 calculate the Adjusted Rand Index (ARI), Normalized information distance (NID),
 Normalized Mutal Information (NMI), Adjusted Mutual Information (AMI).}
 
@@ -59,9 +59,11 @@ Default is 'ward.D2'.}
 
 \item{...}{not used.}
 
-\item{eps}{numeric. The size (radius) of the epsilon neighborhood.}
+\item{eps}{numeric or 'auto'. The size (radius) of the epsilon neighborhood. 
+If eps is set, use DBSCAN to cluster the points for each cell.}
 
-\item{k}{numeric. The number of groups.}
+\item{k}{numeric or 'auto'. The number of groups. If k is set, use hclust to cluster
+the points for each cell.}
 }
 \value{
 cellClusters return an object of class hclust.

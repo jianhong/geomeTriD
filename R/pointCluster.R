@@ -5,7 +5,7 @@
 #' @param eps The size (radius) of the epsilon neighborhood. Default 'auto'.
 #' @param quite Print message or not.
 #' @param ... other parameters could be used by dbscan function except x and eps.
-#' @return A an object of class dbscan_fast.
+#' @return An object of class dbscan_fast.
 #' @importFrom RANN nn2
 #' @importFrom dbscan dbscan
 #' @export

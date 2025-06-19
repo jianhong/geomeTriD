@@ -7,14 +7,14 @@
 #'   second spans the 8th to 10th coordinates, the list would be:
 #'    list(c(2, 3, 4), c(8, 9, 10)).
 #' @param distance_method 'SRD', 'DSDC', 'RMSD', 'NMI', 'ARI', 'NID', or 'AMI'.
-#' SRD method will first perform DBSCAN clustering and then calculate the 
+#' SRD method will first perform clustering and then calculate the 
 #' Sequence Relabeling Distance \link{SRD}.
 #' DSDC method will calculate the Euclidean distance of \link{SDC}.
 #' RMSD method will first do alignment for
 #' each cell x, y, z coordinates and the calculate Root Mean Square Deviation
 #' (RMSD, the square root of the mean of squared 
 #' Euclidean distance between corresponding points).
-#' ARI, NID, NMI, and AMI method will first perform DBSCAN clustering and then
+#' ARI, NID, NMI, and AMI method will first perform clustering and then
 #' calculate the Adjusted Rand Index (ARI), Normalized information distance (NID),
 #' Normalized Mutal Information (NMI), Adjusted Mutual Information (AMI).
 #' @param cluster_method The agglomeration method to be used for \link{hclust}.
@@ -44,7 +44,7 @@ cellClusters <- function(xyzs, TADs,
                          cluster_method='ward.D2', 
                          rescale = TRUE,
                          quite=FALSE,
-                         parallel=FALSE,...){
+                         parallel=FALSE, ...){
   cluster_method <- match.arg(cluster_method,
                       choices = c("ward.D", "ward.D2", "single",
                                   "complete", "average", "mcquitty",
@@ -66,8 +66,10 @@ cellClusters <- function(xyzs, TADs,
 #' cellDistance calculate distance matrix 
 #' @description
 #' Calculate distance for each pair of cells after alignment.
-#' @param eps numeric. The size (radius) of the epsilon neighborhood.
-#' @param k numeric. The number of groups.
+#' @param eps numeric or 'auto'. The size (radius) of the epsilon neighborhood. 
+#' If eps is set, use DBSCAN to cluster the points for each cell.
+#' @param k numeric or 'auto'. The number of groups. If k is set, use hclust to cluster
+#' the points for each cell.
 #' @export
 #' @return cellDistance return distance matrix as an object of 'dist'
 #' @importFrom aricode NMI ARI NID AMI
@@ -76,7 +78,7 @@ cellClusters <- function(xyzs, TADs,
 cellDistance <- function(xyzs, TADs, 
                          distance_method=c('NID', 'RMSD', 'SRD', 'DSDC',
                                            'NMI', 'ARI', 'AMI'),
-                         eps, k,
+                         eps, k, 
                          rescale=TRUE, quite=FALSE, parallel=FALSE, ...){
   checkXYZdim(xyzs)
   distance_method <- match.arg(distance_method)
@@ -85,7 +87,7 @@ cellDistance <- function(xyzs, TADs,
       stop('eps or k is required.')
     }
     if(!missing(eps)) stopifnot(is.numeric(eps)||eps=='auto')
-    if(!missing(k)) stopifnot(is.numeric(k))
+    if(!missing(k)) stopifnot(is.numeric(k)||k=='auto')
   }
   stopifnot(is.logical(rescale))
   if(parallel){
@@ -204,10 +206,15 @@ cellDistance <- function(xyzs, TADs,
           }
         }
       }else{
+        if(!quite) pb <- progressor(steps = length(xyzs))
         pcs <- lapply(xyzs, function(.ele){
-          d <- dist(.ele, method = 'euclidean')
-          hc <- hclust(d, method = 'complete')
-          list(cluster=cutree(hc, k=k))
+          if(!quite) pb()
+          d <- spatialDistanceMatrix(.ele)
+          d <- gaussian_blur(d)
+          tad <- hierarchicalClusteringTAD(
+            d, bin_size = 2, k=k, window = max(ceiling(nrow(.ele)/100), 3))
+          cluster <- rep(seq.int(nrow(tad)), tad$second-tad$first+1)
+          list(cluster=cluster)
         })
       } 
       if(!quite) pb <- progressor(steps = min(100, total_steps))
@@ -339,8 +346,32 @@ rescalePointClouds <- function(xyzs){
 #' fill_NA(xyz)
 #' 
 fill_NA <- function(xyz){
-  xyz <- checkXYZ(xyz)
-  id <- which(is.na(xyz[, 'x']))
+  if(is(xyz, 'GRanges')){
+    mcols(xyz) <- fill_NA(as.data.frame(mcols(xyz)))
+    return(xyz) 
+  }
+  # xyz <- checkXYZ(xyz)
+  stopifnot(is.matrix(xyz)||is.data.frame(xyz)||is(xyz, 'dist'))
+  is_dist <- is(xyz, 'dist')
+  if(is_dist){
+    xyz <- as.matrix(xyz)
+  }
+  half <- FALSE
+  if(all(c('x', 'y', 'z') %in% tolower(colnames(xyz)))){
+    colnames(xyz) <- tolower(colnames(xyz))
+    xyz <- xyz[, c('x', 'y', 'z')]
+  }else{
+    if(nrow(xyz)==ncol(xyz)){
+      half <- TRUE
+    }else{
+      stop('Not proper xyz.')
+    }
+  }
+  id_x <- 1
+  if(all(is.na(xyz[, id_x]))){
+    id_x <- which(!is.na(xyz[id_x, ]))[1]
+  }
+  id <- which(is.na(xyz[, id_x]))
   old_count <- length(id)
   if(length(id)){
     ## fill both ends has values
@@ -353,14 +384,26 @@ fill_NA <- function(xyz){
     res0 <- xyz[id0, , drop=FALSE]
     res1 <- xyz[id1, , drop=FALSE]
     res <- (xyz[id0, , drop=FALSE] + xyz[id1, , drop=FALSE])/2
-    res[is.na(res[, 'x']) & !is.na(res0[, 'x']), ] <- 
-      res0[is.na(res[, 'x']) & !is.na(res0[, 'x']), ]
-    res[is.na(res[, 'x']) & is.na(res0[, 'x']), ] <- 
-      res0[is.na(res[, 'x']) & is.na(res1[, 'x']), ]
+    res[is.na(res[, id_x]) & !is.na(res0[, id_x]), ] <- 
+      res0[is.na(res[, id_x]) & !is.na(res0[, id_x]), ]
+    res[is.na(res[, id_x]) & is.na(res0[, id_x]), ] <- 
+      res0[is.na(res[, id_x]) & is.na(res1[, id_x]), ]
     xyz[id, ] <- res
-    id <- which(is.na(xyz[, 'x']))
+    id <- which(is.na(xyz[, id_x]))
     if(length(id)<old_count){
       return(fill_NA(xyz=xyz))
+    }
+  }
+  if(half){
+    for(i in which(is.na(xyz[id_x, ]))){
+      xyz[, i] <- xyz[i, ]
+      xyz[i, i] <- 0
+    }
+    NAs <- which(is.na(xyz))
+    xyz[NAs] <- (xyz[NAs-1] + xyz[NAs+1])/2
+    xyz[is.na(xyz)] <- 0
+    if(is_dist){
+      xyz <- as.dist(xyz)
     }
   }
   return(xyz)

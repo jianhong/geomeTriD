@@ -16,7 +16,7 @@ pointCluster(xyz, eps = "auto", quite = FALSE, ...)
 \item{...}{other parameters could be used by dbscan function except x and eps.}
 }
 \value{
-A an object of class dbscan_fast.
+An object of class dbscan_fast.
 }
 \description{
 Perform DBSCAN clustering for given 3D coordinates.

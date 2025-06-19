@@ -1,3 +1,10 @@
+Changes in version 1.13.12
+-------------------------
+
+NEW FEATURES
+
+    o Add function to call TADs and compartments for spatial distance.
+    
 Changes in version 1.13.11
 -------------------------
 
