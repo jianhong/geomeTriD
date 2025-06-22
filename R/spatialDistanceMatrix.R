@@ -3,6 +3,7 @@
 #' Create the spatial distance matrix for given 3D coordinates.
 #' @param xyz A GRanges object with x, y, z coordinates
 #' @param output "matrix" or "dist".
+#' @param fill_NA Fill the missing value or not.
 #' @param ... Parameters could be used by downstream function.
 #' @return A matrix of Euclidean distance with fixed bins.
 #' @importFrom stats dist
@@ -20,7 +21,7 @@
 #' head(hierarchicalClusteringTAD(sdm, bin_size=bin_size))
 #' library(BSgenome.Hsapiens.UCSC.hg19)
 #' compartment(xyz.gr, genome=BSgenome.Hsapiens.UCSC.hg19)
-spatialDistanceMatrix <- function(xyz, output='matrix', ...){
+spatialDistanceMatrix <- function(xyz, output='matrix', fill_NA=FALSE, ...){
   output <- match.arg(output, c('matrix', 'dist'))
   isGR <- is(xyz, 'GRanges')
   if(isGR){
@@ -29,8 +30,15 @@ spatialDistanceMatrix <- function(xyz, output='matrix', ...){
     if(!all(seqnames(xyz)==seqnames(xyz)[1])){
       stop('all seqnames should be same.')
     }
+    if(fill_NA){
+      xyz <- fill_gap(xyz)
+    }
     rn <- (start(xyz)-1 + end(xyz))/2
     xyz <- as.data.frame(mcols(xyz))
+  }else{
+    if(fill_NA){
+      xyz <- fill_NA(xyz)
+    }
   }
   xyz <- checkXYZ(xyz)
   d <- dist(xyz, method = 'euclidean')
@@ -40,6 +48,27 @@ spatialDistanceMatrix <- function(xyz, output='matrix', ...){
   if(output=='dist') return(d)
   d <- as.matrix(d)
   return(d)
+}
+
+fill_gap <- function(xyz.gr){
+  rg <- range(xyz.gr)
+  if(length(rg)!=1){
+    stop('The xyz.gr must be a single chromosome data and without strand info.')
+  }
+  w <- unique(width(xyz.gr))
+  if(length(w)!=1){
+    stop('The width of the xyz.gr must be same.')
+  }
+  gr <- slidingWindows(rg, width = w, step=w)[[1]]
+  ol <- findOverlaps(xyz.gr, gr, type = 'equal')
+  if(any(duplicated(queryHits(ol)))){
+    stop('There is duplicated xyz.gr.')
+  }
+  mcols(gr) <- matrix(ncol = ncol(mcols(xyz.gr)),
+                      dimnames = list(NULL, colnames(mcols(xyz.gr))))
+  mcols(gr)[subjectHits(ol), ] <- mcols(xyz.gr)[queryHits(ol), ]
+  mcols(gr) <- fill_NA(as.data.frame(mcols(gr)))
+  return(gr)
 }
 
 safeIndex <- function(idx, n){
@@ -371,6 +400,7 @@ compartment <- function(xyz.gr, genome, minWidth=1){
 #' @param label_unit unit for labels. 'M', 1e6; 'K', 1e3, 'G', 1e9.
 #' @param d_cutoff The maximal cutoff value of distance matrix.
 #' @param Gaussian_blur Do Gaussian blur or not.
+#' @param useRaster logical; if TRUE a bitmap raster is used to plot the image instead of polygons.
 #' @importFrom graphics image axis rect layout
 #' @importFrom grDevices hcl.colors
 #' @export
@@ -387,13 +417,14 @@ spatialDistanceHeatmap <- function(spatialDistances,
                                    Z_cutoff=2.3,
                                    norm=FALSE,
                                    Gaussian_blur=FALSE,
+                                   useRaster=FALSE,
                                    ...){
   bin_size <- 10000 # no meaning.
   compartment <- NULL
   if(is(spatialDistances, 'GRanges')) {
     spatialDistances <- spatialDistanceMatrix(spatialDistances)
   }
-  if(is.numeric(d_cutoff)){
+  if(is.numeric(d_cutoff)||!is.infinite(d_cutoff)){
     spatialDistances[spatialDistances>d_cutoff] <- d_cutoff
   }
   origin <- spatialDistances[,
@@ -478,7 +509,7 @@ spatialDistanceHeatmap <- function(spatialDistances,
   plot(1, type="n", xaxt = 'n', yaxt = 'n', xaxs = "i", yaxs = "i",
        axes=FALSE, frame.plot=FALSE,
        xlab="", ylab="", xlim=c(0, 1.1), ylim=c(0, 1))
-  image(origin, col=col, axes = FALSE, add=TRUE)
+  image(origin, col=col, axes = FALSE, add=TRUE, useRaster=useRaster)
   # add TAD_boundaries
   if('boundaryScoreTAD' %in% components){
     for(i in seq.int(nrow(TAD_boundaries))){

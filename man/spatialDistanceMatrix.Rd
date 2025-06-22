@@ -9,7 +9,7 @@
 \alias{spatialDistanceHeatmap}
 \title{Create the spatial distance matrix}
 \usage{
-spatialDistanceMatrix(xyz, output = "matrix", ...)
+spatialDistanceMatrix(xyz, output = "matrix", fill_NA = FALSE, ...)
 
 boundaryScore(spatialDistances, window = 5, background = 10, ...)
 
@@ -39,6 +39,7 @@ spatialDistanceHeatmap(
   Z_cutoff = 2.3,
   norm = FALSE,
   Gaussian_blur = FALSE,
+  useRaster = FALSE,
   ...
 )
 }
@@ -46,6 +47,8 @@ spatialDistanceHeatmap(
 \item{xyz}{A GRanges object with x, y, z coordinates}
 
 \item{output}{"matrix" or "dist".}
+
+\item{fill_NA}{Fill the missing value or not.}
 
 \item{...}{Parameters could be used by downstream function.}
 
@@ -82,6 +85,8 @@ spatialDistanceHeatmap(
 \item{d_cutoff}{The maximal cutoff value of distance matrix.}
 
 \item{Gaussian_blur}{Do Gaussian blur or not.}
+
+\item{useRaster}{logical; if TRUE a bitmap raster is used to plot the image instead of polygons.}
 }
 \value{
 A matrix of Euclidean distance with fixed bins.
