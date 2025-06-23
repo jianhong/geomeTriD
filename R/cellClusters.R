@@ -356,6 +356,9 @@ fill_NA <- function(xyz){
   if(is_dist){
     xyz <- as.matrix(xyz)
   }
+  if(!any(is.na(xyz))){
+    return(xyz)
+  }
   half <- FALSE
   if(all(c('x', 'y', 'z') %in% tolower(colnames(xyz)))){
     colnames(xyz) <- tolower(colnames(xyz))
@@ -368,8 +371,38 @@ fill_NA <- function(xyz){
     }
   }
   id_x <- 1
-  if(all(is.na(xyz[, id_x]))){
-    id_x <- which(!is.na(xyz[id_x, ]))[1]
+  if(all(is.na(xyz[-id_x, id_x]))){
+    id_x <- apply(xyz, 2, function(.ele) which(!is.na(.ele)), simplify = FALSE)
+    id_x <- mapply(id_x, seq_along(id_x), FUN=function(i, j){
+      i[i!=j]
+    }, SIMPLIFY = FALSE)
+    id_x <- which(lengths(id_x)>0)
+    if(length(id_x)<1){
+      stop('All NA values')
+    }
+    id_x <- id_x[1]
+  }
+  id <- is.na(xyz[, id_x])
+  id.rle <- rle(id)
+  ## fill both ends
+  if(id.rle$values[1]){
+    for(i in seq.int(id.rle$lengths[1])){
+      xyz[i, ] <- xyz[id.rle$lengths[1]+1, ]
+      if(half){
+        xyz[, i] <- xyz[, id.rle$lengths[1]+1]
+        xyz[i, i] <- 0
+      }
+    }
+  }
+  if(id.rle$values[length(id.rle$values)]){
+    j <- cumsum(id.rle$lengths)[length(id.rle$lengths)-1]
+    for(i in seq.int(nrow(xyz))[-seq.int(j)]){
+      xyz[i, ] <- xyz[j, ]
+      if(half){
+        xyz[, i] <- xyz[, j]
+        xyz[i, i] <- 0
+      }
+    }
   }
   id <- which(is.na(xyz[, id_x]))
   old_count <- length(id)
@@ -389,16 +422,18 @@ fill_NA <- function(xyz){
     res[is.na(res[, id_x]) & is.na(res0[, id_x]), ] <- 
       res0[is.na(res[, id_x]) & is.na(res1[, id_x]), ]
     xyz[id, ] <- res
+    if(half){
+      xyz[, id] <- t(res)
+      for(i in id){
+        xyz[i, i] <- 0
+      }
+    }
     id <- which(is.na(xyz[, id_x]))
     if(length(id)<old_count){
       return(fill_NA(xyz=xyz))
     }
   }
   if(half){
-    for(i in which(is.na(xyz[id_x, ]))){
-      xyz[, i] <- xyz[i, ]
-      xyz[i, i] <- 0
-    }
     NAs <- which(is.na(xyz))
     xyz[NAs] <- (xyz[NAs-1] + xyz[NAs+1])/2
     xyz[is.na(xyz)] <- 0

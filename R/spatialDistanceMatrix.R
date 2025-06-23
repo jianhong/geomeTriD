@@ -318,7 +318,7 @@ compartment <- function(xyz.gr, genome, minWidth=1){
   if(!is(xyz.gr, 'GRanges')){
     tile <- GRanges('seq1', IRanges(seq.int(nrow(xyz.gr)), width=1))
     if(all(c('x', 'y', 'z') %in% tolower(colnames(xyz.gr)))){
-      mcols(tile) <- checkXYZ(xyz.gr)
+      mcols(tile) <- fill_NA(checkXYZ(xyz.gr))
     }
   }else{
     if(width(xyz.gr)[1]>minWidth){
