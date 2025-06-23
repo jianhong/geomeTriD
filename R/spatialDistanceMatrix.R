@@ -338,6 +338,7 @@ compartment <- function(xyz.gr, genome, minWidth=1){
       ol <- split(subjectHits(ol), queryHits(ol))
       xyz <- as.data.frame(mcols(xyz.gr))
       xyz <- checkXYZ(xyz)
+      xyz <- fill_NA(xyz)
       xyz <- lapply(ol, function(idx){
         colMeans(xyz[idx, ], na.rm=TRUE)
       })
@@ -346,6 +347,7 @@ compartment <- function(xyz.gr, genome, minWidth=1){
     }else{
       xyz <- as.data.frame(mcols(xyz.gr))
       xyz <- checkXYZ(xyz)
+      xyz <- fill_NA(xyz)
       mcols(xyz.gr) <- xyz
       tile <- xyz.gr
     }
