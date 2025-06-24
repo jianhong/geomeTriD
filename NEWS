@@ -1,3 +1,10 @@
+Changes in version 1.13.13
+-------------------------
+
+BUG FIXES
+
+    o Fix the issue for fill_NA if there are multiple NA values in dist matrix.
+
 Changes in version 1.13.12
 -------------------------
 
