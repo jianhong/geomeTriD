@@ -1123,10 +1123,8 @@ class PDFRenderer{
         }
       }
     });
-    console.log(titleBox);
     this.pdf.setTextColor( titleBox.style.color );
     this.pdf.text(titleBox.innerText, 2, 14);
-    console.log(scalebar);
     this.pdf.setDrawColor( scalebar.style.background );
     this.pdf.setFillColor( scalebar.style.background );
     this.pdf.lines( [[parseFloat(scalebar.style.width), 0]],
