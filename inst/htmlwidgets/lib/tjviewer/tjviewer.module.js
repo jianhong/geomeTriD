@@ -1058,7 +1058,7 @@ class PDFRenderer{
     this.pdf.text(label, v3.x, v3.y);
   }
 
-  render(scene, camera){
+  render(scene, camera, titleBox, scalebar){
     //console.log(scene);
     var renderData = this.projector.projectScene(scene, camera, this.sortObjects, this.sortElements );
     this.lights = renderData.lights;
@@ -1122,90 +1122,17 @@ class PDFRenderer{
           this.renderLabel( this.vector3, obj.name, obj.element.style.color );
         }
       }
-      //line2 or LineSegments2object
-      /*if(obj.isLine2 === true || obj.isLineSegments2 === true && obj.material.visible && camera.layers.test(obj.layers)){
-        //console.log(obj);
-        if(obj.geometry.attributes != undefined && obj.visible){
-          var start=obj.geometry.attributes.instanceStart;
-          var color = obj.geometry.attributes.instanceColorStart.data.array;
-          for(var i=0; i<start.data.count; i++){
-            var k=i*start.data.stride;
-            const vec1 = new THREE.Vector3();
-            const vec2 = new THREE.Vector3();
-            vec1.x=start.data.array[k];
-            vec1.y=start.data.array[k+1];
-            vec1.z=start.data.array[k+2];
-            vec2.x=start.data.array[k+3];
-            vec2.y=start.data.array[k+4];
-            vec2.z=start.data.array[k+5];
-            vec1.project(camera);
-            vec2.project(camera);
-            this.positionScreenToPage( vec1 );
-            this.positionScreenToPage( vec2 );
-
-            this.bboxRect.setFromPoints( [new THREE.Vector2(vec1.x, vec1.y),
-                                         new THREE.Vector2(vec2.x, vec2.y)] );
-            if ( !this.clipRect.intersectsBox( this.bboxRect ) ) {
-              continue;
-            }
-            this.color.setRGB( color[k+0], color[k+1], color[k+2] );
-            this.renderLine2( vec1, vec2, obj.material );
-          }
-        }
-      }*/
-      /*if(obj.isInstancedMesh === true && obj.material.visible && camera.layers.test(obj.layers)){
-        console.log(obj);
-        var position = obj.geometry.attributes.position;
-        var normal = obj.geometry.attributes.normal;
-        console.log(position);
-        var itemSize = position.itemSize;
-        var index = obj.geometry.index;
-        console.log(index);
-        if(itemSize==3 && index){
-          for(var w=0; w<obj.count; w++){
-            const color = new THREE.Color();
-            obj.getColorAt(w, this.color);
-            if(this.color.r && this.color.g && this.color.b){
-              this.pdf.setDrawColor( this.color.r*255, this.color.g*255, this.color.b*255 );
-              this.pdf.setFillColor( this.color.r*255, this.color.g*255, this.color.b*255 );
-            }
-            obj.getMatrixAt(w, this.matrix);
-            for(var i=0; i<index.count/itemSize; i++){
-              var k=i*itemSize;
-              const vec1 = new THREE.Vector3();
-              const vec2 = new THREE.Vector3();
-              const vec3 = new THREE.Vector3();
-              vec1.x=position.array[index.array[k]];
-              vec1.y=position.array[index.array[k]+1];
-              vec1.z=position.array[index.array[k]+2];
-              vec2.x=position.array[index.array[k+1]];
-              vec2.y=position.array[index.array[k+1]+1];
-              vec2.z=position.array[index.array[k+1]+2];
-              vec3.x=position.array[index.array[k+2]];
-              vec3.y=position.array[index.array[k+2]+1];
-              vec3.z=position.array[index.array[k+2]+2];
-              vec1.applyMatrix4( obj.matrixWorld ).applyMatrix4(this.matrix);
-              vec2.applyMatrix4( obj.matrixWorld ).applyMatrix4(this.matrix);
-              vec3.applyMatrix4( obj.matrixWorld ).applyMatrix4(this.matrix);
-              vec1.project(camera);
-              vec2.project(camera);
-              vec3.project(camera);
-              this.positionScreenToPage( vec1 );
-              this.positionScreenToPage( vec2 );
-              this.positionScreenToPage( vec3 );
-  
-              this.bboxRect.setFromPoints( [new THREE.Vector2(vec1.x, vec1.y),
-                                           new THREE.Vector2(vec2.x, vec2.y),
-                                           new THREE.Vector2(vec3.x, vec3.y)] );
-              if ( !this.clipRect.intersectsBox( this.bboxRect ) ) {
-                continue;
-              }
-              this.renderTriangle(vec1, vec2, vec3, obj, obj.material);
-            }
-          }
-        }
-      }*/
     });
+    console.log(titleBox);
+    this.pdf.setTextColor( titleBox.style.color );
+    this.pdf.text(titleBox.innerText, 2, 14);
+    console.log(scalebar);
+    this.pdf.setDrawColor( scalebar.style.background );
+    this.pdf.setFillColor( scalebar.style.background );
+    this.pdf.lines( [[parseFloat(scalebar.style.width), 0]],
+                      20, this.heightHalf*2 - 10,
+                      [1,1],
+                      'S' );
     //console.log(this.pdf);
   }
 };
@@ -1291,6 +1218,14 @@ class tjViewer{
     this.titleBox2 = document.createElement('div');
     this.titleBox2.className = 'tjviewer_titlebox2';
     el.appendChild(this.titleBox2);
+    
+    // scale bar
+    this.scalebar = document.createElement('div');
+    this.scalebar.className = 'tjviewer_scalebar';
+    el.appendChild(this.scalebar);
+    this.scalebar2 = document.createElement('div');
+    this.scalebar2.className = 'tjviewer_scalebar2';
+    el.appendChild(this.scalebar2);
       
     this.perspectiveDistance = -10;
     this.orthographicDistance = 120;
@@ -1955,27 +1890,27 @@ class tjViewer{
             }
             if(this.sideBySide){
               var pdfRenderer = new PDFRenderer(expparam.width/2, expparam.height, this.background);
-              pdfRenderer.render(this.scene, this.camera);
+              pdfRenderer.render(this.scene, this.camera, this.titleBox, this.scalebar);
               pdfRenderer.pdf.save(expparam.filename+'.left.'+expparam.format);
               var pdfRenderer2 = new PDFRenderer(expparam.width/2, expparam.height, this.background2);
-              pdfRenderer2.render(this.scene2, this.camera2);
+              pdfRenderer2.render(this.scene2, this.camera2, this.titleBox2, this.scalebar2);
               pdfRenderer2.pdf.save(expparam.filename+'.right.'+expparam.format);
             }else{
               var pdfRenderer = new PDFRenderer(expparam.width, expparam.height, this.background);
-              pdfRenderer.render(this.scene, this.camera);
+              pdfRenderer.render(this.scene, this.camera, this.titleBox, this.scalebar);
               pdfRenderer.pdf.save(expparam.filename+'.'+expparam.format);
             }
             if(this.overlay){
               if(this.sideBySide){
                 var pdfRenderer = new PDFRenderer(this.width/2, this.height, this.backgroundBottom);
-                pdfRenderer.render(this.sceneBottom, this.camera);
+                pdfRenderer.render(this.sceneBottom, this.camera, this.titleBox, this.scalebar);
                 pdfRenderer.pdf.save(expparam.filename+'.leftBottom.'+expparam.format);
                 var pdfRenderer2 = new PDFRenderer(this.width/2, this.height, this.backgroundBottom2);
-                pdfRenderer2.render(this.sceneBottom2, this.camera2);
+                pdfRenderer2.render(this.sceneBottom2, this.camera2, this.titleBox2, this.scalebar2);
                 pdfRenderer2.pdf.save(expparam.filename+'.rightBottom.'+expparam.format);
               }else{
                 var pdfRenderer = new PDFRenderer(this.width, this.height, this.backgroundBottom);
-                pdfRenderer.render(this.sceneBottom, this.camera);
+                pdfRenderer.render(this.sceneBottom, this.camera, this.titleBox, this.scalebar);
                 pdfRenderer.pdf.save(expparam.filename+'.bottom.'+expparam.format);
               }
             }
@@ -2725,6 +2660,7 @@ class tjViewer{
         1-x.background.g[0],
         1-x.background.b[0]
       ).getHexString();
+      this.scalebar.style.background = this.titleBox.style.color;
       
       this.background2 = new THREE.Color(
         x.background.r[2],
@@ -2742,6 +2678,7 @@ class tjViewer{
         1-x.background.g[2],
         1-x.background.b[2]
       ).getHexString();
+      this.scalebar2.style.background = this.titleBox2.style.color;
     }
   }
   
@@ -2800,17 +2737,26 @@ class tjViewer{
     }
   }
   
+  setFirstTitlePosition(){
+    this.titleBox.style.top = this.container.offsetTop + 2 +'px';
+    this.titleBox.style.left = this.container.offsetLeft + 2 + 'px';
+    this.scalebar.style.top = this.container.offsetTop + this.height - 10 + 'px';
+    this.scalebar.style.left = this.container.offsetLeft + 20 + 'px';
+  }
+  
   setSecondTitlePosition(){
     this.titleBox2.style.top = this.container.offsetTop + 2 +'px';
     this.titleBox2.style.left = this.container.offsetLeft + this.width/2 + 2 + 'px';
+    this.scalebar2.style.top = this.container.offsetTop + this.height - 10 + 'px';
+    this.scalebar2.style.left = this.container.offsetLeft + this.width/2 + 20 + 'px';
   }
   
   setSideBySide(x){
     if('sideBySide' in x){
       this.sideBySide = x.sideBySide;
       if(x.sideBySide){
-        this.camera.aspect = this.width/this.height;
-        this.camera2.aspect = this.width/this.height;
+        this.camera.aspect = this.width/this.height/2;
+        this.camera2.aspect = this.width/this.height/2;
         this.camera.updateProjectionMatrix();
         this.camera2.updateProjectionMatrix();
         this.labelRenderer.setSize( this.width/2, this.height );
@@ -2845,9 +2791,33 @@ class tjViewer{
     }
   }
   
+  getWorldPerPixel(camera, controls, renderer){
+    var worldPerPixel = 1;
+    if ( this.cameraparam.type == 'Orthographic' ) {
+      const heightInWorldUnits = camera.top - camera.bottom;
+      worldPerPixel = heightInWorldUnits / renderer.domElement.clientHeight;
+    } else if ( this.cameraparam.type == 'Perspective' ) {
+      const vFOV = THREE.MathUtils.degToRad(camera.fov); // vertical field of view in radians
+      const cameraDistance = camera.position.distanceTo(controls.target); // distance from camera to target
+      const heightInWorldUnits = 2 * Math.tan(vFOV / 2) * cameraDistance;
+      worldPerPixel = heightInWorldUnits / renderer.domElement.clientHeight;
+    }
+    return(worldPerPixel);
+  }
+  
+  resizeScaleBar(){
+    const wpp = this.getWorldPerPixel(this.camera, this.controls, this.renderer);
+    this.scalebar.style.width=this.resizeFactor.left/wpp + 'px';
+      if(this.sideBySide){
+        const wpp2 = this.getWorldPerPixel(this.camera2, this.controls2, this.renderer);
+        this.scalebar2.style.width=this.resizeFactor.right/wpp2 + 'px';
+      }
+  }
+  
   setResizeFactor(x){
     if('resizeFactor' in x){
       this.resizeFactor = x.resizeFactor;
+      this.resizeScaleBar();
     }
   }
   
@@ -2858,6 +2828,7 @@ class tjViewer{
     this.setBackground(x);
     this.setDefaultValues(x);
     this.setMainTitle(x);
+    this.setFirstTitlePosition();
     this.setSideBySide(x);
     this.setOverlay(x);
     this.setResizeFactor(x);
@@ -4009,6 +3980,8 @@ class tjViewer{
         if(this.camera2.fov<=0.1) this.camera2.fov=0.1;
         this.camera2.updateProjectionMatrix(); 
       }
+      // scale bar
+      this.resizeScaleBar();
     })
   }
   
@@ -4090,6 +4063,7 @@ class tjViewer{
     this.width = width;
     this.height = height;
     
+    this.setFirstTitlePosition();
     if(this.sideBySide){
       this.makeCamera(this.camera);
       this.makeCamera(this.camera2);

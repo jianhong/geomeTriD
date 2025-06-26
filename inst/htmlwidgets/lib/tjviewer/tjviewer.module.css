@@ -38,3 +38,19 @@
   top: 2px;
   left: calc(50% + 2px);
 }
+
+.tjviewer_scalebar {
+  position: absolute;
+  left: 20px;
+  width: 135px;
+  height: 2px;
+  background: white;
+}
+
+.tjviewer_scalebar2 {
+  position: absolute;
+  left: calc(50% + 20px);
+  width: 0px;
+  height: 2px;
+  background: white;
+}
