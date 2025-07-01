@@ -1220,9 +1220,15 @@ class tjViewer{
     // scale bar
     this.scalebar = document.createElement('div');
     this.scalebar.className = 'tjviewer_scalebar';
+    this.scalebarLabel = document.createElement('span');
+    this.scalebarLabel.className = 'tjveiwer_scalebarLabel';
+    this.scalebar.appendChild(this.scalebarLabel);
     el.appendChild(this.scalebar);
     this.scalebar2 = document.createElement('div');
     this.scalebar2.className = 'tjviewer_scalebar2';
+    this.scalebarLabel2 = document.createElement('span');
+    this.scalebarLabel2.className = 'tjveiwer_scalebarLabel2';
+    this.scalebar2.appendChild(this.scalebarLabel2);
     el.appendChild(this.scalebar2);
       
     this.perspectiveDistance = -10;
@@ -2659,6 +2665,7 @@ class tjViewer{
         1-x.background.b[0]
       ).getHexString();
       this.scalebar.style.background = this.titleBox.style.color;
+      this.scalebarLabel.style.color = this.titleBox.style.color;
       
       this.background2 = new THREE.Color(
         x.background.r[2],
@@ -2677,6 +2684,7 @@ class tjViewer{
         1-x.background.b[2]
       ).getHexString();
       this.scalebar2.style.background = this.titleBox2.style.color;
+      this.scalebarLabel2.style.color = this.titleBox2.style.color;
     }
   }
   
@@ -2738,14 +2746,14 @@ class tjViewer{
   setFirstTitlePosition(){
     this.titleBox.style.top = this.container.offsetTop + 2 +'px';
     this.titleBox.style.left = this.container.offsetLeft + 2 + 'px';
-    this.scalebar.style.top = this.container.offsetTop + this.height - 10 + 'px';
+    this.scalebar.style.top = this.container.offsetTop + this.height - 18 + 'px';
     this.scalebar.style.left = this.container.offsetLeft + 20 + 'px';
   }
   
   setSecondTitlePosition(){
     this.titleBox2.style.top = this.container.offsetTop + 2 +'px';
     this.titleBox2.style.left = this.container.offsetLeft + this.width/2 + 2 + 'px';
-    this.scalebar2.style.top = this.container.offsetTop + this.height - 10 + 'px';
+    this.scalebar2.style.top = this.container.offsetTop + this.height - 18 + 'px';
     this.scalebar2.style.left = this.container.offsetLeft + this.width/2 + 20 + 'px';
   }
   
@@ -2805,10 +2813,12 @@ class tjViewer{
   
   resizeScaleBar(){
     const wpp = this.getWorldPerPixel(this.camera, this.controls, this.renderer);
-    this.scalebar.style.width=this.resizeFactor.left/wpp + 'px';
+    this.scalebar.style.width= 1/wpp/this.resizeFactor.left + 'px';
+    this.scalebarLabel.textContent = this.scalebar.style.width+'/AU';
       if(this.sideBySide){
         const wpp2 = this.getWorldPerPixel(this.camera2, this.controls2, this.renderer);
-        this.scalebar2.style.width=this.resizeFactor.right/wpp2 + 'px';
+        this.scalebar2.style.width= 1/wpp2/this.resizeFactor.right+ 'px';
+        this.scalebarLabel2.textContent = this.scalebar2.style.width+'/AU';
       }
   }
   

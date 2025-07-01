@@ -42,9 +42,9 @@ test_that("view3dCells works not correct", {
 })
 test_that("view3dStructure works not correct", {
   obj <- GRanges("1", IRanges(seq.int(10), width = 1),
-    x = seq.int(10),
-    y = seq.int(10),
-    z = seq.int(10)
+    x = sample.int(10),
+    y = sample.int(10),
+    z = sample.int(10)
   )
   feature.gr <- GRanges("1", IRanges(c(3, 7), width = 3),
     label = c("gene1", "gene2"),
@@ -59,4 +59,18 @@ test_that("view3dStructure works not correct", {
   threeJsViewer(vc)
   rglViewer(vc, background = "white")
   rgl::close3d()
+  obj2 <- obj
+  obj2$x <- obj$x * 2
+  obj2$y <- obj$y * 2
+  obj2$z <- obj$z * 2
+  vc2 <- view3dStructure(obj2, feature.gr,
+                         renderer = "none",
+                         coor_mark_interval = 5, coor_tick_unit = 2
+  )
+  vc2 <- lapply(vc2, function(.ele){
+    .ele$side <- 'right'
+    .ele
+  })
+  null <- lapply(vc2, expect_s4_class, class = "threeJsGeometry")
+  threeJsViewer(vc, vc2, title = c('10', '20'))
 })
