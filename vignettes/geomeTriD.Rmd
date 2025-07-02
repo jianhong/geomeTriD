@@ -41,6 +41,7 @@ their nearby and remote regulatory elements has been developed to reveal how
 gene expression is controlled in genome-wide. 
 The geomeTriD package enables users to visualize epigenomic data in both 2D and
 3D.
+Additional examples are available at [geomeTriD_documentation](https://jianhong.github.io/geomeTriD_documentation/index.html)
 
 # Installation
 
