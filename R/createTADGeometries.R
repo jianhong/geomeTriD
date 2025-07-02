@@ -45,7 +45,14 @@ createTADGeometries <- function(tad, targetObj,
   stopifnot(inherits(tad, c('GRanges', 'GRangesList')))
   checkSmoothedGR(targetObj)
   if(is(tad, 'GRangesList')){
-    tad_geometries <- lapply(tad, createTADGeometries)
+    tad_geometries <- lapply(tad, createTADGeometries,
+                             targetObj=targetObj,
+                             type=type,
+                             name=name, 
+                             tag=tag,
+                             alpha=alpha,
+                             lwd=lwd,
+                             ...)
     names(tad_geometries) <- names(tad)
     if(is.null(names(tad_geometries))){
       names(tad_geometries) <- paste0('TAD_', seq_along(tad))
@@ -57,7 +64,8 @@ createTADGeometries <- function(tad, targetObj,
     tad$label <- paste0('tad_', seq_along(tad))
   }
   if(any(duplicated(tad$label))){
-    stop('input tad has duplicated label. Please keep it unique.')
+    warning('input tad has duplicated label. Please keep it unique.')
+    tad$label <- make.unique(tad$label)
   }
   if(!'col' %in% mcn){
     colorColumn <- grepl('^(col|color)(s?)$', mcn, ignore.case = TRUE)

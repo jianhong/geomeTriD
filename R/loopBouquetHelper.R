@@ -487,13 +487,52 @@ calTickPos <- function(feature.tick, curve_gr, arrowLen, kd = 2, rate = 72) {
   )
 }
 
-#' @importFrom IRanges countOverlaps
+#' @importFrom IRanges countOverlaps findOverlaps
 #' @importFrom BiocGenerics start<- width<- end<- strand
 #' start end
 #' @importFrom utils head
+#' @importFrom S4Vectors queryHits subjectHits
+#' @importFrom GenomeInfoDb seqnames
 calGenePos <- function(fgf, curve_gr, arrowLen, kd = 2, rate = 72) {
   if (!is(fgf, "GRanges")) {
     return(NULL)
+  }
+  if(length(unique(seqnames(fgf)))>1 || length(unique(seqnames(curve_gr)))>1){
+    curve_gr <- split(curve_gr, as.character(seqnames(curve_gr)))
+    fgf0 <- fgf
+    fgf <- split(fgf, as.character(seqnames(fgf)))
+    sn <- intersect(names(fgf), names(curve_gr))
+    out <- mapply(calGenePos, fgf[sn], curve_gr[sn],
+                  arrowLen=arrowLen, kd = kd, rate = rate,
+                  SIMPLIFY = FALSE)
+    get_ele <- function(n){
+      if(n=='fgf'){
+        x <- lapply(out, getElement, name=n)
+        x <- x[lengths(x)>0]
+        if(length(x)){
+          ## fix the simpleUnit unlist issue
+          x <- lapply(x, function(.ele){
+            .ele$size <- NULL
+            .ele
+          })
+          x <- unlist(GRangesList(x))
+          ol <- findOverlaps(x, fgf0, type='equal')
+          x <- fgf0[subjectHits(ol)]
+          return(x)
+        }else{
+          return(NULL)
+        }
+      }
+      unlist(lapply(out, getElement, name=n), recursive = FALSE)
+    }
+    if(length(get_ele('fgf'))==0){
+      return(NULL)
+    }
+    ele <- unique(unlist(lapply(out, names)))
+    names(ele) <- ele
+    return(
+      lapply(ele, get_ele)
+    )
   }
   ## subsetByOverlaps will not work for unit metadata
   olcnt <- countOverlaps(fgf, curve_gr, ignore.strand = TRUE)
@@ -513,6 +552,9 @@ calGenePos <- function(fgf, curve_gr, arrowLen, kd = 2, rate = 72) {
   ol_s <- calTickPos(s, curve_gr, arrowLen, kd = kd, rate = rate)
   ol_e <- calTickPos(e, curve_gr, arrowLen, kd = kd, rate = rate)
   keep <- intersect(ol_s$id, ol_e$id) ## will delete some small element
+  if(length(keep)==0){
+    return(NULL)
+  }
   ol_s <- lapply(ol_s, function(.ele) {
     .ele[ol_s$id %in% keep]
   })

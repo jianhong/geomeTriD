@@ -37,6 +37,7 @@
 #' @importFrom grDevices colorRampPalette
 #' @importFrom grid convertUnit grid.newpage viewport pushViewport popViewport
 #' convertWidth convertHeight xsplineGrob grobCoords convertX convertY is.unit
+#' @importFrom GenomicRanges GRangesList
 #' @export
 #' @examples
 #' obj <- readRDS(system.file("extdata", "4DNFI1UEG1HD.chr21.FLAMINGO.res.rds",
@@ -81,12 +82,14 @@ view3dStructure <- function(obj, feature.gr,
     obj <- subsetByOverlaps(obj, region)
   }
   checkSignalTransformFun(signalTransformFun)
-  stopifnot(
-    "Only work for data in a single chromsome." =
-      all(as.character(seqnames(obj)) == as.character(seqnames(obj)[1]))
-  )
   stopifnot(is.numeric(k))
   stopifnot(k == 2 || k == 3)
+  singleChr <- all(as.character(seqnames(obj)) == as.character(seqnames(obj)[1]))
+  if(k==2){
+    if(!singleChr){
+      stop("Only work for data in a single chromsome.")
+    }
+  }
   stopifnot(all(c("x", "y") %in% colnames(mcols(obj))))
   if (k == 3) {
     stopifnot("z" %in% colnames(mcols(obj)))
@@ -252,15 +255,75 @@ view3dStructure <- function(obj, feature.gr,
       pc <- clusterAnno(obj, clusters)
     }
     ## spline smooth for each bin with 30 points
+    if('resolution' %in% names(dots)){
+      resolution <- dots$resolution
+    }else{
+      resolution <- 30
+    }
     tryCatch({
-      if('resolution' %in% names(dots)){
-        obj <- smooth3dPoints(obj, dots$resolution)
+      if(singleChr){
+        obj <- smooth3dPoints(obj, resolution)
       }else{
-        obj <- smooth3dPoints(obj, 30)
+        obj <- lapply(split(obj, as.character(seqnames(obj))),
+                      smooth3dPoints, resolution=resolution)
       }
     }, error=function(e){
       stop('Can not smooth the 3D model. Please try to add parameter resolution=1')
     })
+    
+    geometries <- list() ## list to save all geometries to plot
+    if(singleChr){
+      geometries$backbone <- threeJsGeometry(
+        x = c(obj$x0, obj$x1[length(obj)]),
+        y = c(obj$y0, obj$y1[length(obj)]),
+        z = c(obj$z0, obj$z1[length(obj)]),
+        colors = col.backbone,
+        type = "line",
+        tag = "backbone",
+        properties = list(
+          size = lwd.backbone,
+          target = unname(as.character(ranges(obj))),
+          seqn = seqn,
+          resizeFactor = resizeFactor
+        )
+      )
+    }else{
+      if(length(col.backbone)>length(obj)){
+        this.col.backbone <- col.backbone[seq_along(obj)]
+      }else{
+        this.col.backbone <- col.backbone
+      }
+      if(length(lwd.backbone)>length(obj)){
+        this.lwd.backbone <- lwd.backbone[seq_along(obj)]
+      }else{
+        this.lwd.backbone <- lwd.backbone
+      }
+      if(all(names(obj) %in% names(this.col.backbone))){
+        this.col.backbone <- this.col.backbone[names(obj)]
+      }
+      if(all(names(obj) %in% names(this.lwd.backbone))){
+        this.lwd.backbone <- this.lwd.backbone[names(obj)]
+      }
+      backbone <- mapply(function(.obj, .col, .lwd, .seqn){
+        threeJsGeometry(
+          x = c(.obj$x0, .obj$x1[length(.obj)]),
+          y = c(.obj$y0, .obj$y1[length(.obj)]),
+          z = c(.obj$z0, .obj$z1[length(.obj)]),
+          colors = .col,
+          type = "line",
+          tag = "backbone",
+          properties = list(
+            size = .lwd,
+            target = unname(as.character(ranges(.obj))),
+            seqn = .seqn,
+            resizeFactor = resizeFactor
+          )
+        )
+      }, obj, this.col.backbone, this.lwd.backbone, names(obj))
+      names(backbone) <- paste0('backbone', names(obj))
+      geometries <- c(geometries, backbone)
+      obj <- unlist(GRangesList(obj))
+    }
     
     ## obj is the GRanges with p0 and p1 (x,y,z) coordinates
     if(cluster3Dpoints){
@@ -271,22 +334,6 @@ view3dStructure <- function(obj, feature.gr,
         createPointClusterGeometries(pc, obj,
                                      resizeFactor = resizeFactor, type=type)
     }
-    
-    geometries <- list() ## list to save all geometries to plot
-    geometries$backbone <- threeJsGeometry(
-      x = c(obj$x0, obj$x1[length(obj)]),
-      y = c(obj$y0, obj$y1[length(obj)]),
-      z = c(obj$z0, obj$z1[length(obj)]),
-      colors = col.backbone,
-      type = "line",
-      tag = "backbone",
-      properties = list(
-        size = lwd.backbone,
-        target = unname(as.character(ranges(obj))),
-        seqn = seqn,
-        resizeFactor = resizeFactor
-      )
-    )
 
     rate <- 50
 
@@ -349,7 +396,7 @@ view3dStructure <- function(obj, feature.gr,
       geometries <- geometries[lengths(geometries) > 0]
     }
     ## add genomic coordinates
-    if (show_coor) {
+    if (show_coor & singleChr) {
       r_tick <- range(obj)
       end(r_tick) <- ceiling(end(r_tick) / coor_tick_unit) * coor_tick_unit
       start(r_tick) <- floor(start(r_tick) / coor_tick_unit) * coor_tick_unit
