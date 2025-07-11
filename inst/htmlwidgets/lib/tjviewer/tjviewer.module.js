@@ -1308,6 +1308,15 @@ class tjViewer{
   setCameraGUI(){
     this.cameraparam = {
       YX_aspect : this.camera.aspect,
+      linked: true,
+      samescale: function(){
+        if(this.resizeFactor.left<this.resizeFactor.right){
+            this.camera.position.multiplyScalar(this.resizeFactor.right/this.resizeFactor.left); 
+        }else{
+          this.camera2.position.multiplyScalar(this.resizeFactor.left/this.resizeFactor.right);
+        }
+        this.resizeScaleBar();
+      }.bind(this),
       type : 'Perspective',
       world_center : function(){
         this.objects.position.set(0, 0, 0);
@@ -1390,6 +1399,10 @@ class tjViewer{
       this.cameraparam.YX_aspect = val;
       this.cameraparam.changed = true;
     }.bind(this)).onFinishChange(this.cameraparam.setAspect);
+    this.animateLinkedGUI = cameraGUI.add(this.cameraparam, 'linked').onChange( function(val){
+      this.cameraparam.linked = val;
+    }.bind(this)).hide();
+    this.cameraSameScaleGUI = cameraGUI.add(this.cameraparam, 'samescale').hide();
     cameraGUI.add(this.cameraparam, 'type', [ 'Orthographic', 'Perspective' ] )
       .name( 'projection method' ).onChange( function () {
         this.removeLinkedControls();
@@ -1749,7 +1762,6 @@ class tjViewer{
       stepX : 0.3,
       stepY : 0.3,
       stepZ : 0.3, 
-      linked: true,
       up : false,
       down : false,
       left : false,
@@ -1786,9 +1798,6 @@ class tjViewer{
       this.rotateXYZ('z', val);
     }.bind(this));
     rotationGUI.add(this.animateparam, 'flip', ['', 'x', 'y', 'z']).onChange(this.flipXYZ.bind(this));
-    this.animateLinkedGUI = rotationGUI.add(this.animateparam, 'linked').onChange( function(val){
-      this.animateparam.linked = val;
-    }.bind(this)).hide();
     rotationGUI.close();
     
     // keyboard
@@ -2559,7 +2568,7 @@ class tjViewer{
   }
   
   rotateXYZ(xyz, val){
-    if(this.animateparam.linked){
+    if(this.cameraparam.linked){
       this.scene.rotation[xyz] = val;
       this.sceneBottom.rotation[xyz] = val;
       this.scene2.rotation[xyz] = val;
@@ -2589,7 +2598,7 @@ class tjViewer{
         scale.x = -1;
         scale.y = -1;
     }
-    if(this.animateparam.linked){
+    if(this.cameraparam.linked){
       this.objects.scale.multiply(scale);
       this.objects2.scale.multiply(scale);
       this.objectsBottom.scale.multiply(scale);
@@ -2772,6 +2781,7 @@ class tjViewer{
         this.bckcolGUI.controllers[4].show();
         this.bckcolGUI.controllers[5].show();
         this.animateLinkedGUI.show();
+        this.cameraSameScaleGUI.show();
         if('title' in x){
            this.titleBox2.innerText = x.title[1];
            this.setSecondTitlePosition();
@@ -4009,7 +4019,7 @@ class tjViewer{
   }
   
   linkCamera(cam1, cam2, ctl1, ctl2){
-    if(this.animateparam.linked){
+    if(this.cameraparam.linked){
         cam2.position.copy( cam1.position );
         cam2.rotation.copy( cam1.rotation );
         cam2.zoom = cam1.zoom;
