@@ -392,7 +392,7 @@ prettyMark <- function(x, u) {
 }
 
 #' @importFrom BiocGenerics strand<-
-#' @importFrom GenomeInfoDb seqnames
+#' @importFrom Seqinfo seqnames
 #' @importFrom IRanges coverage Views ranges
 resampleDataByFun <- function(fromGR, targetGR, FUN = viewMeans, dropZERO = TRUE,
                               ...) {
@@ -492,7 +492,7 @@ calTickPos <- function(feature.tick, curve_gr, arrowLen, kd = 2, rate = 72) {
 #' start end
 #' @importFrom utils head
 #' @importFrom S4Vectors queryHits subjectHits
-#' @importFrom GenomeInfoDb seqnames
+#' @importFrom Seqinfo seqnames
 calGenePos <- function(fgf, curve_gr, arrowLen, kd = 2, rate = 72) {
   if (!is(fgf, "GRanges")) {
     return(NULL)

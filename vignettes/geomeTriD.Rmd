@@ -26,7 +26,7 @@ suppressPackageStartupMessages({
   library(org.Hs.eg.db)
   library(InteractionSet)
   library(rgl)
-  library(GenomeInfoDb)
+  library(Seqinfo)
 })
 knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 ```

@@ -7,7 +7,7 @@
 #' @param ... Parameters could be used by downstream function.
 #' @return A matrix of Euclidean distance with fixed bins.
 #' @importFrom stats dist
-#' @importFrom GenomeInfoDb seqnames
+#' @importFrom Seqinfo seqnames
 #' @importFrom BiocGenerics start end
 #' @importFrom S4Vectors mcols
 #' @export

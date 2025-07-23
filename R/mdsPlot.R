@@ -35,7 +35,7 @@
 #' @importFrom GenomicRanges GRanges
 #' @importFrom S4Vectors mcols mcols<- first second
 #' @importFrom BiocGenerics sort width t
-#' @importFrom GenomeInfoDb seqnames
+#' @importFrom Seqinfo seqnames
 #' @importFrom IRanges countOverlaps
 #' @export
 #' @examples

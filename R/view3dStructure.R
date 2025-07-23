@@ -31,7 +31,7 @@
 #' htmlwidget.
 #' @importFrom stats quantile
 #' @importFrom trackViewer parseWIG
-#' @importFrom GenomeInfoDb seqnames
+#' @importFrom Seqinfo seqnames
 #' @importFrom BiocGenerics start<- end<- strand<-
 #' @importFrom utils tail
 #' @importFrom grDevices colorRampPalette

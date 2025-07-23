@@ -30,7 +30,7 @@
 #' @importFrom GenomicRanges GRanges GRangesList
 #' @importFrom S4Vectors mcols first second
 #' @importFrom BiocGenerics sort start<- end<- strand<- width start end
-#' @importFrom GenomeInfoDb seqnames
+#' @importFrom Seqinfo seqnames
 #' @importFrom igraph graph_from_data_frame components layout_with_fr
 #' norm_coords V
 #' @importFrom plotrix arctext
