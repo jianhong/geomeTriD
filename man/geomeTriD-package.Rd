@@ -50,5 +50,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Jianhong Ou \email{jou@morgridge.org} (\href{https://orcid.org/0000-0002-8652-2488}{ORCID})
 
+Other contributors:
+\itemize{
+  \item Kenneth Poss \email{kposs@morgridge.org} [funder]
+}
+
 }
 \keyword{package}
