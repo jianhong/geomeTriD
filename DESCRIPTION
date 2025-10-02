@@ -56,7 +56,7 @@ Suggests:
   testthat
 biocViews: Visualization
 VignetteBuilder: knitr
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Encoding: UTF-8
 URL: https://github.com/jianhong/geomeTriD
 BugReports: https://github.com/jianhong/geomeTriD/issues
