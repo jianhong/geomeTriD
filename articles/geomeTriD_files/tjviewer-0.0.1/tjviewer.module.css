@@ -38,38 +38,3 @@
   top: 2px;
   left: calc(50% + 2px);
 }
-
-.tjviewer_scalebar {
-  position: absolute;
-  left: 20px;
-  width: 135px;
-  height: 2px;
-  background: white;
-  text-align: 'right';
-}
-
-.tjviewer_scalebar2 {
-  position: absolute;
-  left: calc(50% + 20px);
-  width: 0px;
-  height: 2px;
-  background: white;
-  text-align: 'right';
-}
-
-.tjviewer_scalebarLabel {
-  position: absolute;
-  left: 160px;
-  height: 8px;
-  fontSize: 8px;
-  fontFamily = 'sans-serif';
-  color: white;
-}
-
-.tjviewer_scalebarLabel2 {
-  position: absolute;
-  left: calc(50% + 160px);
-  fontSize: 8px;
-  fontFamily = 'sans-serif';
-  color: white;
-}
