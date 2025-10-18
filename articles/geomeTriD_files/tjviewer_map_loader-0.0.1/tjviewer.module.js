@@ -24,11 +24,836 @@ import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import { DRACOExporter } from 'three/addons/exporters/DRACOExporter.js';
 // pdf exporters
 import {
-  Projector,
+  RenderableObject,
+  RenderableVertex,
   RenderableFace,
 	RenderableLine,
 	RenderableSprite } from "three/addons/renderers/Projector.js";
 import { jsPDF } from 'jspdf'; // 2.0.0 version is important! because other version can not load @babel/runtime/helpers/typeof
+// patch the Projector
+class Projector {
+	constructor() {
+
+		let _object, _objectCount, _objectPoolLength = 0,
+			_vertex, _vertexCount, _vertexPoolLength = 0,
+			_face, _faceCount, _facePoolLength = 0,
+			_line, _lineCount, _linePoolLength = 0,
+			_sprite, _spriteCount, _spritePoolLength = 0,
+			_modelMatrix;
+
+		const
+
+			_renderData = { objects: [], lights: [], elements: [] },
+
+			_vector3 = new THREE.Vector3(),
+			_vector4 = new THREE.Vector4(),
+
+			_clipBox = new THREE.Box3( new THREE.Vector3( - 1, - 1, - 1 ), new THREE.Vector3( 1, 1, 1 ) ),
+			_boundingBox = new THREE.Box3(),
+			_points3 = new Array( 3 ),
+
+			_viewMatrix = new THREE.Matrix4(),
+			_viewProjectionMatrix = new THREE.Matrix4(),
+
+			_modelViewProjectionMatrix = new THREE.Matrix4(),
+
+			_frustum = new THREE.Frustum(),
+
+			_objectPool = [], _vertexPool = [], _facePool = [], _linePool = [], _spritePool = [];
+
+
+		function RenderList() {
+
+			const normals = [];
+			const colors = [];
+			const uvs = [];
+
+			let object = null;
+
+			const normalMatrix = new THREE.Matrix3();
+
+			function setObject( value ) {
+
+				object = value;
+
+				normalMatrix.getNormalMatrix( object.matrixWorld );
+
+				normals.length = 0;
+				colors.length = 0;
+				uvs.length = 0;
+
+			}
+
+			function projectVertex( vertex ) {
+
+				const position = vertex.position;
+				const positionWorld = vertex.positionWorld;
+				const positionScreen = vertex.positionScreen;
+
+				positionWorld.copy( position ).applyMatrix4( _modelMatrix );
+				positionScreen.copy( positionWorld ).applyMatrix4( _viewProjectionMatrix );
+
+				const invW = 1 / positionScreen.w;
+
+				positionScreen.x *= invW;
+				positionScreen.y *= invW;
+				positionScreen.z *= invW;
+
+				vertex.visible = positionScreen.x >= - 1 && positionScreen.x <= 1 &&
+						 positionScreen.y >= - 1 && positionScreen.y <= 1 &&
+						 positionScreen.z >= - 1 && positionScreen.z <= 1;
+
+			}
+
+			function pushVertex( x, y, z ) {
+
+				_vertex = getNextVertexInPool();
+				_vertex.position.set( x, y, z );
+
+				projectVertex( _vertex );
+
+			}
+
+			function pushNormal( x, y, z ) {
+
+				normals.push( x, y, z );
+
+			}
+
+			function pushColor( r, g, b ) {
+
+				colors.push( r, g, b );
+
+			}
+
+			function pushUv( x, y ) {
+
+				uvs.push( x, y );
+
+			}
+
+			function checkTriangleVisibility( v1, v2, v3 ) {
+
+				if ( v1.visible === true || v2.visible === true || v3.visible === true ) return true;
+
+				_points3[ 0 ] = v1.positionScreen;
+				_points3[ 1 ] = v2.positionScreen;
+				_points3[ 2 ] = v3.positionScreen;
+
+				return _clipBox.intersectsBox( _boundingBox.setFromPoints( _points3 ) );
+
+			}
+
+			function checkBackfaceCulling( v1, v2, v3 ) {
+
+				return ( ( v3.positionScreen.x - v1.positionScreen.x ) *
+					    ( v2.positionScreen.y - v1.positionScreen.y ) -
+					    ( v3.positionScreen.y - v1.positionScreen.y ) *
+					    ( v2.positionScreen.x - v1.positionScreen.x ) ) < 0;
+
+			}
+
+			function pushLine( a, b ) {
+
+				const v1 = _vertexPool[ a ];
+				const v2 = _vertexPool[ b ];
+
+				// Clip
+
+				v1.positionScreen.copy( v1.position ).applyMatrix4( _modelViewProjectionMatrix );
+				v2.positionScreen.copy( v2.position ).applyMatrix4( _modelViewProjectionMatrix );
+
+				if ( clipLine( v1.positionScreen, v2.positionScreen ) === true ) {
+
+					// Perform the perspective divide
+					v1.positionScreen.multiplyScalar( 1 / v1.positionScreen.w );
+					v2.positionScreen.multiplyScalar( 1 / v2.positionScreen.w );
+
+					_line = getNextLineInPool();
+					_line.id = object.id;
+					_line.v1.copy( v1 );
+					_line.v2.copy( v2 );
+					_line.z = Math.max( v1.positionScreen.z, v2.positionScreen.z );
+					_line.renderOrder = object.renderOrder;
+
+					_line.material = object.material;
+
+					if ( object.material.vertexColors ) {
+
+						_line.vertexColors[ 0 ].fromArray( colors, a * 3 );
+						_line.vertexColors[ 1 ].fromArray( colors, b * 3 );
+
+					}
+
+					_renderData.elements.push( _line );
+
+				}
+
+			}
+
+			function pushTriangle( a, b, c, material, useColor ) {
+
+				const v1 = _vertexPool[ a ];
+				const v2 = _vertexPool[ b ];
+				const v3 = _vertexPool[ c ];
+
+				if ( checkTriangleVisibility( v1, v2, v3 ) === false ) return;
+
+				if ( material.side === THREE.DoubleSide || checkBackfaceCulling( v1, v2, v3 ) === true ) {
+
+					_face = getNextFaceInPool();
+
+					_face.id = object.id;
+					_face.v1.copy( v1 );
+					_face.v2.copy( v2 );
+					_face.v3.copy( v3 );
+					_face.z = ( v1.positionScreen.z + v2.positionScreen.z + v3.positionScreen.z ) / 3;
+					_face.renderOrder = object.renderOrder;
+
+					// face normal
+					_vector3.subVectors( v3.position, v2.position );
+					_vector4.subVectors( v1.position, v2.position );
+					_vector3.cross( _vector4 );
+					_face.normalModel.copy( _vector3 );
+					_face.normalModel.applyMatrix3( normalMatrix ).normalize();
+
+					for ( let i = 0; i < 3; i ++ ) {
+
+						const normal = _face.vertexNormalsModel[ i ];
+						normal.fromArray( normals, arguments[ i ] * 3 );
+						normal.applyMatrix3( normalMatrix ).normalize();
+
+						const uv = _face.uvs[ i ];
+						uv.fromArray( uvs, arguments[ i ] * 2 );
+
+					}
+
+					_face.vertexNormalsLength = 3;
+
+					_face.material = material;
+
+					if ( useColor ) {
+
+						_face.color.fromArray( colors, a * 3 );
+
+					}
+
+					_renderData.elements.push( _face );
+
+				}
+
+			}
+
+			return {
+				setObject: setObject,
+				projectVertex: projectVertex,
+				checkTriangleVisibility: checkTriangleVisibility,
+				checkBackfaceCulling: checkBackfaceCulling,
+				pushVertex: pushVertex,
+				pushNormal: pushNormal,
+				pushColor: pushColor,
+				pushUv: pushUv,
+				pushLine: pushLine,
+				pushTriangle: pushTriangle
+			};
+
+		}
+
+		const renderList = new RenderList();
+
+		function projectObject( object, camera ) {
+
+			if ( object.visible === false ) return;
+
+			if ( object.isLight ) {
+
+				_renderData.lights.push( object );
+
+			} else if ( object.isMesh || object.isLine || object.isPoints ) {
+
+				if ( object.material.visible === false ) return;
+				if ( camera.layers.test(object.layers) === false ) return;
+				if ( object.frustumCulled === true && _frustum.intersectsObject( object ) === false ) return;
+
+				addObject( object );
+
+			} else if ( object.isSprite ) {
+
+				if ( object.material.visible === false ) return;
+				if ( object.frustumCulled === true && _frustum.intersectsSprite( object ) === false ) return;
+
+				addObject( object );
+
+			}
+
+			const children = object.children;
+
+			for ( let i = 0, l = children.length; i < l; i ++ ) {
+
+				projectObject( children[ i ] , camera );
+
+			}
+
+		}
+
+		function addObject( object ) {
+
+			_object = getNextObjectInPool();
+			_object.id = object.id;
+			_object.object = object;
+
+			_vector3.setFromMatrixPosition( object.matrixWorld );
+			_vector3.applyMatrix4( _viewProjectionMatrix );
+			_object.z = _vector3.z;
+			_object.renderOrder = object.renderOrder;
+
+			_renderData.objects.push( _object );
+
+		}
+
+		/**
+		 * Projects the given scene in 3D space into a 2D representation. The result
+		 * is an object with renderable items.
+		 *
+		 * @param {Object3D} scene - A scene or any other type of 3D object.
+		 * @param {Camera} camera - The camera.
+		 * @param {boolean} sortObjects - Whether to sort objects or not.
+		 * @param {boolean} sortElements - Whether to sort elements (faces, lines and sprites) or not.
+		 * @return {{objects:Array<Objects>,lights:Array<Objects>,elements:Array<Objects>}} The projected scene as renderable objects.
+		 */
+		this.projectScene = function ( scene, camera, sortObjects, sortElements ) {
+
+			_faceCount = 0;
+			_lineCount = 0;
+			_spriteCount = 0;
+
+			_renderData.elements.length = 0;
+
+			if ( scene.matrixWorldAutoUpdate === true ) scene.updateMatrixWorld();
+			if ( camera.parent === null && camera.matrixWorldAutoUpdate === true ) camera.updateMatrixWorld();
+
+			_viewMatrix.copy( camera.matrixWorldInverse );
+			_viewProjectionMatrix.multiplyMatrices( camera.projectionMatrix, _viewMatrix );
+
+			_frustum.setFromProjectionMatrix( _viewProjectionMatrix );
+
+			//
+
+			_objectCount = 0;
+
+			_renderData.objects.length = 0;
+			_renderData.lights.length = 0;
+
+			projectObject( scene, camera );
+
+			if ( sortObjects === true ) {
+
+				_renderData.objects.sort( painterSort );
+
+			}
+
+			//
+
+			const objects = _renderData.objects;
+
+			for ( let o = 0, ol = objects.length; o < ol; o ++ ) {
+
+				const object = objects[ o ].object;
+				const geometry = object.geometry;
+
+				renderList.setObject( object );
+
+				_modelMatrix = object.matrixWorld;
+
+				_vertexCount = 0;
+
+				if ( object.isMesh && !object.isLine2 && !object.isLineSegments2) {
+
+					let material = object.material;
+
+					const isMultiMaterial = Array.isArray( material );
+
+					const attributes = geometry.attributes;
+					const groups = geometry.groups;
+
+					if ( attributes.position === undefined ) continue;
+
+					const positions = attributes.position.array;
+					let useColor = false;
+
+					for ( let i = 0, l = positions.length; i < l; i += 3 ) {
+
+						let x = positions[ i ];
+						let y = positions[ i + 1 ];
+						let z = positions[ i + 2 ];
+
+						const morphTargets = geometry.morphAttributes.position;
+
+						if ( morphTargets !== undefined ) {
+
+							const morphTargetsRelative = geometry.morphTargetsRelative;
+							const morphInfluences = object.morphTargetInfluences;
+
+							for ( let t = 0, tl = morphTargets.length; t < tl; t ++ ) {
+
+								const influence = morphInfluences[ t ];
+
+								if ( influence === 0 ) continue;
+
+								const target = morphTargets[ t ];
+
+								if ( morphTargetsRelative ) {
+
+									x += target.getX( i / 3 ) * influence;
+									y += target.getY( i / 3 ) * influence;
+									z += target.getZ( i / 3 ) * influence;
+
+								} else {
+
+									x += ( target.getX( i / 3 ) - positions[ i ] ) * influence;
+									y += ( target.getY( i / 3 ) - positions[ i + 1 ] ) * influence;
+									z += ( target.getZ( i / 3 ) - positions[ i + 2 ] ) * influence;
+
+								}
+
+							}
+
+						}
+
+						renderList.pushVertex( x, y, z );
+
+					}
+
+					if ( attributes.normal !== undefined ) {
+
+						const normals = attributes.normal.array;
+
+						for ( let i = 0, l = normals.length; i < l; i += 3 ) {
+
+							renderList.pushNormal( normals[ i ], normals[ i + 1 ], normals[ i + 2 ] );
+
+						}
+
+					}
+
+					if ( attributes.color !== undefined ) {
+
+						const colors = attributes.color.array;
+
+						for ( let i = 0, l = colors.length; i < l; i += 3 ) {
+
+							renderList.pushColor( colors[ i ], colors[ i + 1 ], colors[ i + 2 ] );
+
+						}
+						useColor = true;
+
+					} else if (object.instanceColor !== undefined && geometry.index !== null) {
+					  const colors = object.instanceColor.array;
+						for ( let i = 0, l = geometry.index.array.length; i < l; i += 3 ) {
+							renderList.pushColor( colors[ 0 ], colors[ 1 ], colors[ 2 ] );
+						}
+						useColor = true;
+					}
+
+					if ( attributes.uv !== undefined ) {
+
+						const uvs = attributes.uv.array;
+
+						for ( let i = 0, l = uvs.length; i < l; i += 2 ) {
+
+							renderList.pushUv( uvs[ i ], uvs[ i + 1 ] );
+
+						}
+
+					}
+
+					if ( geometry.index !== null ) {
+
+						const indices = geometry.index.array;
+
+						if ( groups.length > 0 ) {
+
+							for ( let g = 0; g < groups.length; g ++ ) {
+
+								const group = groups[ g ];
+
+								material = isMultiMaterial === true
+									 ? object.material[ group.materialIndex ]
+									 : object.material;
+
+								if ( material === undefined ) continue;
+
+								for ( let i = group.start, l = group.start + group.count; i < l; i += 3 ) {
+
+									renderList.pushTriangle( indices[ i ], indices[ i + 1 ], indices[ i + 2 ], material, useColor );
+
+								}
+
+							}
+
+						} else {
+
+							for ( let i = 0, l = indices.length; i < l; i += 3 ) {
+
+								renderList.pushTriangle( indices[ i ], indices[ i + 1 ], indices[ i + 2 ], material, useColor );
+
+							}
+
+						}
+
+					} else {
+
+						if ( groups.length > 0 ) {
+
+							for ( let g = 0; g < groups.length; g ++ ) {
+
+								const group = groups[ g ];
+
+								material = isMultiMaterial === true
+									 ? object.material[ group.materialIndex ]
+									 : object.material;
+
+								if ( material === undefined ) continue;
+
+								for ( let i = group.start, l = group.start + group.count; i < l; i += 3 ) {
+
+									renderList.pushTriangle( i, i + 1, i + 2, material, useColor );
+
+								}
+
+							}
+
+						} else {
+
+							for ( let i = 0, l = positions.length / 3; i < l; i += 3 ) {
+
+								renderList.pushTriangle( i, i + 1, i + 2, material, useColor );
+
+							}
+
+						}
+
+					}
+
+				} else if ( object.isLine || object.isLine2 || object.isLineSegments2) {
+					
+					_modelViewProjectionMatrix.multiplyMatrices( _viewProjectionMatrix, _modelMatrix );
+
+					const attributes = geometry.attributes;
+					if (attributes.instanceStart !== undefined){
+					  const positions = attributes.instanceStart.data.array;
+						for ( let i = 0, l = positions.length; i < l; i += 3 ) {
+							renderList.pushVertex( positions[ i ], positions[ i + 1 ], positions[ i + 2 ] );
+						}
+
+						if ( attributes.instanceColorStart !== undefined ) {
+							const colors = attributes.instanceColorStart.data.array;
+							for ( let i = 0, l = colors.length; i < l; i += 3 ) {
+								renderList.pushColor( colors[ i ], colors[ i + 1 ], colors[ i + 2 ] );
+							}
+						}
+						for ( let i = 0, l = ( positions.length / 3 ) - 1; i < l; i += 2 ) {
+								renderList.pushLine( i, i + 1 );
+						}
+					} else if ( attributes.position !== undefined ) {
+
+						const positions = attributes.position.array;
+
+						for ( let i = 0, l = positions.length; i < l; i += 3 ) {
+
+							renderList.pushVertex( positions[ i ], positions[ i + 1 ], positions[ i + 2 ] );
+
+						}
+
+						if ( attributes.color !== undefined ) {
+
+							const colors = attributes.color.array;
+
+							for ( let i = 0, l = colors.length; i < l; i += 3 ) {
+
+								renderList.pushColor( colors[ i ], colors[ i + 1 ], colors[ i + 2 ] );
+
+							}
+
+						}
+
+						if ( geometry.index !== null ) {
+
+							const indices = geometry.index.array;
+
+							for ( let i = 0, l = indices.length; i < l; i += 2 ) {
+
+								renderList.pushLine( indices[ i ], indices[ i + 1 ] );
+
+							}
+
+						} else {
+
+							const step = object.isLineSegments ? 2 : 1;
+
+							for ( let i = 0, l = ( positions.length / 3 ) - 1; i < l; i += step ) {
+
+								renderList.pushLine( i, i + 1 );
+
+							}
+
+						}
+
+					}
+
+				} else if ( object.isPoints ) {
+
+					_modelViewProjectionMatrix.multiplyMatrices( _viewProjectionMatrix, _modelMatrix );
+
+					const attributes = geometry.attributes;
+
+					if ( attributes.position !== undefined ) {
+
+						const positions = attributes.position.array;
+
+						for ( let i = 0, l = positions.length; i < l; i += 3 ) {
+
+							_vector4.set( positions[ i ], positions[ i + 1 ], positions[ i + 2 ], 1 );
+							_vector4.applyMatrix4( _modelViewProjectionMatrix );
+
+							pushPoint( _vector4, object, camera );
+
+						}
+
+					}
+
+				} else if ( object.isSprite ) {
+
+					object.modelViewMatrix.multiplyMatrices( camera.matrixWorldInverse, object.matrixWorld );
+					_vector4.set( _modelMatrix.elements[ 12 ], _modelMatrix.elements[ 13 ], _modelMatrix.elements[ 14 ], 1 );
+					_vector4.applyMatrix4( _viewProjectionMatrix );
+
+					pushPoint( _vector4, object, camera );
+
+				}
+
+			}
+
+			if ( sortElements === true ) {
+
+				_renderData.elements.sort( painterSort );
+
+			}
+
+			return _renderData;
+
+		};
+
+		function pushPoint( _vector4, object, camera ) {
+
+			const invW = 1 / _vector4.w;
+
+			_vector4.z *= invW;
+
+			if ( _vector4.z >= - 1 && _vector4.z <= 1 ) {
+
+				_sprite = getNextSpriteInPool();
+				_sprite.id = object.id;
+				_sprite.x = _vector4.x * invW;
+				_sprite.y = _vector4.y * invW;
+				_sprite.z = _vector4.z;
+				_sprite.renderOrder = object.renderOrder;
+				_sprite.object = object;
+
+				_sprite.rotation = object.rotation;
+
+				_sprite.scale.x = object.scale.x * Math.abs( _sprite.x - ( _vector4.x + camera.projectionMatrix.elements[ 0 ] ) / ( _vector4.w + camera.projectionMatrix.elements[ 12 ] ) );
+				_sprite.scale.y = object.scale.y * Math.abs( _sprite.y - ( _vector4.y + camera.projectionMatrix.elements[ 5 ] ) / ( _vector4.w + camera.projectionMatrix.elements[ 13 ] ) );
+
+				_sprite.material = object.material;
+
+				_renderData.elements.push( _sprite );
+
+			}
+
+		}
+
+		// Pools
+
+		function getNextObjectInPool() {
+
+			if ( _objectCount === _objectPoolLength ) {
+
+				const object = new RenderableObject();
+				_objectPool.push( object );
+				_objectPoolLength ++;
+				_objectCount ++;
+				return object;
+
+			}
+
+			return _objectPool[ _objectCount ++ ];
+
+		}
+
+		function getNextVertexInPool() {
+
+			if ( _vertexCount === _vertexPoolLength ) {
+
+				const vertex = new RenderableVertex();
+				_vertexPool.push( vertex );
+				_vertexPoolLength ++;
+				_vertexCount ++;
+				return vertex;
+
+			}
+
+			return _vertexPool[ _vertexCount ++ ];
+
+		}
+
+		function getNextFaceInPool() {
+
+			if ( _faceCount === _facePoolLength ) {
+
+				const face = new RenderableFace();
+				_facePool.push( face );
+				_facePoolLength ++;
+				_faceCount ++;
+				return face;
+
+			}
+
+			return _facePool[ _faceCount ++ ];
+
+
+		}
+
+		function getNextLineInPool() {
+
+			if ( _lineCount === _linePoolLength ) {
+
+				const line = new RenderableLine();
+				_linePool.push( line );
+				_linePoolLength ++;
+				_lineCount ++;
+				return line;
+
+			}
+
+			return _linePool[ _lineCount ++ ];
+
+		}
+
+		function getNextSpriteInPool() {
+
+			if ( _spriteCount === _spritePoolLength ) {
+
+				const sprite = new RenderableSprite();
+				_spritePool.push( sprite );
+				_spritePoolLength ++;
+				_spriteCount ++;
+				return sprite;
+
+			}
+
+			return _spritePool[ _spriteCount ++ ];
+
+		}
+
+		//
+
+		function painterSort( a, b ) {
+
+			if ( a.renderOrder !== b.renderOrder ) {
+
+				return a.renderOrder - b.renderOrder;
+
+			} else if ( a.z !== b.z ) {
+
+				return b.z - a.z;
+
+			} else if ( a.id !== b.id ) {
+
+				return a.id - b.id;
+
+			} else {
+
+				return 0;
+
+			}
+
+		}
+
+		function clipLine( s1, s2 ) {
+
+			let alpha1 = 0, alpha2 = 1;
+
+			// Calculate the boundary coordinate of each vertex for the near and far clip planes,
+			// Z = -1 and Z = +1, respectively.
+
+			const bc1near = s1.z + s1.w,
+				bc2near = s2.z + s2.w,
+				bc1far = - s1.z + s1.w,
+				bc2far = - s2.z + s2.w;
+
+			if ( bc1near >= 0 && bc2near >= 0 && bc1far >= 0 && bc2far >= 0 ) {
+
+				// Both vertices lie entirely within all clip planes.
+				return true;
+
+			} else if ( ( bc1near < 0 && bc2near < 0 ) || ( bc1far < 0 && bc2far < 0 ) ) {
+
+				// Both vertices lie entirely outside one of the clip planes.
+				return false;
+
+			} else {
+
+				// The line segment spans at least one clip plane.
+
+				if ( bc1near < 0 ) {
+
+					// v1 lies outside the near plane, v2 inside
+					alpha1 = Math.max( alpha1, bc1near / ( bc1near - bc2near ) );
+
+				} else if ( bc2near < 0 ) {
+
+					// v2 lies outside the near plane, v1 inside
+					alpha2 = Math.min( alpha2, bc1near / ( bc1near - bc2near ) );
+
+				}
+
+				if ( bc1far < 0 ) {
+
+					// v1 lies outside the far plane, v2 inside
+					alpha1 = Math.max( alpha1, bc1far / ( bc1far - bc2far ) );
+
+				} else if ( bc2far < 0 ) {
+
+					// v2 lies outside the far plane, v2 inside
+					alpha2 = Math.min( alpha2, bc1far / ( bc1far - bc2far ) );
+
+				}
+
+				if ( alpha2 < alpha1 ) {
+
+					// The line segment spans two boundaries, but is outside both of them.
+					// (This can't happen when we're only clipping against just near/far but good
+					//  to leave the check here for future usage if other clip planes are added.)
+					return false;
+
+				} else {
+
+					// Update the s1 and s2 vertices to match the clipped line segment.
+					s1.lerp( s2, alpha1 );
+					s2.lerp( s1, 1 - alpha2 );
+
+					return true;
+
+				}
+
+			}
+
+		}
+
+	}
+}
+
 //pdfRenderer
 class PDFRenderer{
   constructor(width, height, backgroundColor){
@@ -45,6 +870,7 @@ class PDFRenderer{
     this.widthHalf = width/2;
     this.heightHalf = height/2;
     this.pdf = new jsPDF( (width > height ? 'landscape' : 'portrait'), 'pt', [width, height] );
+    this.gstate = {gs1:new this.pdf.GState({ opacity: 1 })};
     this.pdf.setFillColor(backgroundColor.r*255, backgroundColor.g*255, backgroundColor.b*255);
     this.pdf.rect(0, 0, width, height, "F");
     this.projector = new Projector();
@@ -89,7 +915,7 @@ class PDFRenderer{
         const lightPosition = this.vector3.setFromMatrixPosition( light.matrixWorld ).normalize();
         let amount = normal.dot( lightPosition );
         if ( amount <= 0 ) continue;
-        amount *= light.intensity;
+        amount *= light.intensity/2.5;
         color.r += lightColor.r * amount;
         color.g += lightColor.g * amount;
         color.b += lightColor.b * amount;
@@ -156,6 +982,12 @@ class PDFRenderer{
                      this.normalToComponent( element.normalModel.z ) );
 
     }
+    if( material.opacity !== undefined ){
+      if( !this.gstate.hasOwnProperty('gs'+ material.opacity) ){
+        this.gstate['gs'+material.opacity] = new this.pdf.GState({opacity: material.opacity});
+      }
+      this.pdf.setGState(this.gstate['gs'+material.opacity]);
+    }
 
     this.pdf.setDrawColor( this.color.r*255, this.color.g*255, this.color.b*255 );
     this.pdf.setFillColor( this.color.r*255, this.color.g*255, this.color.b*255 );
@@ -175,26 +1007,28 @@ class PDFRenderer{
                     [1,1], 'S' );
   }
   renderLine ( v1, v2, element, material, scene ) {
-    if ( material instanceof THREE.LineBasicMaterial ) {
-      this.setStyleFromMaterial( material );
-    }
+    this.setStyleFromMaterial( material );
     this.pdf.lines( [[v2.positionScreen.x-v1.positionScreen.x,
                       v2.positionScreen.y-v1.positionScreen.y]],
                     v1.positionScreen.x, v1.positionScreen.y,
                     [1,1],
                     'S' );
+    this.pdf.setGState(this.gstate.gs1);
   }
   renderFace3 ( v1, v2, v3, element, material, scene ) {
     //console.log('renderFace3');
     this.setStyleFromMaterial( material );
     this.setColorForElement( element, material );
+    //console.log(element);
     //console.log(material);
+    //console.log(this.color);
     //console.log(this.pdf.getFillColor());
     //console.log(this.pdf.getDrawColor());
     this.pdf.triangle( v1.positionScreen.x, v1.positionScreen.y,
                        v2.positionScreen.x, v2.positionScreen.y,
                        v3.positionScreen.x, v3.positionScreen.y,
                        material.wireframe ? 'S' : 'F' );// Stroke or Fill, FD: fill then stroke
+    this.pdf.setGState(this.gstate.gs1);
   }
   renderLine2(v1, v2, material){
       this.setStyleFromMaterial( material );
@@ -224,16 +1058,16 @@ class PDFRenderer{
     this.pdf.text(label, v3.x, v3.y);
   }
 
-  render(scene, camera){
-    console.log(scene);
+  render(scene, camera, titleBox, scalebar){
+    //console.log(scene);
     var renderData = this.projector.projectScene(scene, camera, this.sortObjects, this.sortElements );
     this.lights = renderData.lights;
     this.calculateLights(this.lights);
-
+    //console.log(renderData);
+    
     for( let e = 0, el = renderData.elements.length; e<el; e++){
       const element = renderData.elements[ e ];
-      const material = element.material;
-      //console.log(element);
+      const material = element.material.clone();
       if ( material === undefined || material.opacity === 0 ) continue;
       if ( element instanceof RenderableSprite ) {
         this.vec1 = element;
@@ -248,6 +1082,7 @@ class PDFRenderer{
         if ( !this.clipRect.intersectsBox( this.bboxRect ) ) {
           continue;
         }
+        material.color = element.vertexColors[0];
         this.renderLine( this.vec1, this.vec2, element, material, scene );
       } else if ( element instanceof RenderableFace ) {
         this.vec1 = element.v1; this.vec2 = element.v2; this.vec3 = element.v3;
@@ -271,6 +1106,7 @@ class PDFRenderer{
         if ( !this.clipRect.intersectsBox( this.bboxRect ) ) {
           continue;
         }
+        material.color = element.color;
         this.renderFace3( this.vec1, this.vec2, this.vec3, element, material, scene );
       }
     }
@@ -286,90 +1122,15 @@ class PDFRenderer{
           this.renderLabel( this.vector3, obj.name, obj.element.style.color );
         }
       }
-      //line2 or LineSegments2object
-      if(obj.isLine2 === true || obj.isLineSegments2 === true && obj.material.visible && camera.layers.test(obj.layers)){
-        //console.log(obj);
-        if(obj.geometry.attributes != undefined && obj.visible){
-          var start=obj.geometry.attributes.instanceStart;
-          var color = obj.geometry.attributes.instanceColorStart.data.array;
-          for(var i=0; i<start.data.count; i++){
-            var k=i*start.data.stride;
-            const vec1 = new THREE.Vector3();
-            const vec2 = new THREE.Vector3();
-            vec1.x=start.data.array[k];
-            vec1.y=start.data.array[k+1];
-            vec1.z=start.data.array[k+2];
-            vec2.x=start.data.array[k+3];
-            vec2.y=start.data.array[k+4];
-            vec2.z=start.data.array[k+5];
-            vec1.project(camera);
-            vec2.project(camera);
-            this.positionScreenToPage( vec1 );
-            this.positionScreenToPage( vec2 );
-
-            this.bboxRect.setFromPoints( [new THREE.Vector2(vec1.x, vec1.y),
-                                         new THREE.Vector2(vec2.x, vec2.y)] );
-            if ( !this.clipRect.intersectsBox( this.bboxRect ) ) {
-              continue;
-            }
-            this.color.setRGB( color[k+0], color[k+1], color[k+2] );
-            this.renderLine2( vec1, vec2, obj.material );
-          }
-        }
-      }
-      /*if(obj.isInstancedMesh === true && obj.material.visible && camera.layers.test(obj.layers)){
-        console.log(obj);
-        var position = obj.geometry.attributes.position;
-        var normal = obj.geometry.attributes.normal;
-        console.log(position);
-        var itemSize = position.itemSize;
-        var index = obj.geometry.index;
-        console.log(index);
-        if(itemSize==3 && index){
-          for(var w=0; w<obj.count; w++){
-            const color = new THREE.Color();
-            obj.getColorAt(w, this.color);
-            if(this.color.r && this.color.g && this.color.b){
-              this.pdf.setDrawColor( this.color.r*255, this.color.g*255, this.color.b*255 );
-              this.pdf.setFillColor( this.color.r*255, this.color.g*255, this.color.b*255 );
-            }
-            obj.getMatrixAt(w, this.matrix);
-            for(var i=0; i<index.count/itemSize; i++){
-              var k=i*itemSize;
-              const vec1 = new THREE.Vector3();
-              const vec2 = new THREE.Vector3();
-              const vec3 = new THREE.Vector3();
-              vec1.x=position.array[index.array[k]];
-              vec1.y=position.array[index.array[k]+1];
-              vec1.z=position.array[index.array[k]+2];
-              vec2.x=position.array[index.array[k+1]];
-              vec2.y=position.array[index.array[k+1]+1];
-              vec2.z=position.array[index.array[k+1]+2];
-              vec3.x=position.array[index.array[k+2]];
-              vec3.y=position.array[index.array[k+2]+1];
-              vec3.z=position.array[index.array[k+2]+2];
-              vec1.applyMatrix4( obj.matrixWorld ).applyMatrix4(this.matrix);
-              vec2.applyMatrix4( obj.matrixWorld ).applyMatrix4(this.matrix);
-              vec3.applyMatrix4( obj.matrixWorld ).applyMatrix4(this.matrix);
-              vec1.project(camera);
-              vec2.project(camera);
-              vec3.project(camera);
-              this.positionScreenToPage( vec1 );
-              this.positionScreenToPage( vec2 );
-              this.positionScreenToPage( vec3 );
-  
-              this.bboxRect.setFromPoints( [new THREE.Vector2(vec1.x, vec1.y),
-                                           new THREE.Vector2(vec2.x, vec2.y),
-                                           new THREE.Vector2(vec3.x, vec3.y)] );
-              if ( !this.clipRect.intersectsBox( this.bboxRect ) ) {
-                continue;
-              }
-              this.renderTriangle(vec1, vec2, vec3, obj, obj.material);
-            }
-          }
-        }
-      }*/
     });
+    this.pdf.setTextColor( titleBox.style.color );
+    this.pdf.text(titleBox.innerText, 2, 14);
+    this.pdf.setDrawColor( scalebar.style.background );
+    this.pdf.setFillColor( scalebar.style.background );
+    this.pdf.lines( [[parseFloat(scalebar.style.width), 0]],
+                      20, this.heightHalf*2 - 10,
+                      [1,1],
+                      'S' );
     //console.log(this.pdf);
   }
 };
@@ -455,6 +1216,20 @@ class tjViewer{
     this.titleBox2 = document.createElement('div');
     this.titleBox2.className = 'tjviewer_titlebox2';
     el.appendChild(this.titleBox2);
+    
+    // scale bar
+    this.scalebar = document.createElement('div');
+    this.scalebar.className = 'tjviewer_scalebar';
+    this.scalebarLabel = document.createElement('span');
+    this.scalebarLabel.className = 'tjveiwer_scalebarLabel';
+    this.scalebar.appendChild(this.scalebarLabel);
+    el.appendChild(this.scalebar);
+    this.scalebar2 = document.createElement('div');
+    this.scalebar2.className = 'tjviewer_scalebar2';
+    this.scalebarLabel2 = document.createElement('span');
+    this.scalebarLabel2.className = 'tjveiwer_scalebarLabel2';
+    this.scalebar2.appendChild(this.scalebarLabel2);
+    el.appendChild(this.scalebar2);
       
     this.perspectiveDistance = -10;
     this.orthographicDistance = 120;
@@ -491,6 +1266,8 @@ class tjViewer{
     this.maxLineWidth = 50;
     this.layer = {};
     this.symbols = [];//save all gene symbols
+    
+    this.resizeFactor = {left: 1, right: 1};
     
     // add GUIs
     this.setGUI();
@@ -531,6 +1308,15 @@ class tjViewer{
   setCameraGUI(){
     this.cameraparam = {
       YX_aspect : this.camera.aspect,
+      linked: true,
+      samescale: function(){
+        if(this.resizeFactor.left<this.resizeFactor.right){
+            this.camera.position.multiplyScalar(this.resizeFactor.right/this.resizeFactor.left); 
+        }else{
+          this.camera2.position.multiplyScalar(this.resizeFactor.left/this.resizeFactor.right);
+        }
+        this.resizeScaleBar();
+      }.bind(this),
       type : 'Perspective',
       world_center : function(){
         this.objects.position.set(0, 0, 0);
@@ -613,6 +1399,10 @@ class tjViewer{
       this.cameraparam.YX_aspect = val;
       this.cameraparam.changed = true;
     }.bind(this)).onFinishChange(this.cameraparam.setAspect);
+    this.animateLinkedGUI = cameraGUI.add(this.cameraparam, 'linked').onChange( function(val){
+      this.cameraparam.linked = val;
+    }.bind(this)).hide();
+    this.cameraSameScaleGUI = cameraGUI.add(this.cameraparam, 'samescale').hide();
     cameraGUI.add(this.cameraparam, 'type', [ 'Orthographic', 'Perspective' ] )
       .name( 'projection method' ).onChange( function () {
         this.removeLinkedControls();
@@ -972,7 +1762,6 @@ class tjViewer{
       stepX : 0.3,
       stepY : 0.3,
       stepZ : 0.3, 
-      linked: true,
       up : false,
       down : false,
       left : false,
@@ -1009,9 +1798,6 @@ class tjViewer{
       this.rotateXYZ('z', val);
     }.bind(this));
     rotationGUI.add(this.animateparam, 'flip', ['', 'x', 'y', 'z']).onChange(this.flipXYZ.bind(this));
-    this.animateLinkedGUI = rotationGUI.add(this.animateparam, 'linked').onChange( function(val){
-      this.animateparam.linked = val;
-    }.bind(this)).hide();
     rotationGUI.close();
     
     // keyboard
@@ -1117,27 +1903,27 @@ class tjViewer{
             }
             if(this.sideBySide){
               var pdfRenderer = new PDFRenderer(expparam.width/2, expparam.height, this.background);
-              pdfRenderer.render(this.scene, this.camera);
+              pdfRenderer.render(this.scene, this.camera, this.titleBox, this.scalebar);
               pdfRenderer.pdf.save(expparam.filename+'.left.'+expparam.format);
               var pdfRenderer2 = new PDFRenderer(expparam.width/2, expparam.height, this.background2);
-              pdfRenderer2.render(this.scene2, this.camera2);
+              pdfRenderer2.render(this.scene2, this.camera2, this.titleBox2, this.scalebar2);
               pdfRenderer2.pdf.save(expparam.filename+'.right.'+expparam.format);
             }else{
               var pdfRenderer = new PDFRenderer(expparam.width, expparam.height, this.background);
-              pdfRenderer.render(this.scene, this.camera);
+              pdfRenderer.render(this.scene, this.camera, this.titleBox, this.scalebar);
               pdfRenderer.pdf.save(expparam.filename+'.'+expparam.format);
             }
             if(this.overlay){
               if(this.sideBySide){
                 var pdfRenderer = new PDFRenderer(this.width/2, this.height, this.backgroundBottom);
-                pdfRenderer.render(this.sceneBottom, this.camera);
+                pdfRenderer.render(this.sceneBottom, this.camera, this.titleBox, this.scalebar);
                 pdfRenderer.pdf.save(expparam.filename+'.leftBottom.'+expparam.format);
                 var pdfRenderer2 = new PDFRenderer(this.width/2, this.height, this.backgroundBottom2);
-                pdfRenderer2.render(this.sceneBottom2, this.camera2);
+                pdfRenderer2.render(this.sceneBottom2, this.camera2, this.titleBox2, this.scalebar2);
                 pdfRenderer2.pdf.save(expparam.filename+'.rightBottom.'+expparam.format);
               }else{
                 var pdfRenderer = new PDFRenderer(this.width, this.height, this.backgroundBottom);
-                pdfRenderer.render(this.sceneBottom, this.camera);
+                pdfRenderer.render(this.sceneBottom, this.camera, this.titleBox, this.scalebar);
                 pdfRenderer.pdf.save(expparam.filename+'.bottom.'+expparam.format);
               }
             }
@@ -1472,24 +2258,29 @@ class tjViewer{
   
   setMeasureGUI(){
     const measureGUI = this.gui.addFolder('measure TSS distance');
+    function clearAll(){
+       markerA.visible = false;
+       markerB.visible = false;
+       markerA2.visible = false;
+       markerB2.visible = false;
+       measureparam['gene 1'] = '';
+       measureparam['gene 2'] = '';
+       measureparam.result = "0";
+       labelDiv.textContent = '';
+       labelDiv2.textContent = '';
+       setLine(line, result, new THREE.Vector3(), new THREE.Vector3());
+       setLine(line2, result2, new THREE.Vector3(), new THREE.Vector3());
+       g1.setValue('');
+       g2.setValue('');
+       distancePlace.setValue('');
+    }
     const measureparam = {
       'measure by cursor': false,
+      'normalized': false,
       'gene 1': '',
       'gene 2': '',
       'result' : "0",
-      'clear' : function(){
-                  markerA.visible = false;
-                  markerB.visible = false;
-                  markerA2.visible = false;
-                  markerB2.visible = false;
-                  measureparam['gene 1'] = '';
-                  measureparam['gene 2'] = '';
-                  measureparam.result = "0";
-                  labelDiv.textContent = '';
-                  labelDiv2.textContent = '';
-                  setLine(line, result, new THREE.Vector3(), new THREE.Vector3());
-                  setLine(line2, result2, new THREE.Vector3(), new THREE.Vector3());
-                }
+      'clear' : clearAll
     };
     /*measureGUI.add(measureparam, 'measure by cursor').onChange((val)=>{
       if(val){
@@ -1507,6 +2298,9 @@ class tjViewer{
     g2.$input.setAttribute("autocomplete", 'off');
     g2.$input.setAttribute("size", 10);
     const distancePlace = measureGUI.add(measureparam, 'result');
+    const normalized = measureGUI.add(measureparam, 'normalized').onChange(val=>{
+       clearAll();
+    });
     measureGUI.add(measureparam, 'clear');
     
     var points = [
@@ -1595,8 +2389,9 @@ class tjViewer{
         res.center.set(0.5,0.5);
     }
     
-    function showDistance(line, result, points, labelDiv, label2=''){
+    function showDistance(line, result, points, labelDiv, label2='', resizeFactor=1){
       var distance = points[0].distanceTo(points[1]);
+      if(!measureparam.normalized) distance = distance * resizeFactor;
       let formattedNumber = distance.toLocaleString('en-US', {
               minimumIntegerDigits: 1,
               useGrouping: false
@@ -1616,7 +2411,7 @@ class tjViewer{
     }
     
     var more = false;
-    function showResults1(collection, scene){
+    function showResults1(collection, scene, resizeFactor){
       if (collection.length > 0) {
           points[clicks].copy(collection[0].point);
           markers[clicks].position.copy(collection[0].point);
@@ -1624,14 +2419,14 @@ class tjViewer{
           clicks++;
           if (clicks > 1){
             markerB.visible = true;
-            showDistance(line, result, points, labelDiv);
+            showDistance(line, result, points, labelDiv, '', resizeFactor);
             clicks = 0;
             more = true;
           }else{
             if(clicks == 1){
               if(more){
                 swapPosition(markers, points);
-                showDistance(line, result, points, labelDiv);
+                showDistance(line, result, points, labelDiv, '', resizeFactor);
               }else{
                 markerA.visible = true;
                 markerB.visible = false;
@@ -1641,7 +2436,7 @@ class tjViewer{
       }
     }
     var more2 = false;
-    function showResults2(collection, scene){
+    function showResults2(collection, scene, resizeFactor){
       if (collection.length > 0) {
           points2[clicks2].copy(collection[0].point);
           markers2[clicks2].position.copy(collection[0].point);
@@ -1649,14 +2444,14 @@ class tjViewer{
           clicks2++;
           if (clicks2 > 1){
             markerB2.visible = true;
-            showDistance(line2, result2, points2, labelDiv2, '; '+distancePlace.getValue());
+            showDistance(line2, result2, points2, labelDiv2, '; '+distancePlace.getValue(), resizeFactor);
             clicks2 = 0;
             more2 = true;
           }else{
             if(clicks2 == 1){
               if(more){
                 swapPosition(markers2, points2);
-                showDistance(line2, result2, points2, labelDiv2, '; '+distancePlace.getValue());
+                showDistance(line2, result2, points2, labelDiv2, '; '+distancePlace.getValue(), resizeFactor);
               }else{
                 markerA2.visible = true;
                 markerB2.visible = false;
@@ -1693,12 +2488,12 @@ class tjViewer{
       
       var intersects = getIntersections(event, this.scene, this.camera);
       if(intersects.length>0){
-        showResults1(intersects, this.scene);
+        showResults1(intersects, this.scene, this.resizeFactor.left);
       }
       if(this.sideBySide){
         var intersects2 = getIntersections(event, this.scene2, this.camera2);
         if(intersects2.length>0){
-          showResults2(intersects2, this.scene2);
+          showResults2(intersects2, this.scene2, this.resizeFactor.right);
         }
       }
     }.bind(this);
@@ -1717,14 +2512,14 @@ class tjViewer{
         var wpos = new THREE.Vector3();
         gene_body[0].getWorldPosition(wpos);
         var intersects = [{point:wpos}];
-        showResults1(intersects, this.scene);
+        showResults1(intersects, this.scene, this.resizeFactor.left);
       }
       var gene_body2 = this.searchGeneByGeneName(val, this.scene2, this.sceneBottom2);
       if(gene_body2.length>0){
         var wpos2 = new THREE.Vector3();
         gene_body2[0].getWorldPosition(wpos2);
         var intersects2 = [{point:wpos2}];
-        showResults2(intersects2, this.scene2);
+        showResults2(intersects2, this.scene2, this.resizeFactor.right);
       }
     }.bind(this);
     
@@ -1773,7 +2568,7 @@ class tjViewer{
   }
   
   rotateXYZ(xyz, val){
-    if(this.animateparam.linked){
+    if(this.cameraparam.linked){
       this.scene.rotation[xyz] = val;
       this.sceneBottom.rotation[xyz] = val;
       this.scene2.rotation[xyz] = val;
@@ -1803,7 +2598,7 @@ class tjViewer{
         scale.x = -1;
         scale.y = -1;
     }
-    if(this.animateparam.linked){
+    if(this.cameraparam.linked){
       this.objects.scale.multiply(scale);
       this.objects2.scale.multiply(scale);
       this.objectsBottom.scale.multiply(scale);
@@ -1878,6 +2673,8 @@ class tjViewer{
         1-x.background.g[0],
         1-x.background.b[0]
       ).getHexString();
+      this.scalebar.style.background = this.titleBox.style.color;
+      this.scalebarLabel.style.color = this.titleBox.style.color;
       
       this.background2 = new THREE.Color(
         x.background.r[2],
@@ -1895,6 +2692,8 @@ class tjViewer{
         1-x.background.g[2],
         1-x.background.b[2]
       ).getHexString();
+      this.scalebar2.style.background = this.titleBox2.style.color;
+      this.scalebarLabel2.style.color = this.titleBox2.style.color;
     }
   }
   
@@ -1953,17 +2752,26 @@ class tjViewer{
     }
   }
   
+  setFirstTitlePosition(){
+    this.titleBox.style.top = this.container.offsetTop + 2 +'px';
+    this.titleBox.style.left = this.container.offsetLeft + 2 + 'px';
+    this.scalebar.style.top = this.container.offsetTop + this.height - 18 + 'px';
+    this.scalebar.style.left = this.container.offsetLeft + 20 + 'px';
+  }
+  
   setSecondTitlePosition(){
     this.titleBox2.style.top = this.container.offsetTop + 2 +'px';
     this.titleBox2.style.left = this.container.offsetLeft + this.width/2 + 2 + 'px';
+    this.scalebar2.style.top = this.container.offsetTop + this.height - 18 + 'px';
+    this.scalebar2.style.left = this.container.offsetLeft + this.width/2 + 20 + 'px';
   }
   
   setSideBySide(x){
     if('sideBySide' in x){
       this.sideBySide = x.sideBySide;
       if(x.sideBySide){
-        this.camera.aspect = this.width/this.height;
-        this.camera2.aspect = this.width/this.height;
+        this.camera.aspect = this.width/this.height/2;
+        this.camera2.aspect = this.width/this.height/2;
         this.camera.updateProjectionMatrix();
         this.camera2.updateProjectionMatrix();
         this.labelRenderer.setSize( this.width/2, this.height );
@@ -1973,6 +2781,7 @@ class tjViewer{
         this.bckcolGUI.controllers[4].show();
         this.bckcolGUI.controllers[5].show();
         this.animateLinkedGUI.show();
+        this.cameraSameScaleGUI.show();
         if('title' in x){
            this.titleBox2.innerText = x.title[1];
            this.setSecondTitlePosition();
@@ -1998,15 +2807,49 @@ class tjViewer{
     }
   }
   
+  getWorldPerPixel(camera, controls, renderer){
+    var worldPerPixel = 1;
+    if ( this.cameraparam.type == 'Orthographic' ) {
+      const heightInWorldUnits = camera.top - camera.bottom;
+      worldPerPixel = heightInWorldUnits / renderer.domElement.clientHeight;
+    } else if ( this.cameraparam.type == 'Perspective' ) {
+      const vFOV = THREE.MathUtils.degToRad(camera.fov); // vertical field of view in radians
+      const cameraDistance = camera.position.distanceTo(controls.target); // distance from camera to target
+      const heightInWorldUnits = 2 * Math.tan(vFOV / 2) * cameraDistance;
+      worldPerPixel = heightInWorldUnits / renderer.domElement.clientHeight;
+    }
+    return(worldPerPixel);
+  }
+  
+  resizeScaleBar(){
+    const wpp = this.getWorldPerPixel(this.camera, this.controls, this.renderer);
+    this.scalebar.style.width= 1/wpp/this.resizeFactor.left + 'px';
+    this.scalebarLabel.textContent = this.scalebar.style.width+'/AU';
+      if(this.sideBySide){
+        const wpp2 = this.getWorldPerPixel(this.camera2, this.controls2, this.renderer);
+        this.scalebar2.style.width= 1/wpp2/this.resizeFactor.right+ 'px';
+        this.scalebarLabel2.textContent = this.scalebar2.style.width+'/AU';
+      }
+  }
+  
+  setResizeFactor(x){
+    if('resizeFactor' in x){
+      this.resizeFactor = x.resizeFactor;
+      this.resizeScaleBar();
+    }
+  }
+  
   create_plot(x){
-    //console.log(x);
+    console.log(x);
     //const twoPi = Math.PI * 2;
     //x is a named array
     this.setBackground(x);
     this.setDefaultValues(x);
     this.setMainTitle(x);
+    this.setFirstTitlePosition();
     this.setSideBySide(x);
     this.setOverlay(x);
+    this.setResizeFactor(x);
     
     const arrowLayer = [];
     const groupFolder = this.gui.addFolder('Group setting');
@@ -2084,14 +2927,24 @@ class tjViewer{
           });
           return(typeof id == 'undefined');
     }
-    // each element 
-    for(var k in x){
+    // each element
+    var xgeos = x.hasOwnProperty('geos') ? x.geos : x;
+    for(var k in xgeos){
       if(k!='background' && k!='maxRadius' &&
          k!='maxLineWidth' && k!='taglayers' &&
          k!='tagWithChild' &&
          k!='overlay' && k!='sideBySide' &&
-         k!='title'){
-        let ele = x[k];
+         k!='resizeFactor' &&
+         k!='title' && xgeos[k].hasOwnProperty('colors')){
+        let ele = xgeos[k];
+        let material = new THREE.MeshStandardMaterial( {
+              color: 0xffffff,
+              opacity: 1,
+              transparent: true,
+              metalness: 0,
+              roughness: 0,
+              depthWrite: false
+            } );
         const param = {
           'size': 0.08,
           'radius': 0.08,
@@ -2108,7 +2961,9 @@ class tjViewer{
                 ele.colors[1],
                 ele.colors[2]),
           'thetaStart': 0,
-          'thetaLength': 2*Math.PI
+          'thetaLength': 2*Math.PI,
+          'show' : true,
+          'filterByR': 11
         };
         const len = ele.positions.length/3;
         if(typeof groupFolderObj[ele.tag] == 'undefined'){
@@ -2121,6 +2976,7 @@ class tjViewer{
                 groupParamObj[ele.tag][key] = 0;
                 switch(key){
                   case 'size':
+                    if(ele.type=="label") break;
                     groupFolderObj[ele.tag].add(
                       groupParamObj[ele.tag], key, -10, 10, .5)
                       .onFinishChange((val) => {
@@ -2341,6 +3197,7 @@ class tjViewer{
                       }).name('increase height by:');
                       break;
                     case 'depth':
+                      if(ele.type=="label") break;
                       groupFolderObj[ele.tag].add(
                       groupParamObj[ele.tag], key, -10, 10, .5)
                       .onFinishChange(val => {
@@ -2399,6 +3256,7 @@ class tjViewer{
               }else{
                 switch(key){
                     case 'opacity':
+                      if(ele.type=="label") break;
                       groupFolderObj[ele.tag].add(
                         groupParamObj[ele.tag], key, 0, 1)
                         .onChange(val=>{
@@ -2419,6 +3277,7 @@ class tjViewer{
                         });
                       break;
                     case 'transparent':
+                      if(ele.type=="label") break;
                       groupFolderObj[ele.tag].add(
                         groupParamObj[ele.tag], key)
                         .onChange(val=>{
@@ -2438,6 +3297,52 @@ class tjViewer{
                           }
                         });
                       break;
+                    case 'show':
+                      if(ele.type=="label") break;
+                      groupFolderObj[ele.tag].add(
+                        groupParamObj[ele.tag], key)
+                        .onChange(val=>{
+                          groupParamObj[ele.tag] = val;
+                          var traverseFun = function(obj){
+                            if(obj.isMesh){
+                              if(obj.layers.mask==Math.pow(2, this.getLayer(ele.tag))){
+                                obj.visible = val;
+                              }
+                            }
+                          }.bind(this);
+                          this.objects.traverse(traverseFun);
+                          this.objectsBottom.traverse(traverseFun);
+                          if(this.sideBySide){
+                            this.objects2.traverse(traverseFun);
+                            this.objectsBottom2.traverse(traverseFun);
+                          }
+                        });
+                      break;
+                    case 'filterByR':
+                      if(ele.type!="sphere") break;
+                      groupFolderObj[ele.tag].add(
+                        groupParamObj[ele.tag], key, 0, 12)
+                        .onChange(val=>{
+                          groupParamObj[ele.tag] = val;
+                          var traverseFun = function(obj){
+                            if(obj.isMesh){
+                              if(obj.layers.mask==Math.pow(2, this.getLayer(ele.tag))){
+                                if(obj.geometry.parameters.radius > val){
+                                  obj.visible = false;
+                                }else{
+                                  obj.visible = true;
+                                }
+                              }
+                            }
+                          }.bind(this);
+                          this.objects.traverse(traverseFun);
+                          this.objectsBottom.traverse(traverseFun);
+                          if(this.sideBySide){
+                            this.objects2.traverse(traverseFun);
+                            this.objectsBottom2.traverse(traverseFun);
+                          }
+                        });
+                      break;
                 }
               }
             }
@@ -2446,13 +3351,6 @@ class tjViewer{
         var folder = groupFolderObj[ele.tag].addFolder(ele.type+' '+k);
         let geometry = new THREE.BufferGeometry();
         let obj = new THREE.InstancedMesh();
-        let material = new THREE.MeshStandardMaterial( {
-              color: 0xffffff,
-              opacity: 1,
-              transparent: true,
-              metalness: 0,
-              roughness: 0
-            } );
         // get the center of the object
         let center = new THREE.Vector3(0, 0, 0);
         for ( let i =0; i<len; i++){
@@ -2980,6 +3878,9 @@ class tjViewer{
         folder.add(param, 'transparent').onChange( function( val ){
           material.transparent = val;
         });
+        folder.add(param, 'show').onChange( function(val){
+            obj.visible = val;
+        });
         folder.close();
         // add obj to a parent container
         let objContainer = new THREE.Group();
@@ -3028,6 +3929,7 @@ class tjViewer{
     }
     this.gui.close();
     this.setAutocompleteDatalist();
+    console.log(this);
   }
   
   makeOrthographicCamera() {
@@ -3096,6 +3998,8 @@ class tjViewer{
         if(this.camera2.fov<=0.1) this.camera2.fov=0.1;
         this.camera2.updateProjectionMatrix(); 
       }
+      // scale bar
+      this.resizeScaleBar();
     })
   }
   
@@ -3115,7 +4019,7 @@ class tjViewer{
   }
   
   linkCamera(cam1, cam2, ctl1, ctl2){
-    if(this.animateparam.linked){
+    if(this.cameraparam.linked){
         cam2.position.copy( cam1.position );
         cam2.rotation.copy( cam1.rotation );
         cam2.zoom = cam1.zoom;
@@ -3177,6 +4081,7 @@ class tjViewer{
     this.width = width;
     this.height = height;
     
+    this.setFirstTitlePosition();
     if(this.sideBySide){
       this.makeCamera(this.camera);
       this.makeCamera(this.camera2);
