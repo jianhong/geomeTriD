@@ -182,7 +182,7 @@ addMissingBins <- function(r, ids){
       gaps <- sort(c(gaps[width(gaps)<=w], unlist(gapsBin)))
     }
     if(length(r)+length(gaps)!=diff(range(ids))+1){
-      stop('Something wrong, please report the bug! Thank you.')
+      warning('Something wrong, The anchor IDs number are not identical with the length of sliding windows.')
     }
     r <- sort(c(r, gaps))
   }
