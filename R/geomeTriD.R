@@ -1,15 +1,13 @@
 #' Interactive 3D plot of epigenetic data or single cell data
 #'
-#' geomeTriD (Three Dimensional Geometry Package) create interactive 3D plots
-#' using the GL library with the 'three.js' 
-#' visualization library (https://threejs.org) or the rgl library.
-#' In addition to creating interactive 3D plots, 
-#' the application also generates simplified models in 2D.
-#' These 2D models provide a more straightforward visual representation,
-#' making it easier to analyze and interpret the data quickly.
-#' This functionality ensures that users have access to both detailed 
-#' three-dimensional visualizations and more accessible two-dimensional views,
-#' catering to various analytical needs.
+#' The geomeTriD (Three-Dimensional Geometry) Package provides interactive 3D
+#' visualization of chromatin structures using the WebGL-based three.js or 
+#' the rgl rendering library. It is designed to identify and explore spatial
+#' chromatin patterns within genomic regions. The package generates dynamic 
+#' 3D plots and HTML widgets that integrate seamlessly with Shiny applications,
+#' enabling researchers to visualize chromatin organization, detect spatial
+#' features, and compare structural dynamics across different conditions and
+#' data types.
 #' @keywords package
 #' @examples
 #' if(interactive()){
