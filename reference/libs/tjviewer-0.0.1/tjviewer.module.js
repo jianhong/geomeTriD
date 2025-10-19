@@ -1392,6 +1392,16 @@ class tjViewer{
               this.cameraparam.center_z);
           }
         }
+      }.bind(this),
+      reset: function(){
+        this.removeLinkedControls();
+        this.camera = this.setCamera();
+        this.controls.setCamera(this.camera);
+        this.camera2 = this.setCamera();
+        this.controls2.setCamera(this.camera2);
+        this.linkPan();
+        this.linkControls();
+        this.animate();
       }.bind(this)
     }
     const cameraGUI = this.gui.addFolder('camera');
@@ -1428,6 +1438,7 @@ class tjViewer{
     }.bind(this));
     cameraGUI.add(this.cameraparam, 'world_center');
     cameraGUI.add(this.cameraparam, 'object_center');
+    cameraGUI.add(this.cameraparam, 'reset').name('Reset Position');
     cameraGUI.add(this.cameraparam, 'insetCamera').onChange( function(val){
       this.cameraparam.insetCamera = val;
       this.insetCamera = val;

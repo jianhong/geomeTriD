@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">geomeTriD</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.18</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.19</span>
       </span>
     </div>
 
@@ -66,9 +66,55 @@
       </header><div class="row">
   <div class="contents col-md-9">
 <div class="section level1">
-<div class="page-header"><h1 id="geometrid">geomeTriD<a class="anchor" aria-label="anchor" href="#geometrid"></a>
+<div class="page-header"><h1 id="geometrid-a-rbioconductor-package-for-interactive-3d-plot-of-epigenetic-data">geomeTriD: A R/Bioconductor package for interactive 3D plot of epigenetic data<a class="anchor" aria-label="anchor" href="#geometrid-a-rbioconductor-package-for-interactive-3d-plot-of-epigenetic-data"></a>
 </h1></div>
-<p>A R/Bioconductor package for interactive 3D plot of epigenetic data or single cell data.</p>
+<div class="section level2">
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h2>
+<p>The <code>geomeTriD</code> (Three-Dimensional Geometry) Package provides interactive 3D visualization of chromatin structures using the WebGL-based <a href="https://threejs.org/" class="external-link">three.js</a> or the rgl rendering library. It is designed to identify and explore spatial chromatin patterns within genomic regions. The package generates dynamic 3D plots and HTML widgets that integrate seamlessly with Shiny applications, enabling researchers to visualize chromatin organization, detect spatial features, and compare structural dynamics across different conditions and data types.</p>
+<p><code>geomeTriD</code> is available on Bioconductor: <a href="https://bioconductor.org/packages/geomeTriD/" class="external-link">https://bioconductor.org/packages/geomeTriD/</a></p>
+</div>
+<div class="section level2">
+<h2 id="installaton">Installaton<a class="anchor" aria-label="anchor" href="#installaton"></a>
+</h2>
+<p>To install <code>geomeTriD</code> package, start R (version “4.5”) and enter:</p>
+<p>```{r} if (!require(“BiocManager”, quietly = TRUE)) install.packages(“BiocManager”)</p>
+<p>BiocManager::install(“geomeTriD”)</p>
+<pre><code>
+Development version are available by:
+
+```{r}
+BiocManager::install('jianhong/geomeTriD')</code></pre>
+<p>The dependency of this package is R (&gt;= 4.5.0).</p>
+</div>
+<div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<p>To view documentation of <code>geomeTriD</code>, start R and enter:</p>
+<p><code>{r} browseVignettes('geomeTriD')</code></p>
+<p>The documentation are also available online at <a href="https://bioconductor.org/packages/release/bioc/vignettes/geomeTriD/inst/doc/geomeTriD.html" class="external-link">Bioconductor</a>.</p>
+<div class="section level3">
+<h3 id="contributions-and-support">Contributions and Support<a class="anchor" aria-label="anchor" href="#contributions-and-support"></a>
+</h3>
+<p>If you would like to contribute to this package, the standard workflow is as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Check that there isn’t already an issue about your idea in the <a href="https://github.com/jianhong/geomeTriD/issues" class="external-link">jianhong/geomeTriD/issues</a> to avoid duplicating work. If there isn’t one already, please create one so that others know you’re working on this</li>
+<li>
+<a href="https://help.github.com/en/github/getting-started-with-github/fork-a-repo" class="external-link">Fork</a> the <a href="https://github.com/jianhong/geomeTriD" class="external-link">jianhong/geomeTriD</a> to your GitHub account</li>
+<li>Make the necessary changes / additions within your forked repository following <a href="https://contributions.bioconductor.org/" class="external-link">Bioconductor contribution</a>
+</li>
+<li>Use <code><a href="https://devtools.r-lib.org/reference/build.html" class="external-link">devtools::build</a></code> and <code><a href="https://devtools.r-lib.org/reference/check.html" class="external-link">devtools::check</a></code> to check the package work properly.</li>
+<li>Submit a Pull Request against the <code>main</code> or current <code>RELEASE_VERSION</code> branch and wait for the code to be reviewed and merged.</li>
+</ol>
+<p>If you’re not used to this workflow with git, you can start with some <a href="https://help.github.com/en/github/collaborating-with-issues-and-pull-requests" class="external-link">docs from GitHub</a> or even their <a href="https://try.github.io/" class="external-link">excellent <code>git</code> resources</a>.</p>
+<p>For further information or help, don’t hesitate to get in touch on the <a href="https://support.bioconductor.org/" class="external-link">Bioconductor support site</a> with tag <code>#geomeTriD</code> or create a new issues at <a href="https://github.com/jianhong/geomeTriD/issues" class="external-link">jianhong/geomeTriD/issues</a>.</p>
+</div>
+<div class="section level3">
+<h3 id="reporting-bugissues">Reporting bug/issues<a class="anchor" aria-label="anchor" href="#reporting-bugissues"></a>
+</h3>
+<p>Many thanks for taking an interest in improving this package. Please report bug/issues at <a href="https://github.com/jianhong/geomeTriD/issues" class="external-link">jianhong/geomeTriD/issues</a>.</p>
+</div>
+</div>
 </div>
   </div>
 
