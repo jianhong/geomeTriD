@@ -35,6 +35,9 @@ browseVignettes('geomeTriD')
 
 The documentation are also available online at [Bioconductor](https://bioconductor.org/packages/release/bioc/vignettes/geomeTriD/inst/doc/geomeTriD.html).
 
+A quick-start introduction video is available on YouTube:
+[![Youtube Video](https://img.youtube.com/vi/PRNYXbcqYt8/0.jpg)](https://youtu.be/PRNYXbcqYt8)
+
 ### Contributions and Support
 
 If you would like to contribute to this package, the standard workflow
