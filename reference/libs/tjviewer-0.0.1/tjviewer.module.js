@@ -1394,6 +1394,7 @@ class tjViewer{
         }
       }.bind(this),
       reset: function(){
+        this.objects.rotation.set(0,0,0);
         this.removeLinkedControls();
         this.camera = this.setCamera();
         this.controls.setCamera(this.camera);
