@@ -203,7 +203,28 @@ bezier0 <- function(t, ctrNodes) {
   return(c(x, y))
 }
 
-bezier <- function(coefs, center, r_coefs, r, evaluation = 100, w, method = 1) {
+getNr <- function(coefs, center, nodesCoorSizes, nodesCoorDistance){
+  # methods 1
+  # distance of the center of nodes center points to sub-cluster center
+  Nr <- sqrt((mean(coefs[, 1, drop = TRUE]) - center[1])^2 +
+         (mean(coefs[, 2, drop = TRUE]) - center[2])^2)
+  if(Nr>1){
+    Nr <- 1
+  }
+  # methods 2
+  # coordinate distance of the two nodes vs mean width of the nodes width
+  mu <- mean(nodesCoorSizes, na.rm=TRUE)
+  if(is.na(mu)||is.null(mu)){
+    return(Nr)
+  }
+  if(nodesCoorDistance==0){
+    return(Nr)
+  }else{
+    return(mu/nodesCoorDistance)
+  }
+}
+bezier <- function(coefs, center, r_coefs, r, evaluation = 100, w, method = 1,
+                   nodesCoorSizes, nodesCoorDistance) {
   stopifnot("Dimention of coefs need to be 2" = length(dim(coefs)) == 2)
   stopifnot("Dimention of center need to be 2" = length(dim(center)) == 2)
   # mirror center
@@ -221,19 +242,18 @@ bezier <- function(coefs, center, r_coefs, r, evaluation = 100, w, method = 1) {
         coefs[1, , drop = TRUE],
         coefs[nrow(coefs), , drop = TRUE]
       )
-      # distance of the center of nodes center points to sub-cluster center
-      Nr <- sqrt((mean(coefs[, 1, drop = TRUE]) - center[1])^2 +
-        (mean(coefs[, 2, drop = TRUE]) - center[2])^2)
-      # N/sum(2*pi*r_coefs) should be same as w
-      N <- max(min(2 * w, r / Nr, 2 * N / sum(2 * pi * r_coefs), na.rm = TRUE), 1.25)
+      if(w==0){
+        N <- max( 2 * N / sum(2 * pi * r_coefs), 0.5)
+      }else{
+        N <- getNr(coefs, center, nodesCoorSizes, nodesCoorDistance)
+      }
     }
-    N <- 2 * N # 4 points in new algorithm need 2 times strengh.
+    N <- 2 * N # 4 points in new algorithm need 2 times strength.
   } else {
     if (r == 0) {
       N <- 2
     } else {
-      Nr <- sqrt((mean(coefs[, 1, drop = TRUE]) - center[1])^2 +
-        (mean(coefs[, 2, drop = TRUE]) - center[2])^2)
+      Nr <- getNr(coefs, center, nodesCoorSizes, nodesCoorDistance)
       N <- r / Nr
     }
   }
@@ -270,7 +290,7 @@ getPointInNodeCircle <- function(ns, a, c1, r) {
 }
 
 curveMaker <- function(ns1, ns2, ab, cx, cy, r, w, evaluation = 100,
-                       method = 1,
+                       method = 1, nodesCoorSizes, nodesCoorDistance,
                        ...) {
   x1 <- ns1$x[ab[1]]
   y1 <- ns1$y[ab[1]]
@@ -317,7 +337,9 @@ curveMaker <- function(ns1, ns2, ab, cx, cy, r, w, evaluation = 100,
     ),
     r = ifelse(length(r) == 1, r, 0), w = w,
     evaluation = evaluation,
-    method = method[1]
+    method = method[1],
+    nodesCoorSizes=nodesCoorSizes,
+    nodesCoorDistance=nodesCoorDistance
   )
   return(xy)
 }

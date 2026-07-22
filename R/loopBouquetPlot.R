@@ -309,7 +309,9 @@ loopBouquetPlot <- function(gi, range, feature.gr, genomicSigs,
         r = cn$r,
         w = d0[i] / d0.ups.dws[i],
         evaluation = floor(100 * edgeL_coor$weight[i]),
-        method = method
+        method = method,
+        nodesCoorSizes = c(width(reg0), width(reg1)),
+        nodesCoorDistance = distance(reg0, reg1)
       )
       plotPoints <- addPoints(
         plotPoints,
@@ -353,7 +355,7 @@ loopBouquetPlot <- function(gi, range, feature.gr, genomicSigs,
       )
     }
   }
-  ## plot the bacground circle
+  ## plot the background circle
   if (show_cluster) {
     for (i in seq_along(clusterCenter)) {
       grid.circle(clusterCenter[[i]]$x, clusterCenter[[i]]$y,

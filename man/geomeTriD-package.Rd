@@ -50,6 +50,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Jianhong Ou \email{jou@morgridge.org} (\href{https://orcid.org/0000-0002-8652-2488}{ORCID})
   \item Kenneth Poss \email{kposs@morgridge.org} [funder]
 }
 
