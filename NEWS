@@ -1,3 +1,10 @@
+Changes in version 1.7.2
+-------------------------
+
+IMPROVEMENT
+
+    o Fix the missing value sections in man pages.
+    
 Changes in version 1.7.1
 -------------------------
 

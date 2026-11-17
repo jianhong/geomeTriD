@@ -510,8 +510,7 @@ calTickPos <- function(feature.tick, curve_gr, arrowLen, kd = 2, rate = 72) {
 }
 
 #' @importFrom IRanges countOverlaps findOverlaps
-#' @importFrom BiocGenerics start<- width<- end<- strand
-#' start end
+#' @importFrom BiocGenerics start<- width<- end<- strand start end
 #' @importFrom utils head
 #' @importFrom S4Vectors queryHits subjectHits
 #' @importFrom Seqinfo seqnames
@@ -890,8 +889,7 @@ safeObjCoor <- function(objCoor, obj, x, y, xlim, ylim, logic = TRUE, force = 6)
   }
   return(c(x, y))
 }
-#' @importFrom grid textGrob grid.segments gpar grid.lines linesGrob grid.text
-#' grid.draw arrow grid.points
+#' @importFrom grid textGrob grid.segments gpar grid.lines linesGrob grid.text grid.draw arrow grid.points
 plotBouquet <- function(pP, fgf, genomicSigs, signalTransformFun,
                         lwd.backbone, col.backbone,
                         lwd.maxGenomicSigs,

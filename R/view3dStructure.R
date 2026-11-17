@@ -35,8 +35,7 @@
 #' @importFrom BiocGenerics start<- end<- strand<-
 #' @importFrom utils tail
 #' @importFrom grDevices colorRampPalette
-#' @importFrom grid convertUnit grid.newpage viewport pushViewport popViewport
-#' convertWidth convertHeight xsplineGrob grobCoords convertX convertY is.unit
+#' @importFrom grid convertUnit grid.newpage viewport pushViewport popViewport convertWidth convertHeight xsplineGrob grobCoords convertX convertY is.unit
 #' @importFrom GenomicRanges GRangesList
 #' @export
 #' @examples

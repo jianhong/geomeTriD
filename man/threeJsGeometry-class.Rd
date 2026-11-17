@@ -28,6 +28,9 @@ threeJsGeometry(...)
 
 \item{object}{an object of threeJsGeometry}
 }
+\value{
+An object of class \code{threeJsGeometry}.
+}
 \description{
 An object of class \code{"threeJsGeometry"}
              represents `three.js` geometry.

@@ -20,6 +20,7 @@ setClassUnion("maybeColor", c("numeric", "character"))
 #' @slot properties A \code{"list"}, the properties to control the geometry.
 #' @import methods
 #' @exportClass threeJsGeometry
+#' @return An object of class \code{threeJsGeometry}.
 #' @examples
 #' tjg <- threeJsGeometry()
 #'
@@ -197,6 +198,7 @@ setClass("threeJsGeometry",
 #' @description
 #' The Geometries supported by \link{threeJsGeometry} class
 #' @export
+#' @return A character vector of available geometries.
 #' @examples
 #' availableGeometries
 #'

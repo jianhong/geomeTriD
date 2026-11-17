@@ -6,6 +6,9 @@
 \usage{
 availableGeometries
 }
+\value{
+A character vector of available geometries.
+}
 \description{
 The Geometries supported by \link{threeJsGeometry} class
 }

@@ -31,19 +31,14 @@
 #' @importFrom S4Vectors mcols first second
 #' @importFrom BiocGenerics sort start<- end<- strand<- width start end
 #' @importFrom Seqinfo seqnames
-#' @importFrom igraph graph_from_data_frame components layout_with_fr
-#' norm_coords V
+#' @importFrom igraph graph_from_data_frame components layout_with_fr norm_coords V
 #' @importFrom plotrix arctext
 #' @importFrom stats plogis quantile median
-#' @importFrom graphics curve lines par points segments strheight text arrows
-#' polygon
+#' @importFrom graphics curve lines par points segments strheight text arrows polygon
 #' @importFrom scales rescale
-#' @importFrom IRanges IRanges subsetByOverlaps viewMeans countOverlaps reduce
-#' findOverlaps distance
+#' @importFrom IRanges IRanges subsetByOverlaps viewMeans countOverlaps reduce findOverlaps distance
 #' @importFrom trackViewer parseWIG
-#' @importFrom grid unit grid.newpage viewport pushViewport popViewport
-#'  stringWidth convertWidth convertHeight grid.circle gpar grid.segments
-#'  grid.points grid.text
+#' @importFrom grid unit grid.newpage viewport pushViewport popViewport stringWidth convertWidth convertHeight grid.circle gpar grid.segments grid.points grid.text
 #' @export
 #' @examples
 #' library(InteractionSet)

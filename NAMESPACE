@@ -34,155 +34,185 @@ exportMethods("$")
 exportMethods("$<-")
 import(methods)
 importClassesFrom(InteractionSet,GInteractions)
-importFrom(BiocGenerics,"end<-")
-importFrom(BiocGenerics,"start<-")
-importFrom(BiocGenerics,"strand<-")
-importFrom(BiocGenerics,"width<-")
-importFrom(BiocGenerics,end)
-importFrom(BiocGenerics,sort)
-importFrom(BiocGenerics,start)
-importFrom(BiocGenerics,strand)
-importFrom(BiocGenerics,t)
-importFrom(BiocGenerics,width)
-importFrom(Biostrings,getSeq)
-importFrom(Biostrings,letterFrequency)
-importFrom(GenomicRanges,GRanges)
-importFrom(GenomicRanges,GRangesList)
-importFrom(GenomicRanges,slidingWindows)
-importFrom(IRanges,IRanges)
-importFrom(IRanges,Views)
-importFrom(IRanges,countOverlaps)
-importFrom(IRanges,coverage)
-importFrom(IRanges,distance)
-importFrom(IRanges,findOverlaps)
-importFrom(IRanges,gaps)
-importFrom(IRanges,ranges)
-importFrom(IRanges,reduce)
-importFrom(IRanges,subsetByOverlaps)
-importFrom(IRanges,tile)
-importFrom(IRanges,viewMeans)
+importFrom(BiocGenerics,
+  "end<-",
+  "start<-",
+  "strand<-",
+  "width<-",
+  end,
+  sort,
+  start,
+  strand,
+  t,
+  width
+)
+importFrom(Biostrings,
+  getSeq,
+  letterFrequency
+)
+importFrom(GenomicRanges,
+  GRanges,
+  GRangesList,
+  slidingWindows
+)
+importFrom(IRanges,
+  IRanges,
+  Views,
+  countOverlaps,
+  coverage,
+  distance,
+  findOverlaps,
+  gaps,
+  ranges,
+  reduce,
+  subsetByOverlaps,
+  tile,
+  viewMeans
+)
 importFrom(InteractionSet,GInteractions)
 importFrom(MASS,isoMDS)
 importFrom(Matrix,sparseMatrix)
 importFrom(RANN,nn2)
-importFrom(S4Vectors,"mcols<-")
-importFrom(S4Vectors,"metadata<-")
-importFrom(S4Vectors,Pairs)
-importFrom(S4Vectors,first)
-importFrom(S4Vectors,mcols)
-importFrom(S4Vectors,metadata)
-importFrom(S4Vectors,queryHits)
-importFrom(S4Vectors,second)
-importFrom(S4Vectors,subjectHits)
+importFrom(S4Vectors,
+  "mcols<-",
+  "metadata<-",
+  Pairs,
+  first,
+  mcols,
+  metadata,
+  queryHits,
+  second,
+  subjectHits
+)
 importFrom(Seqinfo,seqnames)
-importFrom(aricode,AMI)
-importFrom(aricode,ARI)
-importFrom(aricode,NID)
-importFrom(aricode,NMI)
+importFrom(aricode,
+  AMI,
+  ARI,
+  NID,
+  NMI
+)
 importFrom(clue,solve_LSAP)
 importFrom(cluster,silhouette)
 importFrom(dbscan,dbscan)
 importFrom(future.apply,future_mapply)
-importFrom(grDevices,col2rgb)
-importFrom(grDevices,colorRampPalette)
-importFrom(grDevices,colors)
-importFrom(grDevices,hcl.colors)
-importFrom(grDevices,rainbow)
-importFrom(grDevices,rgb)
-importFrom(graphics,arrows)
-importFrom(graphics,axis)
-importFrom(graphics,curve)
-importFrom(graphics,image)
-importFrom(graphics,layout)
-importFrom(graphics,lines)
-importFrom(graphics,par)
-importFrom(graphics,points)
-importFrom(graphics,polygon)
-importFrom(graphics,rect)
-importFrom(graphics,segments)
-importFrom(graphics,strheight)
-importFrom(graphics,text)
-importFrom(grid,arrow)
-importFrom(grid,convertHeight)
-importFrom(grid,convertUnit)
-importFrom(grid,convertWidth)
-importFrom(grid,convertX)
-importFrom(grid,convertY)
-importFrom(grid,gpar)
-importFrom(grid,grid.circle)
-importFrom(grid,grid.draw)
-importFrom(grid,grid.lines)
-importFrom(grid,grid.newpage)
-importFrom(grid,grid.points)
-importFrom(grid,grid.segments)
-importFrom(grid,grid.text)
-importFrom(grid,grobCoords)
-importFrom(grid,grobHeight)
-importFrom(grid,grobWidth)
-importFrom(grid,grobX)
-importFrom(grid,grobY)
-importFrom(grid,is.unit)
-importFrom(grid,linesGrob)
-importFrom(grid,popViewport)
-importFrom(grid,pushViewport)
-importFrom(grid,stringWidth)
-importFrom(grid,textGrob)
-importFrom(grid,unit)
-importFrom(grid,viewport)
-importFrom(grid,xsplineGrob)
-importFrom(htmlwidgets,createWidget)
-importFrom(htmlwidgets,shinyRenderWidget)
-importFrom(htmlwidgets,shinyWidgetOutput)
-importFrom(igraph,V)
-importFrom(igraph,components)
-importFrom(igraph,graph_from_data_frame)
-importFrom(igraph,layout_with_fr)
-importFrom(igraph,norm_coords)
+importFrom(grDevices,
+  col2rgb,
+  colorRampPalette,
+  colors,
+  hcl.colors,
+  rainbow,
+  rgb
+)
+importFrom(graphics,
+  arrows,
+  axis,
+  curve,
+  image,
+  layout,
+  lines,
+  par,
+  points,
+  polygon,
+  rect,
+  segments,
+  strheight,
+  text
+)
+importFrom(grid,
+  arrow,
+  convertHeight,
+  convertUnit,
+  convertWidth,
+  convertX,
+  convertY,
+  gpar,
+  grid.circle,
+  grid.draw,
+  grid.lines,
+  grid.newpage,
+  grid.points,
+  grid.segments,
+  grid.text,
+  grobCoords,
+  grobHeight,
+  grobWidth,
+  grobX,
+  grobY,
+  is.unit,
+  linesGrob,
+  popViewport,
+  pushViewport,
+  stringWidth,
+  textGrob,
+  unit,
+  viewport,
+  xsplineGrob
+)
+importFrom(htmlwidgets,
+  createWidget,
+  shinyRenderWidget,
+  shinyWidgetOutput
+)
+importFrom(igraph,
+  V,
+  components,
+  graph_from_data_frame,
+  layout_with_fr,
+  norm_coords
+)
 importFrom(methods,getPackageName)
 importFrom(plotrix,arctext)
-importFrom(progressr,progressor)
-importFrom(progressr,with_progress)
-importFrom(rgl,addNormals)
-importFrom(rgl,arrow3d)
-importFrom(rgl,bg3d)
-importFrom(rgl,cube3d)
-importFrom(rgl,cylinder3d)
-importFrom(rgl,dodecahedron3d)
-importFrom(rgl,icosahedron3d)
-importFrom(rgl,lines3d)
-importFrom(rgl,octahedron3d)
-importFrom(rgl,open3d)
-importFrom(rgl,points3d)
-importFrom(rgl,polygon3d)
-importFrom(rgl,rgl.bringtotop)
-importFrom(rgl,rotate3d)
-importFrom(rgl,scale3d)
-importFrom(rgl,segments3d)
-importFrom(rgl,shade3d)
-importFrom(rgl,spheres3d)
-importFrom(rgl,subdivision3d)
-importFrom(rgl,tetrahedron3d)
-importFrom(rgl,texts3d)
-importFrom(rgl,translate3d)
+importFrom(progressr,
+  progressor,
+  with_progress
+)
+importFrom(rgl,
+  addNormals,
+  arrow3d,
+  bg3d,
+  cube3d,
+  cylinder3d,
+  dodecahedron3d,
+  icosahedron3d,
+  lines3d,
+  octahedron3d,
+  open3d,
+  points3d,
+  polygon3d,
+  rgl.bringtotop,
+  rotate3d,
+  scale3d,
+  segments3d,
+  shade3d,
+  spheres3d,
+  subdivision3d,
+  tetrahedron3d,
+  texts3d,
+  translate3d
+)
 importFrom(rjson,fromJSON)
 importFrom(scales,rescale)
-importFrom(stats,as.dist)
-importFrom(stats,cor)
-importFrom(stats,cutree)
-importFrom(stats,dist)
-importFrom(stats,hclust)
-importFrom(stats,median)
-importFrom(stats,plogis)
-importFrom(stats,prcomp)
-importFrom(stats,quantile)
-importFrom(stats,sd)
-importFrom(stats,setNames)
-importFrom(stats,splinefun)
-importFrom(stats,var)
+importFrom(stats,
+  as.dist,
+  cor,
+  cutree,
+  dist,
+  hclust,
+  median,
+  plogis,
+  prcomp,
+  quantile,
+  sd,
+  setNames,
+  splinefun,
+  var
+)
 importFrom(trackViewer,parseWIG)
-importFrom(utils,combn)
-importFrom(utils,getFromNamespace)
-importFrom(utils,head)
-importFrom(utils,tail)
+importFrom(utils,
+  combn,
+  getFromNamespace,
+  head,
+  tail
+)
 importMethodsFrom(InteractionSet,anchorIds)
 importMethodsFrom(InteractionSet,regions)
